@@ -1,0 +1,8 @@
+{
+    "Location" : {
+    },
+    "Mesh" : {
+        "mesh" : "dynamicBlocks:vehicle",
+        "material" : "dynamicBlocks:vehicle"
+    }
+}

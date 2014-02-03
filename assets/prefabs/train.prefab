@@ -1,0 +1,32 @@
+{
+    "Item" : {
+        "name" : "Train",
+        "icon" : "gelcube",
+        "usage" : "IN_DIRECTION"
+    },
+    "Location" : {
+        "scale" : 0.5
+    },
+    "Mesh" : {
+        "mesh" : "dynamicBlocks:test",
+        "material" : "dynamicBlocks:train"
+    },
+    "RigidBody" : {
+        "kinematic" : true,
+        "collisionGroup" : "engine:kinematic",
+        "collidesWith" : ["engine:world","engine:debris", "engine:kinematic", "engine:sensor","engine:character"]
+    },
+    "BoxShape" : {
+        "extents" : [1, 1, 1]
+    },
+    "DynamicBlock" : {
+        "dynamicType"  : "Minecart",
+        "maximumSpeed" : 4,
+        "collisionGroup" : "engine:world",
+        "pathBlocks"   : ["dynamicBlocks:TrainTrack", "dynamicBlocks:TrainTrackIntersection", "dynamicBlocks:TrainTrackTee"]
+    },
+    "Trigger" : {
+        "detectGroups" : ["engine:world","engine:debris","engine:sensor", "engine:kinematic", "engine:character"]
+    }
+
+}

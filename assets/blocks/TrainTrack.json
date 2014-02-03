@@ -1,0 +1,87 @@
+/*
+ * Copyright 2012 Benjamin Glatzel <benjamin.glatzel@me.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+{
+    "shadowCasting": "false",
+    "rotation": "Fences:fence",
+    "translucent" : true,
+    "penetrable" : false,
+
+    "no_connections": {
+        "shape": "engine:horizontalOffsetPlane",
+        "tiles" : {
+           "sides" : "dynamicBlocks:TrainTrackEmpty",
+           "top" : "dynamicBlocks:TrainTrack",
+           "bottom" : "dynamicBlocks:TrainTrackEmpty"
+        }
+    },
+    "one_connection": {
+        "tile" : "dynamicBlocks:TrainTrack",
+        "shape" : "engine:horizontalOffsetPlane",
+        "tiles" : {
+          "sides" : "dynamicBlocks:TrainTrackEmpty",
+          "top" : "dynamicBlocks:TrainTrack",
+          "bottom" : "dynamicBlocks:TrainTrackEmpty"
+        }
+    },
+    "line_connection": {
+        "tile" : "dynamicBlocks:TrainTrack",
+        "shape" : "engine:horizontalOffsetPlane",
+        "tiles" : {
+          "sides" : "dynamicBlocks:TrainTrackEmpty",
+          "top" : "dynamicBlocks:TrainTrack",
+          "bottom" : "dynamicBlocks:TrainTrackEmpty"
+        }
+    },
+    "2d_corner": {
+        "tile" : "dynamicBlocks:TrainTrackCurve",
+        "shape" : "engine:horizontalOffsetPlane",
+        "tiles" : {
+          "sides" : "dynamicBlocks:TrainTrackEmpty",
+          "top" : "dynamicBlocks:TrainTrackCurve",
+          "bottom" : "dynamicBlocks:TrainTrackEmpty"
+        }
+    },
+    "2d_t": {
+        "tile" : "dynamicBlocks:TrainTrack",
+        "shape" : "engine:horizontalOffsetPlane",
+        "tiles" : {
+          "sides" : "dynamicBlocks:TrainTrackEmpty",
+          "top" : "dynamicBlocks:TrainTrack",
+          "bottom" : "dynamicBlocks:TrainTrackEmpty"
+        }
+    },
+    "cross": {
+        "tile" : "dynamicBlocks:TrainTrackIntersection",
+        "shape" : "engine:horizontalOffsetPlane",
+        "tiles" : {
+          "sides" : "dynamicBlocks:TrainTrackEmpty",
+          "top" : "dynamicBlocks:TrainTrack",
+          "center" : "dynamicBlocks:TrainTrack",
+          "bottom" : "dynamicBlocks:TrainTrackEmpty"
+        }
+    },
+
+    "slope": {
+        "tile"  : "dynamicBlocks:TrainTrackSlope",
+        "shape" : "engine:slope",
+        "tiles" : {
+          "sides" : "dynamicBlocks:TrainTrackEmpty",
+          "top" : "dynamicBlocks:TrainTrackSlope",
+          "bottom" : "dynamicBlocks:TrainTrackEmpty"
+        }
+    }
+}
