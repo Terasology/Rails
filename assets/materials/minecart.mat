@@ -1,7 +1,7 @@
 {
-    "shader" : "engine:genericMesh",
+    "shader" : "engine:genericMeshMaterial",
     "params" : {
-        "diffuse" : "dynamicBlocks:train",
+        "diffuse" : "Rails:minecart",
         "colorOffset" : [1.0, 1.0, 1.0],
         "textured" : true
     }

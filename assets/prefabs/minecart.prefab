@@ -1,0 +1,40 @@
+{
+    "Item": {
+        "name": "Minecart",
+        "icon": "Rails:minecart.minecart",
+        "usage": "IN_DIRECTION"
+    },
+    "Location": {
+        "scale": 0.4
+    },
+    "Mesh": {
+        "mesh": "Rails:minecart",
+        "material": "Rails:minecart"
+    },
+    "RigidBody": {
+         "mass": 100f,
+        "collisionGroup": "engine:debris",
+        "collidesWith": [
+            "engine:world",
+            "engine:debris",
+            "engine:kinematic",
+            "engine:sensor",
+            "engine:character"
+        ]
+    },
+    "CylinderShape": {
+        /*"sourceMesh": "Rails:minecart"*/
+        "radius": 2.0,
+        "height": 4.0
+    },
+    "Minecart": {},
+    "Trigger": {
+        "detectGroups": [
+            "engine:world",
+            "engine:debris",
+            "engine:sensor",
+            "engine:kinematic",
+            "engine:character"
+        ]
+    }
+}

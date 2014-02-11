@@ -1,11 +1,12 @@
-package org.terasology.rails.carts.componentsystem.entityfactory;
+package org.terasology.rails.carts.controllers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.terasology.rails.carts.components.DynamicBlockComponent;
+import org.terasology.asset.Assets;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.location.LocationComponent;
+import org.terasology.rails.carts.components.MinecartComponent;
 
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
@@ -17,25 +18,19 @@ import javax.vecmath.Vector3f;
  * Time: 6:14 AM
  * To change this template use File | Settings | File Templates.
  */
-public class DynamicFactory {
+public class MinecartFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(DynamicFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(MinecartFactory.class);
 
     private EntityManager entityManager;
 
-    public EntityRef generateDynamicBlock(Vector3f position, DynamicBlockComponent.DynamicType type) {
+    public EntityRef createMinecart(Vector3f position, MinecartComponent.MinecartTType type) {
         EntityRef entity = null;
         switch (type) {
-            case Minecart: {
-                entity = entityManager.create("rails:train");
+            case minecart: {
+                entity = entityManager.create( "rails:minecart", position);
                 break;
             }
-            case Boat: {
-                entity = entityManager.create("rails:boat");
-                break;
-            }
-            default:
-                entity = entityManager.create("rails:train");
         }
         if (entity == null)
             return null;
@@ -43,25 +38,20 @@ public class DynamicFactory {
         LocationComponent loc = entity.getComponent(LocationComponent.class);
         if (loc != null) {
 
-            DynamicBlockComponent dbc = entity.getComponent(DynamicBlockComponent.class);
+            MinecartComponent dbc = entity.getComponent(MinecartComponent.class);
             dbc.isCreated = true;
 
-            if (type.equals(DynamicBlockComponent.DynamicType.Minecart)){
-                dbc.vehicleFront = entityManager.create("rails:vehicle");
-                dbc.vehicleBack  = entityManager.create("rails:vehicle");
+            /*if (type.equals(DynamicBlockComponent.DynamicType.Minecart)){
+                dbc.vehicleFront = entityManager.create("dynamicBlocks:vehicle");
+                dbc.vehicleBack  = entityManager.create("dynamicBlocks:vehicle");
                 LocationComponent locationVehicleBack  = dbc.vehicleBack.getComponent(LocationComponent.class);
                 locationVehicleBack.setLocalPosition(new Vector3f(0f, 0f, 1f));
                 dbc.vehicleBack.saveComponent(locationVehicleBack);
-
-                loc.getChildren().add(dbc.vehicleFront);
-                loc.getChildren().add(dbc.vehicleBack);
-            }
+                loc.addChild(dbc.vehicleFront, entity);
+                loc.addChild(dbc.vehicleBack, entity);
+            }     */
 
             entity.saveComponent(dbc);
-
-            loc.setWorldPosition(position);
-            loc.setWorldRotation(new Quat4f(0, 0, 0, 1));
-            entity.saveComponent(loc);
         }
 
         return entity;
