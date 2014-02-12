@@ -1,11 +1,15 @@
 package org.terasology.rails.carts.controllers;
 
+import com.bulletphysics.linearmath.QuaternionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.terasology.asset.Assets;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.logic.location.Location;
 import org.terasology.logic.location.LocationComponent;
+import org.terasology.math.Rotation;
+import org.terasology.math.Yaw;
+import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.rails.carts.components.MinecartComponent;
 
 import javax.vecmath.Quat4f;
@@ -24,37 +28,47 @@ public class MinecartFactory {
 
     private EntityManager entityManager;
 
-    public EntityRef createMinecart(Vector3f position, MinecartComponent.MinecartTType type) {
+    public EntityRef create(Vector3f position, MinecartComponent.MinecartTType type) {
         EntityRef entity = null;
         switch (type) {
             case minecart: {
-                entity = entityManager.create( "rails:minecart", position);
+                entity = createMinecart(position);
                 break;
             }
         }
+
+        return entity;
+    }
+
+    private EntityRef createMinecart(Vector3f position){
+        EntityRef entity = null;
+        entity = entityManager.create( "rails:minecart", position);
+
         if (entity == null)
             return null;
 
-        LocationComponent loc = entity.getComponent(LocationComponent.class);
-        if (loc != null) {
+        LocationComponent minecartLocation = entity.getComponent(LocationComponent.class);
+        if (minecartLocation != null) {
+            MinecartComponent minecart = entity.getComponent(MinecartComponent.class);
+            minecart.isCreated = true;
 
-            MinecartComponent dbc = entity.getComponent(MinecartComponent.class);
-            dbc.isCreated = true;
+            attachVehicle(entity, minecart, new Vector3f(-0.2f, -1.2f, 0f));
+            attachVehicle(entity, minecart, new Vector3f(1.3f, -1.2f, 0f));
 
-            /*if (type.equals(DynamicBlockComponent.DynamicType.Minecart)){
-                dbc.vehicleFront = entityManager.create("dynamicBlocks:vehicle");
-                dbc.vehicleBack  = entityManager.create("dynamicBlocks:vehicle");
-                LocationComponent locationVehicleBack  = dbc.vehicleBack.getComponent(LocationComponent.class);
-                locationVehicleBack.setLocalPosition(new Vector3f(0f, 0f, 1f));
-                dbc.vehicleBack.saveComponent(locationVehicleBack);
-                loc.addChild(dbc.vehicleFront, entity);
-                loc.addChild(dbc.vehicleBack, entity);
-            }     */
-
-            entity.saveComponent(dbc);
+            entity.saveComponent(minecart);
         }
 
         return entity;
+    }
+    
+    private void attachVehicle( EntityRef minecartEntity, MinecartComponent minecart, Vector3f position ){
+        EntityRef entity = entityManager.create("rails:vehicle");
+        LocationComponent locationVehicle   = entity.getComponent(LocationComponent.class);
+        Location.attachChild(minecartEntity, entity);
+        locationVehicle.setLocalRotation(Rotation.rotate(Yaw.CLOCKWISE_90).getQuat4f());
+        locationVehicle.setLocalPosition(position);
+        entity.saveComponent(locationVehicle);
+        minecart.vehicles.add(entity);
     }
 
     public void setEntityManager(EntityManager entityManager) {

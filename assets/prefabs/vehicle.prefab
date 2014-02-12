@@ -2,7 +2,7 @@
     "Location" : {
     },
     "Mesh" : {
-        "mesh" : "dynamicBlocks:vehicle",
-        "material" : "dynamicBlocks:vehicle"
+        "mesh" : "Rails:vehicle",
+        "material" : "Rails:vehicle"
     }
 }

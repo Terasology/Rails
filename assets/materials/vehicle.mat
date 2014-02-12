@@ -1,7 +1,7 @@
 {
-    "shader" : "engine:genericMesh",
+    "shader" : "engine:genericMeshMaterial",
     "params" : {
-        "diffuse" : "dynamicBlocks:vehicle",
+        "diffuse" : "Rails:vehicle",
         "colorOffset" : [1.0, 1.0, 1.0],
         "textured" : true
     }

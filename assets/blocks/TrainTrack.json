@@ -16,72 +16,71 @@
 
 {
     "shadowCasting": "false",
-    "rotation": "Fences:fence",
     "translucent" : true,
     "penetrable" : false,
 
     "no_connections": {
         "shape": "engine:horizontalOffsetPlane",
         "tiles" : {
-           "sides" : "dynamicBlocks:TrainTrackEmpty",
-           "top" : "dynamicBlocks:TrainTrack",
-           "bottom" : "dynamicBlocks:TrainTrackEmpty"
+           "sides" : "Rails:TrainTrackEmpty",
+           "top" : "Rails:TrainTrack",
+           "bottom" : "Rails:TrainTrackEmpty"
         }
     },
     "one_connection": {
-        "tile" : "dynamicBlocks:TrainTrack",
+        "tile" : "Rails:TrainTrack",
         "shape" : "engine:horizontalOffsetPlane",
         "tiles" : {
-          "sides" : "dynamicBlocks:TrainTrackEmpty",
-          "top" : "dynamicBlocks:TrainTrack",
-          "bottom" : "dynamicBlocks:TrainTrackEmpty"
+          "sides" : "Rails:TrainTrackEmpty",
+          "top" : "Rails:TrainTrack",
+          "bottom" : "Rails:TrainTrackEmpty"
         }
     },
     "line_connection": {
-        "tile" : "dynamicBlocks:TrainTrack",
+        "tile" : "Rails:TrainTrack",
         "shape" : "engine:horizontalOffsetPlane",
         "tiles" : {
-          "sides" : "dynamicBlocks:TrainTrackEmpty",
-          "top" : "dynamicBlocks:TrainTrack",
-          "bottom" : "dynamicBlocks:TrainTrackEmpty"
+          "sides" : "Rails:TrainTrackEmpty",
+          "top" : "Rails:TrainTrack",
+          "bottom" : "Rails:TrainTrackEmpty"
         }
     },
     "2d_corner": {
-        "tile" : "dynamicBlocks:TrainTrackCurve",
+        "tile" : "Rails:TrainTrackCurve",
         "shape" : "engine:horizontalOffsetPlane",
         "tiles" : {
-          "sides" : "dynamicBlocks:TrainTrackEmpty",
-          "top" : "dynamicBlocks:TrainTrackCurve",
-          "bottom" : "dynamicBlocks:TrainTrackEmpty"
+          "sides" : "Rails:TrainTrackEmpty",
+          "top" : "Rails:TrainTrackCurve",
+          "bottom" : "Rails:TrainTrackEmpty"
         }
     },
     "2d_t": {
-        "tile" : "dynamicBlocks:TrainTrack",
+        "tile" : "Rails:TrainTrack",
         "shape" : "engine:horizontalOffsetPlane",
         "tiles" : {
-          "sides" : "dynamicBlocks:TrainTrackEmpty",
-          "top" : "dynamicBlocks:TrainTrack",
-          "bottom" : "dynamicBlocks:TrainTrackEmpty"
+          "sides" : "Rails:TrainTrackEmpty",
+          "top" : "Rails:TrainTrack",
+          "bottom" : "Rails:TrainTrackEmpty"
         }
     },
     "cross": {
-        "tile" : "dynamicBlocks:TrainTrackIntersection",
+        "tile" : "Rails:TrainTrackIntersection",
         "shape" : "engine:horizontalOffsetPlane",
         "tiles" : {
-          "sides" : "dynamicBlocks:TrainTrackEmpty",
-          "top" : "dynamicBlocks:TrainTrack",
-          "center" : "dynamicBlocks:TrainTrack",
-          "bottom" : "dynamicBlocks:TrainTrackEmpty"
+          "sides" : "Rails:TrainTrackEmpty",
+          "top" : "Rails:TrainTrack",
+          "center" : "Rails:TrainTrack",
+          "bottom" : "Rails:TrainTrackEmpty"
         }
     },
 
     "slope": {
-        "tile"  : "dynamicBlocks:TrainTrackSlope",
+        "tile"  : "Rails:TrainTrackSlope",
         "shape" : "engine:slope",
         "tiles" : {
-          "sides" : "dynamicBlocks:TrainTrackEmpty",
-          "top" : "dynamicBlocks:TrainTrackSlope",
-          "bottom" : "dynamicBlocks:TrainTrackEmpty"
+          "sides" : "Rails:TrainTrackEmpty",
+          "top" : "Rails:TrainTrackSlope",
+          "bottom" : "Rails:TrainTrackEmpty"
         }
     }
 }

@@ -17,9 +17,15 @@ package org.terasology.rails.carts.components;
 
 
 import org.terasology.entitySystem.Component;
+import org.terasology.entitySystem.entity.EntityRef;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MinecartComponent implements Component {
     public boolean isCreated = false;
     public static MinecartTType type = MinecartTType.minecart;
+    public List<EntityRef> vehicles = new ArrayList<EntityRef>();
+
     public enum MinecartTType {locomotive, minecart};
 }

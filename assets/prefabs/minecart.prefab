@@ -5,28 +5,37 @@
         "usage": "IN_DIRECTION"
     },
     "Location": {
-        "scale": 0.4
+        "scale": 0.32
     },
     "Mesh": {
         "mesh": "Rails:minecart",
         "material": "Rails:minecart"
     },
     "RigidBody": {
-         "mass": 100f,
-        "collisionGroup": "engine:debris",
+        "mass": 250f,
+        /*"velocity": [10,0,10],*/
+        /*"angularVelocity": [0,10,0],*/
+        "collisionGroup": "engine:world",
         "collidesWith": [
             "engine:world",
             "engine:debris",
-            "engine:kinematic",
-            "engine:sensor",
-            "engine:character"
+            "engine:character",
+            "engine:default"
         ]
     },
-    "CylinderShape": {
-        /*"sourceMesh": "Rails:minecart"*/
-        "radius": 2.0,
-        "height": 4.0
+    "BoxShape": {
+         "extents" : [3, 3.5, 3]
     },
+
+    "Health": {
+        "currentHealth": 1,
+        "maxHealth": 1,
+        "regenRate": 1,
+        "waitBeforeRegen": 2,
+        "destroyEntityOnNoHealth" : true
+
+    },
+
     "Minecart": {},
     "Trigger": {
         "detectGroups": [
@@ -34,7 +43,7 @@
             "engine:debris",
             "engine:sensor",
             "engine:kinematic",
-            "engine:character"
+            "engine:default"
         ]
     }
 }

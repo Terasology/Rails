@@ -19,10 +19,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.entitySystem.entity.lifecycleEvents.BeforeDeactivateComponent;
 import org.terasology.entitySystem.event.EventPriority;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.ComponentSystem;
+import org.terasology.logic.characters.CharacterComponent;
+import org.terasology.logic.characters.events.AttackRequest;
 import org.terasology.logic.inventory.action.GiveItemAction;
+import org.terasology.logic.location.Location;
 import org.terasology.registry.In;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
@@ -78,17 +82,23 @@ public class MinecartAction implements ComponentSystem {
         localPlayer.getCharacterEntity().send(action);
     }
 
+    @ReceiveEvent(components = {MinecartComponent.class, LocationComponent.class}, priority = EventPriority.PRIORITY_HIGH)
+    public void onDestroyMinecart(BeforeDeactivateComponent event, EntityRef entity) {
+        logger.info("Destroy minecart");
+        MinecartComponent minecart = entity.getComponent(MinecartComponent.class);
+
+        for( EntityRef vehicle : minecart.vehicles ){
+            Location.removeChild(entity,vehicle);
+            if ( vehicle!=null && !vehicle.equals(EntityRef.NULL) ){
+                vehicle.destroy();
+            }
+        }
+
+        entity.saveComponent(minecart);
+    }
+
     @ReceiveEvent(components = {MinecartComponent.class, ItemComponent.class}, priority = EventPriority.PRIORITY_HIGH)
     public void onPlaceFunctional(ActivateEvent event, EntityRef item) {
-
-        for (EntityRef entity : entityManager.getEntitiesWith(MinecartComponent.class, LocationComponent.class)) {
-            MinecartComponent minecart = entity.getComponent(MinecartComponent.class);
-            if ( !minecart.isCreated ){
-                continue;
-            }
-
-            entity.send(new DoDamageEvent(100, EngineDamageTypes.PHYSICAL.get(), entity));
-        }
 
         MinecartComponent functionalItem = item.getComponent(MinecartComponent.class);
 
@@ -113,15 +123,6 @@ public class MinecartAction implements ComponentSystem {
 
         logger.info("Created minecart at {}", placementPos);
 
-
-        for (EntityRef entityNew : entityManager.getEntitiesWith(MinecartComponent.class, LocationComponent.class)) {
-            MinecartComponent minecart = entityNew.getComponent(MinecartComponent.class);
-
-            if ( minecart.isCreated ){
-                entityNew.destroy();
-            }
-        }
-
-        EntityRef entity = minecartFactory.createMinecart(placementPos.toVector3f(), functionalItem.type);
+        EntityRef entity = minecartFactory.create(placementPos.toVector3f(), functionalItem.type);
     }
 }
