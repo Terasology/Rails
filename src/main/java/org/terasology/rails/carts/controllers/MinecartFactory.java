@@ -52,8 +52,8 @@ public class MinecartFactory {
             MinecartComponent minecart = entity.getComponent(MinecartComponent.class);
             minecart.isCreated = true;
 
-            attachVehicle(entity, minecart, new Vector3f(-0.2f, -1.2f, 0f));
-            attachVehicle(entity, minecart, new Vector3f(1.3f, -1.2f, 0f));
+            attachVehicle(entity, minecart, new Vector3f(1.4f, -1.2f, 0f));
+            attachVehicle(entity, minecart, new Vector3f(2.4f, -1.2f, 0f));
 
             entity.saveComponent(minecart);
         }

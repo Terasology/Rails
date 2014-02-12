@@ -2,7 +2,7 @@
     "Location" : {
     },
     "Mesh" : {
-        "mesh" : "Rails:vehicle",
+        "mesh" : "Rails:vehicle_new",
         "material" : "Rails:vehicle"
     }
 }
