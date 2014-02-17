@@ -17,7 +17,12 @@
 {
     "shadowCasting": "false",
     "translucent" : true,
+    "rotation": "Rails:rails",
     "penetrable" : false,
+
+    "entity": {
+        "prefab": "Rails:Rails"
+    },
 
     "no_connections": {
         "shape": "engine:horizontalOffsetPlane",
@@ -59,7 +64,7 @@
         "shape" : "engine:horizontalOffsetPlane",
         "tiles" : {
           "sides" : "Rails:TrainTrackEmpty",
-          "top" : "Rails:TrainTrack",
+          "top" : "Rails:TrainTrackTee",
           "bottom" : "Rails:TrainTrackEmpty"
         }
     },
@@ -68,13 +73,13 @@
         "shape" : "engine:horizontalOffsetPlane",
         "tiles" : {
           "sides" : "Rails:TrainTrackEmpty",
-          "top" : "Rails:TrainTrack",
-          "center" : "Rails:TrainTrack",
+          "top" : "Rails:TrainTrackIntersection",
+          "center" : "Rails:TrainTrackIntersection",
           "bottom" : "Rails:TrainTrackEmpty"
         }
     },
 
-    "slope": {
+    "slope_connection": {
         "tile"  : "Rails:TrainTrackSlope",
         "shape" : "engine:slope",
         "tiles" : {

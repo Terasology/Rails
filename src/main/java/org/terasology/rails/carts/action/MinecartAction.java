@@ -46,6 +46,8 @@ import org.terasology.rails.carts.controllers.MinecartFactory;
 import org.terasology.rendering.logic.MeshComponent;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.BlockComponent;
+import org.terasology.world.block.BlockManager;
+import org.terasology.world.block.items.BlockItemFactory;
 
 @RegisterSystem(RegisterMode.AUTHORITY)
 public class MinecartAction implements ComponentSystem {
@@ -57,6 +59,9 @@ public class MinecartAction implements ComponentSystem {
     private InventoryManager inventoryManager;
 
     private MinecartFactory minecartFactory;
+
+    @In
+    BlockManager blockManager;
 
     @In
     private LocalPlayer localPlayer;
@@ -76,9 +81,11 @@ public class MinecartAction implements ComponentSystem {
 
     @ReceiveEvent
     public void onPlayerSpawn(OnPlayerSpawnedEvent event, EntityRef player, InventoryComponent inventory) {
+        BlockItemFactory blockFactory = new BlockItemFactory(entityManager);
         //inventoryManager.giveItem(player, entityManager.create("Rails:minecart"));
         //localPlayer.getCharacterEntity()
         GiveItemAction action = new GiveItemAction(localPlayer.getCharacterEntity(), entityManager.create("rails:minecart"));
+        player.send(new GiveItemAction(EntityRef.NULL, blockFactory.newInstance(blockManager.getBlockFamily("rails:Rails"), 99)));
         localPlayer.getCharacterEntity().send(action);
     }
 
