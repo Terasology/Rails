@@ -32,15 +32,16 @@ import java.util.Map;
 
 @RegisterBlockFamilyFactory(value = "Rails:rails")
 public class RailsFamilyFactory extends UpdatesWithNeighboursFamilyFactory  {
-    public static final String TWO_CONNECTIONS_SLOPE = "slope_connection";
+
     private static final Map<String, Byte> RAILS_MAPPING =
             new HashMap<String, Byte>() {{
                 put(NO_CONNECTIONS, (byte) 0);
+
                 put(ONE_CONNECTION, SideBitFlag.getSides(Side.RIGHT));
 
                 put(TWO_CONNECTIONS_LINE, SideBitFlag.getSides(Side.LEFT, Side.RIGHT));
-                put(TWO_CONNECTIONS_SLOPE, SideBitFlag.getSides(Side.LEFT, Side.TOP));
                 put(TWO_CONNECTIONS_CORNER, SideBitFlag.getSides(Side.LEFT, Side.FRONT));
+
 
                 put(THREE_CONNECTIONS_T, SideBitFlag.getSides(Side.LEFT, Side.RIGHT, Side.FRONT));
 
@@ -63,9 +64,7 @@ public class RailsFamilyFactory extends UpdatesWithNeighboursFamilyFactory  {
         }
 
         private boolean connectsToNeighbor(EntityRef neighborEntity, Side side) {
-            BlockComponent blockComponent = neighborEntity.getComponent(BlockComponent.class);
-            return neighborEntity.hasComponent(ConnectsToRailsComponent.class)
-                    || (blockComponent != null && blockComponent.getBlock().isFullSide(side));
+            return neighborEntity.hasComponent(ConnectsToRailsComponent.class);
         }
     }
 }

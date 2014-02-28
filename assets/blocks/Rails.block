@@ -20,16 +20,15 @@
     "rotation": "Rails:rails",
     "penetrable" : false,
 
-    "entity": {
-        "prefab": "Rails:Rails"
-    },
-
     "no_connections": {
         "shape": "engine:horizontalOffsetPlane",
         "tiles" : {
            "sides" : "Rails:TrainTrackEmpty",
            "top" : "Rails:TrainTrack",
            "bottom" : "Rails:TrainTrackEmpty"
+        },
+        "entity": {
+            "prefab": "rail"
         }
     },
     "one_connection": {
@@ -39,6 +38,9 @@
           "sides" : "Rails:TrainTrackEmpty",
           "top" : "Rails:TrainTrack",
           "bottom" : "Rails:TrainTrackEmpty"
+        },
+        "entity": {
+            "prefab": "Rails:rail"
         }
     },
     "line_connection": {
@@ -48,6 +50,9 @@
           "sides" : "Rails:TrainTrackEmpty",
           "top" : "Rails:TrainTrack",
           "bottom" : "Rails:TrainTrackEmpty"
+        },
+        "entity": {
+            "prefab": "Rails:rail"
         }
     },
     "2d_corner": {
@@ -57,15 +62,21 @@
           "sides" : "Rails:TrainTrackEmpty",
           "top" : "Rails:TrainTrackCurve",
           "bottom" : "Rails:TrainTrackEmpty"
+        },
+        "entity": {
+            "prefab": "Rails:railCurve"
         }
     },
     "2d_t": {
-        "tile" : "Rails:TrainTrack",
+        "tile" : "Rails:TrainTrackTee",
         "shape" : "engine:horizontalOffsetPlane",
         "tiles" : {
           "sides" : "Rails:TrainTrackEmpty",
           "top" : "Rails:TrainTrackTee",
           "bottom" : "Rails:TrainTrackEmpty"
+        },
+        "entity": {
+            "prefab": "Rails:railTee"
         }
     },
     "cross": {
@@ -76,16 +87,9 @@
           "top" : "Rails:TrainTrackIntersection",
           "center" : "Rails:TrainTrackIntersection",
           "bottom" : "Rails:TrainTrackEmpty"
-        }
-    },
-
-    "slope_connection": {
-        "tile"  : "Rails:TrainTrackSlope",
-        "shape" : "engine:slope",
-        "tiles" : {
-          "sides" : "Rails:TrainTrackEmpty",
-          "top" : "Rails:TrainTrackSlope",
-          "bottom" : "Rails:TrainTrackEmpty"
+        },
+        "entity": {
+            "prefab": "Rails:railintersection"
         }
     }
 }

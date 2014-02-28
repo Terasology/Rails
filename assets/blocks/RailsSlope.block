@@ -1,0 +1,11 @@
+{
+    "shadowCasting": "false",
+    "translucent" : true,
+    "rotation" : "attachedToSurface",
+    "keepActive" : true,
+    "penetrable" : false,
+    "shape" : "engine:slope",
+    "entity": {
+        "prefab": "Rails:railSlope"
+    }
+}

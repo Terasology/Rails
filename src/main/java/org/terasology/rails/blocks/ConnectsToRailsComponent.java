@@ -17,6 +17,13 @@ package org.terasology.rails.blocks;
 
 
 import org.terasology.entitySystem.Component;
+import org.terasology.network.Replicate;
+import org.terasology.world.block.ForceBlockActive;
 
+@ForceBlockActive
 public class ConnectsToRailsComponent implements Component {
+    public static enum RAILS { PLANE, CURVE, TEE, SLOPE, INTERSECTION };
+
+    @Replicate
+    public int type = 0;
 }

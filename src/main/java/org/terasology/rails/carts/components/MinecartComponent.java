@@ -26,6 +26,7 @@ public class MinecartComponent implements Component {
     public boolean isCreated = false;
     public static MinecartTType type = MinecartTType.minecart;
     public List<EntityRef> vehicles = new ArrayList<EntityRef>();
+    public boolean go = false;
 
     public enum MinecartTType {locomotive, minecart};
 }

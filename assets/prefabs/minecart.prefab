@@ -13,7 +13,6 @@
     },
     "RigidBody": {
         "mass": 250f,
-        /*"velocity": [10,0,10],*/
         /*"angularVelocity": [0,10,0],*/
         "collisionGroup": "engine:world",
         "collidesWith": [

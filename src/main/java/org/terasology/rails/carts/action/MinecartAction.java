@@ -25,8 +25,10 @@ import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.ComponentSystem;
 import org.terasology.logic.characters.CharacterComponent;
 import org.terasology.logic.characters.events.AttackRequest;
+import org.terasology.logic.characters.events.FrobRequest;
 import org.terasology.logic.inventory.action.GiveItemAction;
 import org.terasology.logic.location.Location;
+import org.terasology.physics.events.ForceEvent;
 import org.terasology.registry.In;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
@@ -48,6 +50,8 @@ import org.terasology.world.WorldProvider;
 import org.terasology.world.block.BlockComponent;
 import org.terasology.world.block.BlockManager;
 import org.terasology.world.block.items.BlockItemFactory;
+
+import javax.vecmath.Vector3f;
 
 @RegisterSystem(RegisterMode.AUTHORITY)
 public class MinecartAction implements ComponentSystem {
@@ -72,6 +76,26 @@ public class MinecartAction implements ComponentSystem {
     public void initialise() {
         minecartFactory = new MinecartFactory();
         minecartFactory.setEntityManager(entityManager);
+    }
+
+    @Override
+    public void preBegin() {
+
+    }
+
+    @Override
+    public void postBegin() {
+
+    }
+
+    @Override
+    public void preSave() {
+
+    }
+
+    @Override
+    public void postSave() {
+
     }
 
     @Override
@@ -104,10 +128,17 @@ public class MinecartAction implements ComponentSystem {
         entity.saveComponent(minecart);
     }
 
-    @ReceiveEvent(components = {MinecartComponent.class, ItemComponent.class}, priority = EventPriority.PRIORITY_HIGH)
+    @ReceiveEvent(components = {MinecartComponent.class, ItemComponent.class})
     public void onPlaceFunctional(ActivateEvent event, EntityRef item) {
 
         MinecartComponent functionalItem = item.getComponent(MinecartComponent.class);
+
+        if ( functionalItem.isCreated ){
+            logger.info("go!!!");
+            functionalItem.go = !functionalItem.go;
+            item.saveComponent(functionalItem);
+            return;
+        }
 
         Side surfaceDir = Side.inDirection(event.getHitNormal());
 
@@ -132,4 +163,5 @@ public class MinecartAction implements ComponentSystem {
 
         EntityRef entity = minecartFactory.create(placementPos.toVector3f(), functionalItem.type);
     }
+
 }
