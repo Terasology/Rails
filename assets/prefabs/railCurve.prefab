@@ -1,5 +1,5 @@
 {
     "ConnectsToRails": {
-        "type": 2
+        "type": "CURVE"
     }
 }

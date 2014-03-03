@@ -24,17 +24,16 @@ import org.terasology.entitySystem.event.EventPriority;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.ComponentSystem;
 import org.terasology.logic.characters.CharacterComponent;
-import org.terasology.logic.characters.events.AttackRequest;
-import org.terasology.logic.characters.events.FrobRequest;
 import org.terasology.logic.inventory.action.GiveItemAction;
 import org.terasology.logic.location.Location;
-import org.terasology.physics.events.ForceEvent;
+import org.terasology.physics.components.RigidBodyComponent;
+import org.terasology.physics.events.ChangeVelocityEvent;
+import org.terasology.physics.events.CollideEvent;
+import org.terasology.physics.events.ImpulseEvent;
 import org.terasology.registry.In;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.logic.common.ActivateEvent;
-import org.terasology.logic.health.DoDamageEvent;
-import org.terasology.logic.health.EngineDamageTypes;
 import org.terasology.logic.inventory.InventoryComponent;
 import org.terasology.logic.inventory.InventoryManager;
 import org.terasology.logic.inventory.ItemComponent;
@@ -65,12 +64,12 @@ public class MinecartAction implements ComponentSystem {
     private MinecartFactory minecartFactory;
 
     @In
-    BlockManager blockManager;
+    private BlockManager blockManager;
 
     @In
     private LocalPlayer localPlayer;
 
-    private static final Logger logger = LoggerFactory.getLogger(MinecartAction.class);
+    private final Logger logger = LoggerFactory.getLogger(MinecartAction.class);
 
     @Override
     public void initialise() {
@@ -103,6 +102,40 @@ public class MinecartAction implements ComponentSystem {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @ReceiveEvent(components = {MinecartComponent.class, LocationComponent.class}, priority = EventPriority.PRIORITY_HIGH)
+    public void onBump(CollideEvent event, EntityRef entity) {
+        logger.info("Bump event");
+
+        MinecartComponent minecart = entity.getComponent(MinecartComponent.class);
+        LocationComponent minecartLocation = entity.getComponent(LocationComponent.class);
+        EntityRef other = event.getOtherEntity();
+
+        if (other.hasComponent(CharacterComponent.class)) {
+            LocationComponent location = other.getComponent(LocationComponent.class);
+            Vector3f bumpForce = new Vector3f(minecartLocation.getWorldPosition());
+            bumpForce.sub(location.getWorldPosition());
+            bumpForce.normalize();
+            bumpForce.scale(5f);
+            bumpForce.x *= minecart.moveDescriptor.getPathDirection().x;
+            bumpForce.y *= minecart.moveDescriptor.getPathDirection().y;
+            bumpForce.z *= minecart.moveDescriptor.getPathDirection().z;
+            entity.send(new ImpulseEvent(bumpForce));
+            logger.info("Send bump force: " + bumpForce);
+        } else {
+            RigidBodyComponent rb = entity.getComponent(RigidBodyComponent.class);
+            Vector3f velocity = new Vector3f(rb.velocity);
+
+            if ( velocity.x > 1 || velocity.z > 1){
+                velocity.x *= minecart.moveDescriptor.getPathDirection().x;
+                velocity.y *= minecart.moveDescriptor.getPathDirection().y;
+                velocity.z *= minecart.moveDescriptor.getPathDirection().z;
+                entity.send(new ChangeVelocityEvent(velocity));
+                logger.info("Send change velocity: " + velocity);
+            }
+        }
+    }
+
+
     @ReceiveEvent
     public void onPlayerSpawn(OnPlayerSpawnedEvent event, EntityRef player, InventoryComponent inventory) {
         BlockItemFactory blockFactory = new BlockItemFactory(entityManager);
@@ -117,10 +150,10 @@ public class MinecartAction implements ComponentSystem {
     public void onDestroyMinecart(BeforeDeactivateComponent event, EntityRef entity) {
         logger.info("Destroy minecart");
         MinecartComponent minecart = entity.getComponent(MinecartComponent.class);
-
-        for( EntityRef vehicle : minecart.vehicles ){
-            Location.removeChild(entity,vehicle);
-            if ( vehicle!=null && !vehicle.equals(EntityRef.NULL) ){
+        minecart.moveDescriptor = null;
+        for (EntityRef vehicle : minecart.vehicles) {
+            Location.removeChild(entity, vehicle);
+            if (vehicle != null && !vehicle.equals(EntityRef.NULL)) {
                 vehicle.destroy();
             }
         }
@@ -133,27 +166,19 @@ public class MinecartAction implements ComponentSystem {
 
         MinecartComponent functionalItem = item.getComponent(MinecartComponent.class);
 
-        if ( functionalItem.isCreated ){
-            logger.info("go!!!");
-            functionalItem.go = !functionalItem.go;
-            item.saveComponent(functionalItem);
-            return;
-        }
-
         Side surfaceDir = Side.inDirection(event.getHitNormal());
 
         EntityRef targetEntity = event.getTarget();
 
         BlockComponent blockComponent = targetEntity.getComponent(BlockComponent.class);
 
-        if ( blockComponent == null ){
-            logger.info("blockComponent is {}", blockComponent);
+        if (blockComponent == null) {
             return;
         }
 
         Vector3i placementPos = new Vector3i(event.getTarget().getComponent(BlockComponent.class).getPosition());
 
-        if (!worldProvider.getBlock(placementPos).isPenetrable()){
+        if (!worldProvider.getBlock(placementPos).isPenetrable()) {
             placementPos.add(surfaceDir.getVector3i());
         }
 

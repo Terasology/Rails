@@ -31,7 +31,7 @@ import java.util.Map;
 
 
 @RegisterBlockFamilyFactory(value = "Rails:rails")
-public class RailsFamilyFactory extends UpdatesWithNeighboursFamilyFactory  {
+public class RailsFamilyFactory extends UpdatesWithNeighboursFamilyFactory {
 
     private static final Map<String, Byte> RAILS_MAPPING =
             new HashMap<String, Byte>() {{

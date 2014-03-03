@@ -18,15 +18,16 @@ package org.terasology.rails.carts.components;
 
 import org.terasology.entitySystem.Component;
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.rails.carts.controllers.MoveDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MinecartComponent implements Component {
-    public boolean isCreated = false;
-    public static MinecartTType type = MinecartTType.minecart;
+    public boolean isCreated;
+    public static MinecarttType type = MinecarttType.minecart;
     public List<EntityRef> vehicles = new ArrayList<EntityRef>();
-    public boolean go = false;
+    public enum MinecarttType { locomotive, minecart };
 
-    public enum MinecartTType {locomotive, minecart};
+    public MoveDescriptor moveDescriptor = new MoveDescriptor();
 }
