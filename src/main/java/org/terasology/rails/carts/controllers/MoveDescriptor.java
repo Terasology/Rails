@@ -15,6 +15,8 @@
  */
 package org.terasology.rails.carts.controllers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.terasology.math.Side;
 import org.terasology.rails.blocks.ConnectsToRailsComponent;
 
@@ -40,6 +42,7 @@ public class MoveDescriptor {
 
     private Vector3f direction = new Vector3f();
 
+    private final Logger logger = LoggerFactory.getLogger(MoveDescriptor.class);
 
     private int angleSign = 1;
     private float pitch;
@@ -120,6 +123,11 @@ public class MoveDescriptor {
 
     }
 
+    public void setCurrentPosition(Vector3f currentPosition){
+        this.prevPosition = this.currentPosition;
+        this.currentPosition = currentPosition;
+    }
+
 
     public boolean isCorner() {
         return isCorner;
@@ -127,11 +135,11 @@ public class MoveDescriptor {
 
     private void setYawOnPath() {
         switch (side) {
-            case FRONT:
+            case LEFT:
                 if (yaw == 0) {
                     yaw = 180;
                 }
-            case BACK:
+            case RIGHT:
                 if (yaw >= 360 || yaw < 45 && yaw > 0) {
                     yaw = 0;
                 }
@@ -144,11 +152,11 @@ public class MoveDescriptor {
                     yaw = 0;
                 }
                 break;
-            case LEFT:
+            case FRONT:
                 if (yaw == 0) {
                     yaw = 270;
                 }
-            case RIGHT:
+            case BACK:
                 if (yaw == 0 || yaw >= 45 && yaw < 90 || yaw > 90 && yaw < 135) {
                     yaw = 90;
                     break;
@@ -174,13 +182,14 @@ public class MoveDescriptor {
 
         switch (side) {
             case LEFT:
-
+                logger.info("LEFT");
                 if (prevBlockPos.x < currentBlockPos.x) {
                     angleSign = 1;
                     if (nextBlockPos.equals(currentBlockPos)) {
                         nextBlockPos = new Vector3f(currentBlockPos.x, currentBlockPos.y, currentBlockPos.z + 1f);
                         checkNextBlockForCorner = true;
                     }
+                    logger.info("new velocity 1f, 0, 1f");
                     return new Vector3f(1f, 0, 1f);
                 } else if (prevBlockPos.z > currentBlockPos.z) {
                     angleSign = -1;
@@ -188,19 +197,24 @@ public class MoveDescriptor {
                         nextBlockPos = new Vector3f(currentBlockPos.x - 1f, currentBlockPos.y, currentBlockPos.z);
                         checkNextBlockForCorner = true;
                     }
+                    logger.info("new velocity -1f, 0, -1f");
                     return new Vector3f(-1f, 0, -1f);
                 } else if (prevBlockPos.x > currentBlockPos.x) {
+                    logger.info("new velocity -1f, 0, 0");
                     return new Vector3f(-1f, 0, 0);
                 } else if (prevBlockPos.z < currentBlockPos.z) {
+                    logger.info("new velocity 0, 0, 1f");
                     return new Vector3f(0, 0, 1f);
                 }
 
                 break;
             case RIGHT:
-
+                logger.info("RIGHT");
                 if (prevBlockPos.x < currentBlockPos.x) {
+                    logger.info("new velocity 1f, 0, 0f");
                     return new Vector3f(1f, 0, 0f);
                 } else if (prevBlockPos.z > currentBlockPos.z) {
+                    logger.info("new velocity 0, 0, -1f");
                     return new Vector3f(0, 0, -1f);
                 } else if (prevBlockPos.x > currentBlockPos.x) {
                     angleSign = 1;
@@ -208,6 +222,7 @@ public class MoveDescriptor {
                         nextBlockPos = new Vector3f(currentBlockPos.x, currentBlockPos.y, currentBlockPos.z - 1f);
                         checkNextBlockForCorner = true;
                     }
+                    logger.info("new velocity -1f, 0, -1f");
                     return new Vector3f(-1f, 0, -1f);
                 } else if (prevBlockPos.z < currentBlockPos.z) {
                     angleSign = -1;
@@ -215,22 +230,26 @@ public class MoveDescriptor {
                         nextBlockPos = new Vector3f(currentBlockPos.x + 1f, currentBlockPos.y, currentBlockPos.z);
                         checkNextBlockForCorner = true;
                     }
+                    logger.info("new velocity 1f, 0, 1f");
                     return new Vector3f(1f, 0, 1f);
                 }
 
                 break;
             case FRONT:
-
+                logger.info("FRONT");
                 if (prevBlockPos.x < currentBlockPos.x) {
                     angleSign = -1;
                     if (nextBlockPos.equals(currentBlockPos)) {
                         nextBlockPos = new Vector3f(currentBlockPos.x, currentBlockPos.y, currentBlockPos.z - 1f);
                         checkNextBlockForCorner = true;
                     }
+                    logger.info("new velocity 1f, 0, -1f");
                     return new Vector3f(1f, 0, -1f);
                 } else if (prevBlockPos.z > currentBlockPos.z) {
+                    logger.info("new velocity 0, 0, -1f");
                     return new Vector3f(0, 0, -1f);
                 } else if (prevBlockPos.x > currentBlockPos.x) {
+                    logger.info("new velocity 0, 0, -1f");
                     return new Vector3f(0, 0, -1f);
                 } else if (prevBlockPos.z < currentBlockPos.z) {
                     angleSign = 1;
@@ -238,13 +257,15 @@ public class MoveDescriptor {
                         nextBlockPos = new Vector3f(currentBlockPos.x - 1f, currentBlockPos.y, currentBlockPos.z);
                         checkNextBlockForCorner = true;
                     }
+                    logger.info("new velocity -1f, 0, 1f");
                     return new Vector3f(-1f, 0, 1f);
                 }
 
                 break;
             case BACK:
-
+                logger.info("BACK");
                 if (prevBlockPos.x < currentBlockPos.x) {
+                    logger.info("new velocity -1f, 0, 0");
                     return new Vector3f(-1f, 0, 0);
                 } else if (prevBlockPos.z > currentBlockPos.z) {
                     angleSign = 1;
@@ -252,6 +273,7 @@ public class MoveDescriptor {
                         nextBlockPos = new Vector3f(currentBlockPos.x + 1f, currentBlockPos.y, currentBlockPos.z);
                         checkNextBlockForCorner = true;
                     }
+                    logger.info("new velocity 1f, 0, -1f");
                     return new Vector3f(1f, 0, -1f);
                 } else if (prevBlockPos.x > currentBlockPos.x) {
                     angleSign = -1;
@@ -259,8 +281,10 @@ public class MoveDescriptor {
                         nextBlockPos = new Vector3f(currentBlockPos.x, currentBlockPos.y, currentBlockPos.z + 1f);
                         checkNextBlockForCorner = true;
                     }
+                    logger.info("new velocity -1, 0, 1f");
                     return new Vector3f(-1, 0, 1f);
                 } else if (prevBlockPos.z < currentBlockPos.z) {
+                    logger.info("new velocity 0, 0, 1f");
                     return new Vector3f(0, 0, 1f);
                 }
 
@@ -295,7 +319,7 @@ public class MoveDescriptor {
     }
 
     protected void correctVelocity(Vector3f velocity) {
-        Vector3f desiredVelocity = new Vector3f(drive);
+        //Vector3f desiredVelocity = new Vector3f(drive);
 
         if (isCorner) {
             if (velocity.x != 0) {
@@ -408,7 +432,9 @@ public class MoveDescriptor {
         this.yaw = yaw;
     }
 
-    public float getYaw(Vector3f distanceMoved) {
+    public float getYaw() {
+        Vector3f distanceMoved = new Vector3f(currentPosition);
+        distanceMoved.sub(prevPosition);
         if (isCorner) {
             float sign = 1;
 
@@ -430,28 +456,28 @@ public class MoveDescriptor {
 
 
             switch (side) {
-                case BACK:
-                    if (pathDirection.z > 0) {
-                        sign = -1f;
-                    } else {
-                        sign = 1f;
-                    }
-                    break;
-                case FRONT:
-                    if (pathDirection.z > 0) {
-                        sign = 1f;
-                    } else {
-                        sign = -1f;
-                    }
-                    break;
                 case LEFT:
                     if (pathDirection.z > 0) {
-                        sign = 1f;
-                    } else {
                         sign = -1f;
+                    } else {
+                        sign = 1f;
                     }
                     break;
                 case RIGHT:
+                    if (pathDirection.z > 0) {
+                        sign = 1f;
+                    } else {
+                        sign = -1f;
+                    }
+                    break;
+                case BACK:
+                    if (pathDirection.z > 0) {
+                        sign = 1f;
+                    } else {
+                        sign = -1f;
+                    }
+                    break;
+                case FRONT:
                     if (pathDirection.z > 0) {
                         sign = -1f;
                     } else {
@@ -481,7 +507,7 @@ public class MoveDescriptor {
         return yaw;
     }
 
-    public Vector3f getCurrentPosition() {
+    public Vector3f getCurrentBlockPosition() {
         return currentBlockPos;
     }
 

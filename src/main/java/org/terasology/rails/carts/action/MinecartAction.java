@@ -104,7 +104,7 @@ public class MinecartAction implements ComponentSystem {
 
     @ReceiveEvent(components = {MinecartComponent.class, LocationComponent.class}, priority = EventPriority.PRIORITY_HIGH)
     public void onBump(CollideEvent event, EntityRef entity) {
-        logger.info("Bump event");
+       // logger.info("Bump event");
 
         MinecartComponent minecart = entity.getComponent(MinecartComponent.class);
         LocationComponent minecartLocation = entity.getComponent(LocationComponent.class);
@@ -120,17 +120,17 @@ public class MinecartAction implements ComponentSystem {
             bumpForce.y *= minecart.moveDescriptor.getPathDirection().y;
             bumpForce.z *= minecart.moveDescriptor.getPathDirection().z;
             entity.send(new ImpulseEvent(bumpForce));
-            logger.info("Send bump force: " + bumpForce);
+           // logger.info("Send bump force: " + bumpForce);
         } else {
             RigidBodyComponent rb = entity.getComponent(RigidBodyComponent.class);
             Vector3f velocity = new Vector3f(rb.velocity);
 
-            if ( velocity.x > 1 || velocity.z > 1){
+            if ( velocity.x > 1 || velocity.z > 1) {
                 velocity.x *= minecart.moveDescriptor.getPathDirection().x;
                 velocity.y *= minecart.moveDescriptor.getPathDirection().y;
                 velocity.z *= minecart.moveDescriptor.getPathDirection().z;
                 entity.send(new ChangeVelocityEvent(velocity));
-                logger.info("Send change velocity: " + velocity);
+              //  logger.info("Send change velocity: " + velocity);
             }
         }
     }

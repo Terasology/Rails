@@ -15,6 +15,7 @@
  */
 package org.terasology.rails.carts.controllers;
 
+import com.bulletphysics.linearmath.QuaternionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityManager;
@@ -24,6 +25,7 @@ import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
 import org.terasology.logic.location.LocationComponent;
+import org.terasology.math.TeraMath;
 import org.terasology.math.Vector3i;
 import org.terasology.physics.HitResult;
 import org.terasology.physics.Physics;
@@ -37,6 +39,7 @@ import org.terasology.registry.In;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
 
+import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
 @RegisterSystem(RegisterMode.AUTHORITY)
@@ -89,6 +92,7 @@ public class MinecartSystem implements ComponentSystem, UpdateSubscriberSystem {
 
             if (minecartComponent.isCreated) {
                 LocationComponent location = minecart.getComponent(LocationComponent.class);
+
                 HitResult hit = physics.rayTrace(location.getWorldPosition(), new Vector3f(0, -1, 0), 6, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
 
                 Vector3i blockPosition = hit.getBlockPosition();
@@ -96,60 +100,89 @@ public class MinecartSystem implements ComponentSystem, UpdateSubscriberSystem {
                 Block currentBlock = null;
 
                 if (blockPosition != null) {
+                    currentBlock = worldProvider.getBlock(blockPosition);
+                    EntityRef blockEntity = currentBlock.getEntity();
 
-                    if (blockPosition.toVector3f().equals(minecartComponent.moveDescriptor.getCurrentPosition())) {
+                    if (blockPosition.toVector3f().equals(minecartComponent.moveDescriptor.getCurrentBlockPosition())) {
                         if (minecartComponent.moveDescriptor.getCurrentPositionStatus().equals(MoveDescriptor.POSITION_STATUS.ON_THE_PATH)) {
-                            correctPosition(location, minecartComponent.moveDescriptor.getPathDirection(), blockPosition.toVector3f() );
-                            minecart.saveComponent(location);
+                            ConnectsToRailsComponent railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
+                            if (ConnectsToRailsComponent.RAILS.valueOf(railsComponent.type) != ConnectsToRailsComponent.RAILS.CURVE) {
+                                location.setWorldPosition(correctPosition(location.getWorldPosition(), minecartComponent.moveDescriptor.getPathDirection(), blockPosition.toVector3f()));
+                                Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
+                                float yaw   = minecartComponent.moveDescriptor.getYaw();
+                                float pitch = minecartComponent.moveDescriptor.getPitch();
+                                logger.info("yaw " + yaw);
+                                QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * yaw, TeraMath.DEG_TO_RAD * pitch, 0);
+                                location.setWorldRotation(yawPitch);
+                                minecart.saveComponent(location);
+                            }
                         }
                         continue;
                     }
 
-                    currentBlock = worldProvider.getBlock(blockPosition);
-                    EntityRef blockEntity = currentBlock.getEntity();
-
                     if (blockEntity != null && blockEntity.hasComponent(ConnectsToRailsComponent.class)) {
                         ConnectsToRailsComponent railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
+                        RigidBodyComponent rb = minecart.getComponent(RigidBodyComponent.class);
                         minecartComponent.moveDescriptor.setCurrentPositionStatus(MoveDescriptor.POSITION_STATUS.ON_THE_PATH);
                         minecartComponent.moveDescriptor.setCurrentBlockOfPathType(ConnectsToRailsComponent.RAILS.valueOf(railsComponent.type));
                         minecartComponent.moveDescriptor.setCurrentBlockOfPathSide(currentBlock.getDirection());
                         minecartComponent.moveDescriptor.calculateDirection(blockPosition.toVector3f());
+                        rb.angularFactor = 0f;
+                        //   logger.info("plain calculated direction " + minecartComponent.moveDescriptor.getPathDirection());
                         if (ConnectsToRailsComponent.RAILS.valueOf(railsComponent.type) != ConnectsToRailsComponent.RAILS.CURVE) {
-                            correctPosition(location, minecartComponent.moveDescriptor.getPathDirection(), blockPosition.toVector3f() );
-                            minecart.saveComponent(location);
-                        } else {
-                            RigidBodyComponent rb = minecart.getComponent(RigidBodyComponent.class);
+                            //logger.info("before correct position " + location.getWorldPosition());
+                            location.setWorldPosition(correctPosition(location.getWorldPosition(), minecartComponent.moveDescriptor.getPathDirection(), blockPosition.toVector3f()));
+
                             Vector3f velocity = new Vector3f(rb.velocity);
                             minecartComponent.moveDescriptor.correctVelocity(velocity);
                             minecart.send(new ChangeVelocityEvent(velocity));
-                            logger.info("new velocity " + velocity);
+                           // logger.info("sended veloicty: " + velocity);
+                            //logger.info("after correct position " + location.getWorldPosition());
+                        } else {
+                            Vector3f velocity = new Vector3f(rb.velocity);
+                            minecartComponent.moveDescriptor.correctVelocity(velocity);
+                            velocity.y = 0;
+                            minecart.send(new ChangeVelocityEvent(velocity));
+                           // logger.info("new velocity " + velocity);
                         }
+                        Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
+                        float yaw   = minecartComponent.moveDescriptor.getYaw();
+                        float pitch = minecartComponent.moveDescriptor.getPitch();
+                        logger.info("yaw " + yaw);
+                        QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * yaw, TeraMath.DEG_TO_RAD * pitch, 0);
+                        location.setWorldRotation(yawPitch);
+                        minecart.saveComponent(location);
+                        minecart.saveComponent(rb);
                     } else {
-                      minecartComponent.moveDescriptor.setPathDirection(new Vector3f(1f, 1f, 1f));
-                      minecartComponent.moveDescriptor.setCurrentBlockOfPathType(null);
-                      minecartComponent.moveDescriptor.setCurrentPositionStatus(MoveDescriptor.POSITION_STATUS.ON_THE_GROUND);
+                        RigidBodyComponent rb = minecart.getComponent(RigidBodyComponent.class);
+                        minecartComponent.moveDescriptor.setPathDirection(new Vector3f(1f, 1f, 1f));
+                        minecartComponent.moveDescriptor.setCurrentBlockOfPathType(null);
+                        minecartComponent.moveDescriptor.setCurrentPositionStatus(MoveDescriptor.POSITION_STATUS.ON_THE_GROUND);
+                        rb.angularFactor = 1f;
+                        minecart.saveComponent(rb);
                     }
                 } else {
+                    RigidBodyComponent rb = minecart.getComponent(RigidBodyComponent.class);
                     minecartComponent.moveDescriptor.setPathDirection(new Vector3f(1f, 1f, 1f));
                     minecartComponent.moveDescriptor.setCurrentBlockOfPathType(null);
                     minecartComponent.moveDescriptor.setCurrentPositionStatus(MoveDescriptor.POSITION_STATUS.ON_THE_AIR);
-                }
+                    rb.angularFactor = 1f;
+                    minecart.saveComponent(rb);
 
+                }
+                minecartComponent.moveDescriptor.setCurrentPosition(location.getWorldPosition());
                 minecart.saveComponent(minecartComponent);
             }
 
         }
     }
 
-    private void correctPosition(LocationComponent location, Vector3f pathDirection, Vector3f blockPosition) {
+    private Vector3f correctPosition(Vector3f minecartPosition, Vector3f pathDirection, Vector3f blockPosition) {
         if (pathDirection.z != 0) {
-            Vector3f worldPosition = location.getWorldPosition();
-            worldPosition.x = blockPosition.x;
-            location.setWorldPosition(worldPosition);
+            minecartPosition.x = blockPosition.x;
         } else {
-            Vector3f worldPosition = location.getWorldPosition();
-            worldPosition.z = blockPosition.z;
-            location.setWorldPosition(worldPosition);
+            minecartPosition.z = blockPosition.z;
         }
+        return minecartPosition;
     }
 }
