@@ -37,6 +37,7 @@ public class MoveDescriptor {
 
     private Vector3f drive = new Vector3f();
     private Vector3f pathDirection = new Vector3f(1f, 1f, 1f);
+    private Vector3f curveDirection = new Vector3f(1f, 1f, 1f);
     private Vector3f currentPosition = new Vector3f();
     private Vector3f prevPosition = new Vector3f();
 
@@ -93,7 +94,7 @@ public class MoveDescriptor {
                 if (blockType.equals(ConnectsToRailsComponent.RAILS.SLOPE)) {
                     Vector3f slide = new Vector3f(pathDirection);
                     slide.y = -1f;
-                    slide.scale(0.3f);
+                    slide.scale(3f);
                     drive.add(slide);
                 } else {
                     pitch = 0f;
@@ -115,7 +116,7 @@ public class MoveDescriptor {
             case CURVE:
                 isCorner = true;
                 nextBlockPos = null;
-                pathDirection = getCornerDirection();
+                curveDirection = getCornerDirection();
                 break;
             case TEE:
                 break;
@@ -182,14 +183,12 @@ public class MoveDescriptor {
 
         switch (side) {
             case LEFT:
-                logger.info("LEFT");
                 if (prevBlockPos.x < currentBlockPos.x) {
                     angleSign = 1;
                     if (nextBlockPos.equals(currentBlockPos)) {
                         nextBlockPos = new Vector3f(currentBlockPos.x, currentBlockPos.y, currentBlockPos.z + 1f);
                         checkNextBlockForCorner = true;
                     }
-                    logger.info("new velocity 1f, 0, 1f");
                     return new Vector3f(1f, 0, 1f);
                 } else if (prevBlockPos.z > currentBlockPos.z) {
                     angleSign = -1;
@@ -197,24 +196,18 @@ public class MoveDescriptor {
                         nextBlockPos = new Vector3f(currentBlockPos.x - 1f, currentBlockPos.y, currentBlockPos.z);
                         checkNextBlockForCorner = true;
                     }
-                    logger.info("new velocity -1f, 0, -1f");
                     return new Vector3f(-1f, 0, -1f);
                 } else if (prevBlockPos.x > currentBlockPos.x) {
-                    logger.info("new velocity -1f, 0, 0");
                     return new Vector3f(-1f, 0, 0);
                 } else if (prevBlockPos.z < currentBlockPos.z) {
-                    logger.info("new velocity 0, 0, 1f");
                     return new Vector3f(0, 0, 1f);
                 }
 
                 break;
             case RIGHT:
-                logger.info("RIGHT");
                 if (prevBlockPos.x < currentBlockPos.x) {
-                    logger.info("new velocity 1f, 0, 0f");
                     return new Vector3f(1f, 0, 0f);
                 } else if (prevBlockPos.z > currentBlockPos.z) {
-                    logger.info("new velocity 0, 0, -1f");
                     return new Vector3f(0, 0, -1f);
                 } else if (prevBlockPos.x > currentBlockPos.x) {
                     angleSign = 1;
@@ -222,7 +215,6 @@ public class MoveDescriptor {
                         nextBlockPos = new Vector3f(currentBlockPos.x, currentBlockPos.y, currentBlockPos.z - 1f);
                         checkNextBlockForCorner = true;
                     }
-                    logger.info("new velocity -1f, 0, -1f");
                     return new Vector3f(-1f, 0, -1f);
                 } else if (prevBlockPos.z < currentBlockPos.z) {
                     angleSign = -1;
@@ -230,26 +222,21 @@ public class MoveDescriptor {
                         nextBlockPos = new Vector3f(currentBlockPos.x + 1f, currentBlockPos.y, currentBlockPos.z);
                         checkNextBlockForCorner = true;
                     }
-                    logger.info("new velocity 1f, 0, 1f");
                     return new Vector3f(1f, 0, 1f);
                 }
 
                 break;
             case FRONT:
-                logger.info("FRONT");
                 if (prevBlockPos.x < currentBlockPos.x) {
                     angleSign = -1;
                     if (nextBlockPos.equals(currentBlockPos)) {
                         nextBlockPos = new Vector3f(currentBlockPos.x, currentBlockPos.y, currentBlockPos.z - 1f);
                         checkNextBlockForCorner = true;
                     }
-                    logger.info("new velocity 1f, 0, -1f");
                     return new Vector3f(1f, 0, -1f);
                 } else if (prevBlockPos.z > currentBlockPos.z) {
-                    logger.info("new velocity 0, 0, -1f");
                     return new Vector3f(0, 0, -1f);
                 } else if (prevBlockPos.x > currentBlockPos.x) {
-                    logger.info("new velocity 0, 0, -1f");
                     return new Vector3f(0, 0, -1f);
                 } else if (prevBlockPos.z < currentBlockPos.z) {
                     angleSign = 1;
@@ -257,23 +244,19 @@ public class MoveDescriptor {
                         nextBlockPos = new Vector3f(currentBlockPos.x - 1f, currentBlockPos.y, currentBlockPos.z);
                         checkNextBlockForCorner = true;
                     }
-                    logger.info("new velocity -1f, 0, 1f");
                     return new Vector3f(-1f, 0, 1f);
                 }
 
                 break;
             case BACK:
-                logger.info("BACK");
                 if (prevBlockPos.x < currentBlockPos.x) {
-                    logger.info("new velocity -1f, 0, 0");
-                    return new Vector3f(-1f, 0, 0);
+                     return new Vector3f(-1f, 0, 0);
                 } else if (prevBlockPos.z > currentBlockPos.z) {
                     angleSign = 1;
                     if (nextBlockPos.equals(currentBlockPos)) {
                         nextBlockPos = new Vector3f(currentBlockPos.x + 1f, currentBlockPos.y, currentBlockPos.z);
                         checkNextBlockForCorner = true;
                     }
-                    logger.info("new velocity 1f, 0, -1f");
                     return new Vector3f(1f, 0, -1f);
                 } else if (prevBlockPos.x > currentBlockPos.x) {
                     angleSign = -1;
@@ -281,10 +264,8 @@ public class MoveDescriptor {
                         nextBlockPos = new Vector3f(currentBlockPos.x, currentBlockPos.y, currentBlockPos.z + 1f);
                         checkNextBlockForCorner = true;
                     }
-                    logger.info("new velocity -1, 0, 1f");
                     return new Vector3f(-1, 0, 1f);
                 } else if (prevBlockPos.z < currentBlockPos.z) {
-                    logger.info("new velocity 0, 0, 1f");
                     return new Vector3f(0, 0, 1f);
                 }
 
@@ -319,21 +300,36 @@ public class MoveDescriptor {
     }
 
     protected void correctVelocity(Vector3f velocity) {
-        //Vector3f desiredVelocity = new Vector3f(drive);
+        Vector3f desiredVelocity = new Vector3f(drive);
 
         if (isCorner) {
-            if (velocity.x != 0) {
-                velocity.z = velocity.x;
-            } else {
-                velocity.x = velocity.z;
-            }
-
-            velocity.absolute();
             velocity.x = velocity.x * pathDirection.x;
             velocity.z = velocity.z * pathDirection.z;
+
+            velocity.absolute();
+            drive.absolute();
+
+            if (velocity.x > velocity.z) {
+                velocity.z = velocity.x;
+                drive.z = drive.x;
+            } else {
+                velocity.x = velocity.z;
+                drive.z = drive.x;
+            }
+
+            velocity.x = velocity.x * curveDirection.x;
+            velocity.z = velocity.z * curveDirection.z;
+            drive.x = drive.x * curveDirection.x;
+            drive.z = drive.z * curveDirection.z;
         } else {
             velocity.x = velocity.x * pathDirection.x;
             velocity.z = velocity.z * pathDirection.z;
+            drive.x = velocity.x * pathDirection.x;
+            drive.z = velocity.z * pathDirection.z;
+        }
+
+        if ((drive.lengthSquared()  - velocity.lengthSquared()) > 0.1) {
+            velocity.interpolate(drive, 0.2f);
         }
 
     }
@@ -447,52 +443,15 @@ public class MoveDescriptor {
                 }
 
                 float tYaw = yaw + sign * 45f;
-
-                //System.out.println("tYaw: " + tYaw + " side: " + side + " direction: " + pathDirection);
-
-                //System.out.println(tYaw);
                 return tYaw;
             }
-
-
-            switch (side) {
-                case LEFT:
-                    if (pathDirection.z > 0) {
-                        sign = -1f;
-                    } else {
-                        sign = 1f;
-                    }
-                    break;
-                case RIGHT:
-                    if (pathDirection.z > 0) {
-                        sign = 1f;
-                    } else {
-                        sign = -1f;
-                    }
-                    break;
-                case BACK:
-                    if (pathDirection.z > 0) {
-                        sign = 1f;
-                    } else {
-                        sign = -1f;
-                    }
-                    break;
-                case FRONT:
-                    if (pathDirection.z > 0) {
-                        sign = -1f;
-                    } else {
-                        sign = 1f;
-                    }
-                    break;
-            }
-
 
             float percent = distanceMoved.length() / 0.007f;
 
             if (percent > 100) {
-                yaw += (-sign) * 90f;
+                yaw += angleSign * 90f;
             } else {
-                yaw += (-sign) * 90f * percent / 100;
+                yaw += angleSign * 90f * percent / 100;
             }
 
             if (yaw < 0) {
