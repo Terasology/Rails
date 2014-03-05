@@ -302,6 +302,9 @@ public class MoveDescriptor {
     protected void correctVelocity(Vector3f velocity) {
         Vector3f desiredVelocity = new Vector3f(drive);
 
+        if ( drive.length() > 0 ){
+            logger.info("drive:" + drive);
+        }
         if (isCorner) {
             velocity.x = velocity.x * pathDirection.x;
             velocity.z = velocity.z * pathDirection.z;
@@ -314,7 +317,7 @@ public class MoveDescriptor {
                 drive.z = drive.x;
             } else {
                 velocity.x = velocity.z;
-                drive.z = drive.x;
+                drive.x = drive.z;
             }
 
             velocity.x = velocity.x * curveDirection.x;
@@ -324,8 +327,8 @@ public class MoveDescriptor {
         } else {
             velocity.x = velocity.x * pathDirection.x;
             velocity.z = velocity.z * pathDirection.z;
-            drive.x = velocity.x * pathDirection.x;
-            drive.z = velocity.z * pathDirection.z;
+            drive.x = drive.x * pathDirection.x;
+            drive.z = drive.z * pathDirection.z;
         }
 
         if ((drive.lengthSquared()  - velocity.lengthSquared()) > 0.1) {

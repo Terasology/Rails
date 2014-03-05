@@ -141,7 +141,7 @@ public class MinecartAction implements ComponentSystem {
         BlockItemFactory blockFactory = new BlockItemFactory(entityManager);
         GiveItemAction action = new GiveItemAction(localPlayer.getCharacterEntity(), entityManager.create("rails:minecart"));
         player.send(new GiveItemAction(EntityRef.NULL, blockFactory.newInstance(blockManager.getBlockFamily("rails:Rails"), 99)));
-        player.send(new GiveItemAction(EntityRef.NULL, blockFactory.newInstance(blockManager.getBlockFamily("rails:RailsSlope"), 99)));
+       // player.send(new GiveItemAction(EntityRef.NULL, blockFactory.newInstance(blockManager.getBlockFamily("rails:RailsSlope"), 99)));
         localPlayer.getCharacterEntity().send(action);
     }
 

@@ -94,7 +94,7 @@ public class MinecartSystem implements ComponentSystem, UpdateSubscriberSystem {
                 LocationComponent location = minecart.getComponent(LocationComponent.class);
 
                 HitResult hit = physics.rayTrace(location.getWorldPosition(), new Vector3f(0, -1, 0), 6, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
-
+                RigidBodyComponent rb = minecart.getComponent(RigidBodyComponent.class);
                 Vector3i blockPosition = hit.getBlockPosition();
 
                 Block currentBlock = null;
@@ -115,13 +115,15 @@ public class MinecartSystem implements ComponentSystem, UpdateSubscriberSystem {
                                 location.setWorldRotation(yawPitch);
                                 minecart.saveComponent(location);
                             }
+                            Vector3f velocity = new Vector3f(rb.velocity);
+                            minecartComponent.moveDescriptor.correctVelocity(velocity);
+                            minecart.send(new ChangeVelocityEvent(velocity));
                         }
                         continue;
                     }
 
                     if (blockEntity != null && blockEntity.hasComponent(ConnectsToRailsComponent.class)) {
                         ConnectsToRailsComponent railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
-                        RigidBodyComponent rb = minecart.getComponent(RigidBodyComponent.class);
                         minecartComponent.moveDescriptor.setCurrentPositionStatus(MoveDescriptor.POSITION_STATUS.ON_THE_PATH);
                         minecartComponent.moveDescriptor.setCurrentBlockOfPathType(ConnectsToRailsComponent.RAILS.valueOf(railsComponent.type));
                         minecartComponent.moveDescriptor.setCurrentBlockOfPathSide(currentBlock.getDirection());
@@ -148,7 +150,6 @@ public class MinecartSystem implements ComponentSystem, UpdateSubscriberSystem {
                         minecart.saveComponent(location);
                         minecart.saveComponent(rb);
                     } else {
-                        RigidBodyComponent rb = minecart.getComponent(RigidBodyComponent.class);
                         minecartComponent.moveDescriptor.setPathDirection(new Vector3f(1f, 1f, 1f));
                         minecartComponent.moveDescriptor.setCurrentBlockOfPathType(null);
                         minecartComponent.moveDescriptor.setCurrentPositionStatus(MoveDescriptor.POSITION_STATUS.ON_THE_GROUND);
@@ -156,7 +157,6 @@ public class MinecartSystem implements ComponentSystem, UpdateSubscriberSystem {
                         minecart.saveComponent(rb);
                     }
                 } else {
-                    RigidBodyComponent rb = minecart.getComponent(RigidBodyComponent.class);
                     minecartComponent.moveDescriptor.setPathDirection(new Vector3f(1f, 1f, 1f));
                     minecartComponent.moveDescriptor.setCurrentBlockOfPathType(null);
                     minecartComponent.moveDescriptor.setCurrentPositionStatus(MoveDescriptor.POSITION_STATUS.ON_THE_AIR);
