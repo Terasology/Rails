@@ -139,10 +139,9 @@ public class MinecartAction implements ComponentSystem {
     @ReceiveEvent
     public void onPlayerSpawn(OnPlayerSpawnedEvent event, EntityRef player, InventoryComponent inventory) {
         BlockItemFactory blockFactory = new BlockItemFactory(entityManager);
-        //inventoryManager.giveItem(player, entityManager.create("Rails:minecart"));
-        //localPlayer.getCharacterEntity()
         GiveItemAction action = new GiveItemAction(localPlayer.getCharacterEntity(), entityManager.create("rails:minecart"));
         player.send(new GiveItemAction(EntityRef.NULL, blockFactory.newInstance(blockManager.getBlockFamily("rails:Rails"), 99)));
+        player.send(new GiveItemAction(EntityRef.NULL, blockFactory.newInstance(blockManager.getBlockFamily("rails:RailsSlope"), 99)));
         localPlayer.getCharacterEntity().send(action);
     }
 
@@ -163,6 +162,7 @@ public class MinecartAction implements ComponentSystem {
 
     @ReceiveEvent(components = {MinecartComponent.class, ItemComponent.class})
     public void onPlaceFunctional(ActivateEvent event, EntityRef item) {
+        logger.info("onPlaceFunctional");
 
         MinecartComponent functionalItem = item.getComponent(MinecartComponent.class);
 
@@ -187,6 +187,17 @@ public class MinecartAction implements ComponentSystem {
         logger.info("Created minecart at {}", placementPos);
 
         EntityRef entity = minecartFactory.create(placementPos.toVector3f(), functionalItem.type);
+    }
+
+    @ReceiveEvent(components = {MinecartComponent.class, LocationComponent.class})
+    public void onUseFunctional(ActivateEvent event, EntityRef minecartEntity) {
+        logger.info("onUseFunctional");
+        MinecartComponent minecartComponent = minecartEntity.getComponent(MinecartComponent.class);
+
+        if(minecartComponent.isCreated) {
+            minecartComponent.moveDescriptor.setDrive(new Vector3f(10f,0,10f));
+            minecartEntity.saveComponent(minecartComponent);
+        }
     }
 
 }

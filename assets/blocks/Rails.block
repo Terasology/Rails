@@ -21,6 +21,7 @@
     "penetrable" : false,
 
     "no_connections": {
+        "tile" : "Rails:TrainTrack",
         "shape": "engine:horizontalOffsetPlane",
         "tiles" : {
            "sides" : "Rails:TrainTrackEmpty",
@@ -85,7 +86,6 @@
         "tiles" : {
           "sides" : "Rails:TrainTrackEmpty",
           "top" : "Rails:TrainTrackIntersection",
-          "center" : "Rails:TrainTrackIntersection",
           "bottom" : "Rails:TrainTrackEmpty"
         },
         "entity": {

@@ -111,7 +111,6 @@ public class MinecartSystem implements ComponentSystem, UpdateSubscriberSystem {
                                 Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
                                 float yaw   = minecartComponent.moveDescriptor.getYaw();
                                 float pitch = minecartComponent.moveDescriptor.getPitch();
-                                logger.info("yaw " + yaw);
                                 QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * yaw, TeraMath.DEG_TO_RAD * pitch, 0);
                                 location.setWorldRotation(yawPitch);
                                 minecart.saveComponent(location);
@@ -128,27 +127,22 @@ public class MinecartSystem implements ComponentSystem, UpdateSubscriberSystem {
                         minecartComponent.moveDescriptor.setCurrentBlockOfPathSide(currentBlock.getDirection());
                         minecartComponent.moveDescriptor.calculateDirection(blockPosition.toVector3f());
                         rb.angularFactor = 0f;
-                        //   logger.info("plain calculated direction " + minecartComponent.moveDescriptor.getPathDirection());
                         if (ConnectsToRailsComponent.RAILS.valueOf(railsComponent.type) != ConnectsToRailsComponent.RAILS.CURVE) {
-                            //logger.info("before correct position " + location.getWorldPosition());
                             location.setWorldPosition(correctPosition(location.getWorldPosition(), minecartComponent.moveDescriptor.getPathDirection(), blockPosition.toVector3f()));
-
                             Vector3f velocity = new Vector3f(rb.velocity);
                             minecartComponent.moveDescriptor.correctVelocity(velocity);
                             minecart.send(new ChangeVelocityEvent(velocity));
-                           // logger.info("sended veloicty: " + velocity);
-                            //logger.info("after correct position " + location.getWorldPosition());
                         } else {
                             Vector3f velocity = new Vector3f(rb.velocity);
+                            logger.info("rb.velocity:  " + rb.velocity);
                             minecartComponent.moveDescriptor.correctVelocity(velocity);
                             velocity.y = 0;
+                            logger.info("sended velocity:  " + velocity);
                             minecart.send(new ChangeVelocityEvent(velocity));
-                           // logger.info("new velocity " + velocity);
                         }
                         Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
                         float yaw   = minecartComponent.moveDescriptor.getYaw();
                         float pitch = minecartComponent.moveDescriptor.getPitch();
-                        logger.info("yaw " + yaw);
                         QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * yaw, TeraMath.DEG_TO_RAD * pitch, 0);
                         location.setWorldRotation(yawPitch);
                         minecart.saveComponent(location);
