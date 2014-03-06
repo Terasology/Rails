@@ -116,9 +116,9 @@ public class MinecartAction implements ComponentSystem {
             bumpForce.sub(location.getWorldPosition());
             bumpForce.normalize();
             bumpForce.scale(5f);
-            bumpForce.x *= minecart.moveDescriptor.getPathDirection().x;
-            bumpForce.y *= minecart.moveDescriptor.getPathDirection().y;
-            bumpForce.z *= minecart.moveDescriptor.getPathDirection().z;
+            bumpForce.x *= minecart.pathDirection.x;
+            bumpForce.y *= minecart.pathDirection.y;
+            bumpForce.z *= minecart.pathDirection.z;
             entity.send(new ImpulseEvent(bumpForce));
            // logger.info("Send bump force: " + bumpForce);
         } else {
@@ -126,9 +126,9 @@ public class MinecartAction implements ComponentSystem {
             Vector3f velocity = new Vector3f(rb.velocity);
 
             if ( velocity.x > 1 || velocity.z > 1) {
-                velocity.x *= minecart.moveDescriptor.getPathDirection().x;
-                velocity.y *= minecart.moveDescriptor.getPathDirection().y;
-                velocity.z *= minecart.moveDescriptor.getPathDirection().z;
+                velocity.x *= minecart.pathDirection.x;
+                velocity.y *= minecart.pathDirection.y;
+                velocity.z *= minecart.pathDirection.z;
                 entity.send(new ChangeVelocityEvent(velocity));
               //  logger.info("Send change velocity: " + velocity);
             }
@@ -149,7 +149,6 @@ public class MinecartAction implements ComponentSystem {
     public void onDestroyMinecart(BeforeDeactivateComponent event, EntityRef entity) {
         logger.info("Destroy minecart");
         MinecartComponent minecart = entity.getComponent(MinecartComponent.class);
-        minecart.moveDescriptor = null;
         for (EntityRef vehicle : minecart.vehicles) {
             Location.removeChild(entity, vehicle);
             if (vehicle != null && !vehicle.equals(EntityRef.NULL)) {
@@ -195,7 +194,7 @@ public class MinecartAction implements ComponentSystem {
         MinecartComponent minecartComponent = minecartEntity.getComponent(MinecartComponent.class);
 
         if(minecartComponent.isCreated) {
-            minecartComponent.moveDescriptor.setDrive(new Vector3f(10f,0,10f));
+            minecartComponent.drive.set(10f,0,10f);
             minecartEntity.saveComponent(minecartComponent);
         }
     }

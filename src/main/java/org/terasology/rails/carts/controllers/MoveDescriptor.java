@@ -18,13 +18,15 @@ package org.terasology.rails.carts.controllers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.math.Side;
+import org.terasology.math.SideBitFlag;
 import org.terasology.rails.blocks.ConnectsToRailsComponent;
+import org.terasology.rails.carts.components.MinecartComponent;
 
 import javax.vecmath.Vector3f;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MoveDescriptor {
-
-    protected boolean useGravity = true;
 
     protected float groundFriction = 0.7f;
     protected float pathFriction = 0.25f;
@@ -35,325 +37,180 @@ public class MoveDescriptor {
     protected float maxAirSpeed = 25.0f;
     protected float maxLiquidSpeed = 10f;
 
-    private Vector3f drive = new Vector3f();
-    private Vector3f pathDirection = new Vector3f(1f, 1f, 1f);
-    private Vector3f curveDirection = new Vector3f(1f, 1f, 1f);
-    private Vector3f currentPosition = new Vector3f();
-    private Vector3f prevPosition = new Vector3f();
-
-    private Vector3f direction = new Vector3f();
-
     private final Logger logger = LoggerFactory.getLogger(MoveDescriptor.class);
 
     private int angleSign = 1;
-    private float pitch;
-    private float yaw;
 
-    private boolean isCorner;
-    private boolean checkNextBlockForCorner;
-    private boolean nextBlockIsCorner;
-
-    private ConnectsToRailsComponent.RAILS blockType;
-    private Side side;
-
-    private Vector3f currentBlockPos;
-    private Vector3f prevBlockPos;
-    private Vector3f nextBlockPos;
-
-    public static enum POSITION_STATUS {ON_THE_AIR, ON_THE_GROUND, ON_THE_PATH, ON_THE_LIQUID};
-
-    private POSITION_STATUS currentPositionStatus = POSITION_STATUS.ON_THE_AIR;
-
-    public void calculateDirection(Vector3f blockPosition) {
-
-        if (blockType == null) {
-            return;
-        }
-
-        if (currentBlockPos != null) {
-            if (!blockPosition.equals(currentBlockPos)) {
-                prevBlockPos = new Vector3f(currentBlockPos);
-                currentBlockPos = blockPosition;
-            }
-        } else {
-            prevBlockPos = new Vector3f();
-            currentBlockPos = new Vector3f(blockPosition);
-        }
-
-        if (isCorner) {
-            isCorner = false;
-        }
-
+    public void calculateDirection(Vector3f blockPosition, Vector3f velocity, Vector3f direction, ConnectsToRailsComponent.RAILS blockType, Side side, MinecartComponent minecart) {
+        boolean isCorner = false;
         switch (blockType) {
             case PLANE:
             case INTERSECTION:
                 side = side.yawClockwise(1);
             case SLOPE:
-                pathDirection = new Vector3f(side.getVector3i().toVector3f());
-
-                if (blockType.equals(ConnectsToRailsComponent.RAILS.SLOPE)) {
-                    Vector3f slide = new Vector3f(pathDirection);
-                    slide.y = -1f;
-                    slide.scale(3f);
-                    drive.add(slide);
-                } else {
-                    pitch = 0f;
-                }
-
-                pathDirection.absolute();
-                setYawOnPath();
-
-                if (nextBlockPos == null) {
-                    nextBlockPos = new Vector3f(currentBlockPos);
-                }
-
-                if (nextBlockPos.equals(currentBlockPos)) {
-                    nextBlockPos.sub(currentBlockPos, prevBlockPos);
-                    nextBlockPos.add(currentBlockPos, nextBlockPos);
-                }
-
+                minecart.pathDirection = side.getVector3i().toVector3f();
+                minecart.pathDirection.absolute();
+                logger.info("pathDirection:" + minecart.pathDirection);
                 break;
             case CURVE:
                 isCorner = true;
-                nextBlockPos = null;
-                curveDirection = getCornerDirection();
+                setCornerDirection(side, minecart, direction);
                 break;
             case TEE:
                 break;
         }
 
+        correctVelocity(minecart, velocity, isCorner);
+
     }
 
-    public void setCurrentPosition(Vector3f currentPosition){
-        this.prevPosition = this.currentPosition;
-        this.currentPosition = currentPosition;
-    }
+    public float getYawOnPath(Side side, float currentYaw) {
+        float yaw = 0;
 
-
-    public boolean isCorner() {
-        return isCorner;
-    }
-
-    private void setYawOnPath() {
         switch (side) {
             case LEFT:
-                if (yaw == 0) {
+                if (currentYaw == 0) {
                     yaw = 180;
                 }
             case RIGHT:
-                if (yaw >= 360 || yaw < 45 && yaw > 0) {
+                if (currentYaw >= 360 || currentYaw < 45 && currentYaw > 0) {
                     yaw = 0;
                 }
 
-                if (yaw >= 135 && yaw < 180 || yaw > 180 && yaw < 225) {
+                if (currentYaw >= 135 && currentYaw < 180 || currentYaw > 180 && currentYaw < 225) {
                     yaw = 180;
                 }
 
-                if (yaw != 180 && yaw != 0) {
+                if (currentYaw != 180 && currentYaw != 0) {
                     yaw = 0;
                 }
                 break;
             case FRONT:
-                if (yaw == 0) {
+                if (currentYaw == 0) {
                     yaw = 270;
                 }
             case BACK:
-                if (yaw == 0 || yaw >= 45 && yaw < 90 || yaw > 90 && yaw < 135) {
+                if (currentYaw == 0 || currentYaw >= 45 && currentYaw < 90 || currentYaw > 90 && currentYaw < 135) {
                     yaw = 90;
                     break;
                 }
 
-                if (yaw >= 225 && yaw < 270 || yaw > 270 && yaw < 315) {
+                if (currentYaw >= 225 && currentYaw < 270 || currentYaw > 270 && currentYaw < 315) {
                     yaw = 270;
                 }
 
-                if (yaw != 90 && yaw != 270) {
+                if (currentYaw != 90 && currentYaw != 270) {
                     yaw = 90;
                 }
 
                 break;
         }
+        return yaw;
+
     }
 
-    protected Vector3f getCornerDirection() {
+    private void setCornerDirection(Side side, MinecartComponent minecart, Vector3f direction) {
+        logger.info("Corner Direction:" + direction);
 
-        if (nextBlockPos == null) {
-            nextBlockPos = currentBlockPos;
+        if (Math.abs(direction.x) < Math.abs(direction.z)) {
+            direction.x = 0;
+        } else if (Math.abs(direction.x) > Math.abs(direction.z)) {
+            direction.z = 0;
         }
 
         switch (side) {
             case LEFT:
-                if (prevBlockPos.x < currentBlockPos.x) {
+                if (direction.x > 0) {
                     angleSign = 1;
-                    if (nextBlockPos.equals(currentBlockPos)) {
-                        nextBlockPos = new Vector3f(currentBlockPos.x, currentBlockPos.y, currentBlockPos.z + 1f);
-                        checkNextBlockForCorner = true;
-                    }
-                    return new Vector3f(1f, 0, 1f);
-                } else if (prevBlockPos.z > currentBlockPos.z) {
+                    minecart.pathDirection.set(1f, 0, 1f);
+                } else if (direction.z < 0) {
                     angleSign = -1;
-                    if (nextBlockPos.equals(currentBlockPos)) {
-                        nextBlockPos = new Vector3f(currentBlockPos.x - 1f, currentBlockPos.y, currentBlockPos.z);
-                        checkNextBlockForCorner = true;
-                    }
-                    return new Vector3f(-1f, 0, -1f);
-                } else if (prevBlockPos.x > currentBlockPos.x) {
-                    return new Vector3f(-1f, 0, 0);
-                } else if (prevBlockPos.z < currentBlockPos.z) {
-                    return new Vector3f(0, 0, 1f);
+                    minecart.pathDirection.set(-1f, 0, -1f);
+                } else if (direction.x < 0) {
+                    minecart.pathDirection.set(-1f, 0, 0);
+                } else if (direction.z > 0) {
+                    minecart.pathDirection.set(0, 0, 1f);
                 }
-
                 break;
             case RIGHT:
-                if (prevBlockPos.x < currentBlockPos.x) {
-                    return new Vector3f(1f, 0, 0f);
-                } else if (prevBlockPos.z > currentBlockPos.z) {
-                    return new Vector3f(0, 0, -1f);
-                } else if (prevBlockPos.x > currentBlockPos.x) {
+                if (direction.x > 0) {
+                    minecart.pathDirection.set(1f, 0, 0f);
+                } else if (direction.z < 0) {
+                    minecart.pathDirection.set(0, 0, -1f);
+                } else if (direction.x < 0) {
                     angleSign = 1;
-                    if (nextBlockPos.equals(currentBlockPos)) {
-                        nextBlockPos = new Vector3f(currentBlockPos.x, currentBlockPos.y, currentBlockPos.z - 1f);
-                        checkNextBlockForCorner = true;
-                    }
-                    return new Vector3f(-1f, 0, -1f);
-                } else if (prevBlockPos.z < currentBlockPos.z) {
+                    minecart.pathDirection.set(-1f, 0, -1f);
+                } else if (direction.z > 0) {
                     angleSign = -1;
-                    if (nextBlockPos.equals(currentBlockPos)) {
-                        nextBlockPos = new Vector3f(currentBlockPos.x + 1f, currentBlockPos.y, currentBlockPos.z);
-                        checkNextBlockForCorner = true;
-                    }
-                    return new Vector3f(1f, 0, 1f);
+                    minecart.pathDirection.set(1f, 0, 1f);
                 }
-
                 break;
             case FRONT:
-                if (prevBlockPos.x < currentBlockPos.x) {
+                if (direction.x > 0) {
                     angleSign = -1;
-                    if (nextBlockPos.equals(currentBlockPos)) {
-                        nextBlockPos = new Vector3f(currentBlockPos.x, currentBlockPos.y, currentBlockPos.z - 1f);
-                        checkNextBlockForCorner = true;
-                    }
-                    return new Vector3f(1f, 0, -1f);
-                } else if (prevBlockPos.z > currentBlockPos.z) {
-                    return new Vector3f(0, 0, -1f);
-                } else if (prevBlockPos.x > currentBlockPos.x) {
-                    return new Vector3f(0, 0, -1f);
-                } else if (prevBlockPos.z < currentBlockPos.z) {
+                    minecart.pathDirection.set(1f, 0, -1f);
+                } else if (direction.z < 0) {
+                    minecart.pathDirection.set(0, 0, -1f);
+                } else if (direction.x < 0) {
+                    minecart.pathDirection.set(0, 0, -1f);
+                } else if (direction.z > 0) {
                     angleSign = 1;
-                    if (nextBlockPos.equals(currentBlockPos)) {
-                        nextBlockPos = new Vector3f(currentBlockPos.x - 1f, currentBlockPos.y, currentBlockPos.z);
-                        checkNextBlockForCorner = true;
-                    }
-                    return new Vector3f(-1f, 0, 1f);
+                    minecart.pathDirection.set(-1f, 0, 1f);
                 }
-
                 break;
             case BACK:
-                if (prevBlockPos.x < currentBlockPos.x) {
-                     return new Vector3f(-1f, 0, 0);
-                } else if (prevBlockPos.z > currentBlockPos.z) {
+                if (direction.x > 0) {
+                    minecart.pathDirection.set(-1f, 0, 0);
+                } else if (direction.z < 0) {
                     angleSign = 1;
-                    if (nextBlockPos.equals(currentBlockPos)) {
-                        nextBlockPos = new Vector3f(currentBlockPos.x + 1f, currentBlockPos.y, currentBlockPos.z);
-                        checkNextBlockForCorner = true;
-                    }
-                    return new Vector3f(1f, 0, -1f);
-                } else if (prevBlockPos.x > currentBlockPos.x) {
+                    minecart.pathDirection.set(1f, 0, -1f);
+                } else if (direction.x < 0) {
                     angleSign = -1;
-                    if (nextBlockPos.equals(currentBlockPos)) {
-                        nextBlockPos = new Vector3f(currentBlockPos.x, currentBlockPos.y, currentBlockPos.z + 1f);
-                        checkNextBlockForCorner = true;
-                    }
-                    return new Vector3f(-1, 0, 1f);
-                } else if (prevBlockPos.z < currentBlockPos.z) {
-                    return new Vector3f(0, 0, 1f);
+                    minecart.pathDirection.set(-1, 0, 1f);
+                } else if (direction.z > 0) {
+                    minecart.pathDirection.set(0, 0, 1f);
                 }
-
                 break;
         }
-
-        return null;
-
     }
 
-    ;
+    private void correctVelocity(MinecartComponent minecartComponent, Vector3f velocity, boolean isCorner) {
+        //Vector3f desiredVelocity = new Vector3f(minecartComponent.drive);
 
-    public Vector3f getNextBlockPos() {
-        return nextBlockPos;
-    }
-
-    public boolean isNextBlockIsCorner() {
-        return nextBlockIsCorner;
-    }
-
-    public void setNextBlockIsCorner(boolean isCorner) {
-
-        nextBlockIsCorner = isCorner;
-    }
-
-    public boolean getCheckNextBlockForCorner() {
-        return checkNextBlockForCorner;
-    }
-
-    public void setCheckNextBlockForCorner(boolean checkNextBlockForCorner) {
-        this.checkNextBlockForCorner = checkNextBlockForCorner;
-    }
-
-    protected void correctVelocity(Vector3f velocity) {
-        Vector3f desiredVelocity = new Vector3f(drive);
-
-        if ( drive.length() > 0 ){
-            logger.info("drive:" + drive);
+        if (minecartComponent.drive.length() > 0) {
+            logger.info("drive:" + minecartComponent.drive);
         }
         if (isCorner) {
-            velocity.x = velocity.x * pathDirection.x;
-            velocity.z = velocity.z * pathDirection.z;
+            velocity.x = velocity.x * minecartComponent.pathDirection.x;
+            velocity.z = velocity.z * minecartComponent.pathDirection.z;
+            minecartComponent.drive.x = minecartComponent.drive.x * minecartComponent.pathDirection.x;
+            minecartComponent.drive.z = minecartComponent.drive.z * minecartComponent.pathDirection.z;
 
             velocity.absolute();
-            drive.absolute();
+            minecartComponent.drive.absolute();
 
             if (velocity.x > velocity.z) {
                 velocity.z = velocity.x;
-                drive.z = drive.x;
+                minecartComponent.drive.z = minecartComponent.drive.x;
             } else {
                 velocity.x = velocity.z;
-                drive.x = drive.z;
+                minecartComponent.drive.x = minecartComponent.drive.z;
             }
 
-            velocity.x = velocity.x * curveDirection.x;
-            velocity.z = velocity.z * curveDirection.z;
-            drive.x = drive.x * curveDirection.x;
-            drive.z = drive.z * curveDirection.z;
         } else {
-            velocity.x = velocity.x * pathDirection.x;
-            velocity.z = velocity.z * pathDirection.z;
-            drive.x = drive.x * pathDirection.x;
-            drive.z = drive.z * pathDirection.z;
+            velocity.x = velocity.x * minecartComponent.pathDirection.x;
+            velocity.z = velocity.z * minecartComponent.pathDirection.z;
+            minecartComponent.drive.x = minecartComponent.drive.x * minecartComponent.pathDirection.x;
+            minecartComponent.drive.z = minecartComponent.drive.z * minecartComponent.pathDirection.z;
         }
 
-        if ((drive.lengthSquared()  - velocity.lengthSquared()) > 0.1) {
-            velocity.interpolate(drive, 0.2f);
+        if ((minecartComponent.drive.lengthSquared() - velocity.lengthSquared()) > 0.1) {
+            velocity.interpolate(minecartComponent.drive, 0.2f);
         }
 
     }
 
-    public Vector3f getDrive() {
-        return drive;
-    }
-
-    public void setDrive(Vector3f drive) {
-        this.drive = drive;
-    }
-
-    public void setCurrentPositionStatus(POSITION_STATUS positionStatus) {
-        currentPositionStatus = positionStatus;
-    }
-
-    public POSITION_STATUS getCurrentPositionStatus() {
-        return currentPositionStatus;
-    }
-
-    private float getMaxSpeed() {
+    public float getMaxSpeed(MinecartComponent.PositionStatus currentPositionStatus) {
 
         switch (currentPositionStatus) {
             case ON_THE_AIR:
@@ -370,7 +227,7 @@ public class MoveDescriptor {
 
     }
 
-    private float getFriction() {
+    public float getFriction(MinecartComponent.PositionStatus currentPositionStatus) {
 
         switch (currentPositionStatus) {
             case ON_THE_AIR:
@@ -385,41 +242,9 @@ public class MoveDescriptor {
 
     }
 
-    public void setCurrentBlockOfPathType(ConnectsToRailsComponent.RAILS blockType) {
-        this.blockType = blockType;
-    }
+    public float getPitch(ConnectsToRailsComponent.RAILS blockType) {
 
-    public ConnectsToRailsComponent.RAILS getCurrentBlockOfPathType() {
-        return blockType;
-    }
-
-    public void setCurrentBlockOfPathSide(Side side) {
-        this.side = side;
-    }
-
-    public void setPathDirection(Vector3f patDirection) {
-        this.pathDirection = patDirection;
-    }
-
-    public Vector3f getPathDirection() {
-        return pathDirection;
-    }
-
-    public void setUseGravity(boolean useGravity) {
-        this.useGravity = useGravity;
-    }
-
-    public void setPitch(float pitch) {
-        this.pitch = pitch;
-    }
-
-    public float getPitch() {
-
-        if (blockType == null) {
-            return pitch;
-        }
-
-        pitch = 0;
+        float pitch = 0;
 
         if (blockType.equals(ConnectsToRailsComponent.RAILS.SLOPE)) {
             pitch = 45;
@@ -427,53 +252,21 @@ public class MoveDescriptor {
         return pitch;
     }
 
-    public void setYaw(float yaw) {
-        this.yaw = yaw;
-    }
+    /*public float getYawOnCorner(Vector3f distanceMoved) {
+        float percent = distanceMoved.length() / 0.007f;
 
-    public float getYaw() {
-        Vector3f distanceMoved = new Vector3f(currentPosition);
-        distanceMoved.sub(prevPosition);
-        if (isCorner) {
-            float sign = 1;
+        if (percent > 100) {
+            yaw += angleSign * 90f;
+        } else {
+            yaw += angleSign * 90f * percent / 100;
+        }
 
-            if (nextBlockIsCorner) {
-
-                if (side.equals(Side.BACK) || side.equals(Side.FRONT)) {
-                    sign = 1;
-                } else {
-                    sign = 1;
-                }
-
-                float tYaw = yaw + sign * 45f;
-                return tYaw;
-            }
-
-            float percent = distanceMoved.length() / 0.007f;
-
-            if (percent > 100) {
-                yaw += angleSign * 90f;
-            } else {
-                yaw += angleSign * 90f * percent / 100;
-            }
-
-            if (yaw < 0) {
-                yaw = 360 + yaw;
-            } else if (yaw > 360) {
-                yaw = yaw - 360;
-            }
-
-            return yaw;
+        if (yaw < 0) {
+            yaw = 360 + yaw;
+        } else if (yaw > 360) {
+            yaw = yaw - 360;
         }
 
         return yaw;
-    }
-
-    public Vector3f getCurrentBlockPosition() {
-        return currentBlockPos;
-    }
-
-    public Vector3f getprevBlockPos() {
-        return prevBlockPos;
-    }
+    } */
 }

@@ -17,7 +17,7 @@ public class MinecartFactory {
 
     private EntityManager entityManager;
 
-    public EntityRef create(Vector3f position, MinecartComponent.MinecarttType type) {
+    public EntityRef create(Vector3f position, MinecartComponent.Types type) {
         EntityRef entity = null;
         switch (type) {
             case minecart: {
@@ -40,7 +40,10 @@ public class MinecartFactory {
         if (minecartLocation != null) {
             MinecartComponent minecart = entity.getComponent(MinecartComponent.class);
             minecart.isCreated = true;
-
+            minecart.drive = new Vector3f();
+            minecart.pathDirection = new Vector3f();
+            minecart.prevBlockPosition = new Vector3f();
+            minecart.prevPosition = new Vector3f();
             attachVehicle(entity, minecart, new Vector3f(1.4f, -1.2f, 0f));
             attachVehicle(entity, minecart, new Vector3f(2.4f, -1.2f, 0f));
 

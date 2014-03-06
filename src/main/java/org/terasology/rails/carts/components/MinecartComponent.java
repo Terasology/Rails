@@ -18,16 +18,39 @@ package org.terasology.rails.carts.components;
 
 import org.terasology.entitySystem.Component;
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.network.Replicate;
 import org.terasology.rails.carts.controllers.MoveDescriptor;
 
+import javax.vecmath.Vector3f;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MinecartComponent implements Component {
+    @Replicate
     public boolean isCreated;
-    public static MinecarttType type = MinecarttType.minecart;
-    public List<EntityRef> vehicles = new ArrayList<EntityRef>();
-    public enum MinecarttType { locomotive, minecart };
 
-    public MoveDescriptor moveDescriptor = new MoveDescriptor();
+    @Replicate
+    public static Types type = Types.minecart;
+
+    @Replicate
+    public List<EntityRef> vehicles = new ArrayList<EntityRef>();
+
+    public enum Types { locomotive, minecart };
+
+    @Replicate
+    public Vector3f drive;
+
+    @Replicate
+    public Vector3f pathDirection;
+
+    @Replicate
+    public Vector3f prevPosition;
+
+    @Replicate
+    public Vector3f prevBlockPosition;
+
+    @Replicate
+    public PositionStatus currentPositionStatus = PositionStatus.ON_THE_AIR;
+
+    public static enum PositionStatus {ON_THE_AIR, ON_THE_GROUND, ON_THE_PATH, ON_THE_LIQUID};
 }
