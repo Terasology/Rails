@@ -35,7 +35,16 @@ public class MinecartComponent implements Component {
     @Replicate
     public List<EntityRef> vehicles = new ArrayList<EntityRef>();
 
+    @Replicate
+    public float angleSign;
+
     public enum Types { locomotive, minecart };
+
+    @Replicate
+    public float pitch;
+
+    @Replicate
+    public float yaw;
 
     @Replicate
     public Vector3f drive;

@@ -122,6 +122,8 @@ public class MinecartSystem implements ComponentSystem, UpdateSubscriberSystem {
                            // minecartComponent.moveDescriptor.correctVelocity(velocity);
                            // minecart.send(new ChangeVelocityEvent(velocity));
                         }
+                        minecartComponent.prevPosition.set(location.getWorldPosition());
+                        minecart.saveComponent(minecartComponent);
                         continue;
                     }
 
@@ -143,12 +145,17 @@ public class MinecartSystem implements ComponentSystem, UpdateSubscriberSystem {
                         if (ConnectsToRailsComponent.RAILS.valueOf(railsComponent.type) != ConnectsToRailsComponent.RAILS.CURVE) {
                             location.setWorldPosition(correctPosition(location.getWorldPosition(), minecartComponent.pathDirection, blockPosition.toVector3f()));
                         }
+
+                        logger.info("Result velocity: " + velocity);
                         minecart.send(new ChangeVelocityEvent(velocity));
                         /*Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
                         float yaw   = minecartComponent.moveDescriptor.getYaw();
                         float pitch = minecartComponent.moveDescriptor.getPitch();
                         QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * yaw, TeraMath.DEG_TO_RAD * pitch, 0);
                         location.setWorldRotation(yawPitch);*/
+                        //location.getWorldRotation().
+                        //QuaternionUtil.
+                        minecartComponent.prevBlockPosition = blockPosition.toVector3f();
                         minecart.saveComponent(location);
                         minecart.saveComponent(rb);
                     } else {
