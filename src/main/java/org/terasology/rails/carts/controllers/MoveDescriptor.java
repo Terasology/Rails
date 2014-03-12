@@ -22,33 +22,34 @@ import org.terasology.math.Side;
 import org.terasology.rails.blocks.ConnectsToRailsComponent;
 import org.terasology.rails.carts.components.MinecartComponent;
 import javax.vecmath.Vector3f;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MoveDescriptor {
 
-    protected float groundFriction = 0.7f;
-    protected float pathFriction = 0.25f;
-    protected float airFriction = 0.25f;
-
-    protected float maxGroundSpeed = 5.0f;
-    protected float maxPathSpeed = 10.0f;
-    protected float maxAirSpeed = 25.0f;
-    protected float maxLiquidSpeed = 10f;
-
     private final Logger logger = LoggerFactory.getLogger(MoveDescriptor.class);
+    private static final Map<Side, Vector3f> CORNER_ROTATE_OFFSET_CENTER =
+            new HashMap<Side, Vector3f>() {{
+                put(Side.LEFT, new Vector3f(-0.5f, 0, 0.5f));
+                put(Side.RIGHT, new Vector3f(0.5f, 0, -0.5f));
+                put(Side.FRONT, new Vector3f(-0.5f, 0, -0.5f));
+                put(Side.BACK, new Vector3f(0.5f, 0, 0.5f));
+            }};
 
-    public void calculateDirection(Vector3f blockPosition, Vector3f velocity, Vector3f direction, ConnectsToRailsComponent.RAILS blockType, Side side, MinecartComponent minecart) {
+    public void calculateDirection(Vector3f velocity, ConnectsToRailsComponent.RAILS blockType, Side side, MinecartComponent minecart) {
         boolean isCorner = false;
+        side = correctSide(blockType, side);
         switch (blockType) {
             case PLANE:
             case INTERSECTION:
-                side = side.yawClockwise(1);
             case SLOPE:
                 minecart.pathDirection = side.getVector3i().toVector3f();
                 minecart.pathDirection.absolute();
-                logger.info("pathDirection:" + minecart.pathDirection);
                 break;
             case CURVE:
                 isCorner = true;
+                Vector3f direction =  new Vector3f(minecart.currentBlockPosition);
+                direction.sub(minecart.prevBlockPosition);
                 setCornerDirection(side, minecart, direction);
                 break;
             case TEE:
@@ -59,15 +60,31 @@ public class MoveDescriptor {
 
     }
 
-    public void getYawOnPath(Side side, MinecartComponent minecart, Vector3f distanceMoved, boolean isCorner) {
+    public Vector3f getRotationOffsetPoint(Side cornerSide) {
+        return CORNER_ROTATE_OFFSET_CENTER.get(cornerSide);
+    }
 
-        if (isCorner) {
-            float percent = distanceMoved.length() / 0.007f;
+    public Side correctSide(ConnectsToRailsComponent.RAILS blockType, Side side) {
+        switch (blockType) {
+            case PLANE:
+            case INTERSECTION:
+                side = side.yawClockwise(1);
+                break;
+        }
+        return side;
+    }
 
+    public void getYawOnPath(MinecartComponent minecart, Side side, Vector3f cornerDistanceMoved) {
+
+        boolean isCorner = minecart.pathDirection.x!=0 && minecart.pathDirection.z!=0;
+
+        if (isCorner && cornerDistanceMoved != null) {
+            float percent = cornerDistanceMoved.length() / 0.007f;
+            logger.info("");
             if (percent > 100) {
-                minecart.yaw = minecart.yaw +  minecart.angleSign * 90f;
+                minecart.yaw += minecart.angleSign * 90f;
             } else {
-                minecart.yaw = minecart.yaw +  minecart.angleSign * 90f * percent / 100;
+                minecart.yaw += minecart.angleSign * 90f * percent / 100;
             }
 
             if (minecart.yaw < 0) {
@@ -115,20 +132,15 @@ public class MoveDescriptor {
     }
 
     private void setCornerDirection(Side side, MinecartComponent minecart, Vector3f direction) {
-
-        if (Math.abs(direction.x) < Math.abs(direction.z)) {
-            direction.x = 0;
-        } else if (Math.abs(direction.x) > Math.abs(direction.z)) {
-            direction.z = 0;
-        }
-
+        logger.info("Before path: " + direction);
+        logger.info("Side: " + side);
         switch (side) {
             case LEFT:
                 if (direction.x > 0) {
-                    minecart.angleSign = 1;
+                    minecart.angleSign = -1;
                     minecart.pathDirection.set(1f, 0, 1f);
                 } else if (direction.z < 0) {
-                    minecart.angleSign = -1;
+                    minecart.angleSign = 1;
                     minecart.pathDirection.set(-1f, 0, -1f);
                 } else if (direction.x < 0) {
                     minecart.pathDirection.set(-1f, 0, 0);
@@ -142,23 +154,23 @@ public class MoveDescriptor {
                 } else if (direction.z < 0) {
                     minecart.pathDirection.set(0, 0, -1f);
                 } else if (direction.x < 0) {
-                    minecart.angleSign = 1;
+                    minecart.angleSign = -1;
                     minecart.pathDirection.set(-1f, 0, -1f);
                 } else if (direction.z > 0) {
-                    minecart.angleSign = -1;
+                    minecart.angleSign = 1;
                     minecart.pathDirection.set(1f, 0, 1f);
                 }
                 break;
             case FRONT:
                 if (direction.x > 0) {
-                    minecart.angleSign = -1;
+                    minecart.angleSign = 1;
                     minecart.pathDirection.set(1f, 0, -1f);
                 } else if (direction.z < 0) {
                     minecart.pathDirection.set(0, 0, -1f);
                 } else if (direction.x < 0) {
                     minecart.pathDirection.set(0, 0, -1f);
                 } else if (direction.z > 0) {
-                    minecart.angleSign = 1;
+                    minecart.angleSign = -1;
                     minecart.pathDirection.set(-1f, 0, 1f);
                 }
                 break;
@@ -166,23 +178,21 @@ public class MoveDescriptor {
                 if (direction.x > 0) {
                     minecart.pathDirection.set(-1f, 0, 0);
                 } else if (direction.z < 0) {
-                    minecart.angleSign = 1;
+                    minecart.angleSign = -1;
                     minecart.pathDirection.set(1f, 0, -1f);
                 } else if (direction.x < 0) {
-                    minecart.angleSign = -1;
+                    minecart.angleSign = 1;
                     minecart.pathDirection.set(-1, 0, 1f);
                 } else if (direction.z > 0) {
                     minecart.pathDirection.set(0, 0, 1f);
                 }
                 break;
         }
+        logger.info("after path: " + minecart.pathDirection);
     }
 
     private void correctVelocity(MinecartComponent minecartComponent, Vector3f velocity, boolean isCorner) {
 
-        if (minecartComponent.drive.length() > 0) {
-            logger.info("drive:" + minecartComponent.drive);
-        }
         if (isCorner) {
             velocity.absolute();
             minecartComponent.drive.absolute();
@@ -208,45 +218,12 @@ public class MoveDescriptor {
 
     }
 
-    public float getMaxSpeed(MinecartComponent.PositionStatus currentPositionStatus) {
+    public void getPitchOnPath(MinecartComponent minecart, ConnectsToRailsComponent.RAILS blockType) {
 
-        switch (currentPositionStatus) {
-            case ON_THE_AIR:
-                return maxAirSpeed;
-            case ON_THE_GROUND:
-                return maxGroundSpeed;
-            case ON_THE_PATH:
-                return maxPathSpeed;
-            case ON_THE_LIQUID:
-                return maxLiquidSpeed;
-        }
-
-        return maxGroundSpeed;
-
-    }
-
-    public float getFriction(MinecartComponent.PositionStatus currentPositionStatus) {
-
-        switch (currentPositionStatus) {
-            case ON_THE_AIR:
-                return airFriction;
-            case ON_THE_GROUND:
-                return groundFriction;
-            case ON_THE_PATH:
-                return pathFriction;
-        }
-
-        return groundFriction;
-
-    }
-
-    public float getPitch(ConnectsToRailsComponent.RAILS blockType) {
-
-        float pitch = 0;
+        minecart.pitch = 0;
 
         if (blockType.equals(ConnectsToRailsComponent.RAILS.SLOPE)) {
-            pitch = 45;
+            minecart.pitch = 45;
         }
-        return pitch;
     }
 }

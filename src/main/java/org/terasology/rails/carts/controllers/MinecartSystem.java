@@ -20,11 +20,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.entitySystem.entity.lifecycleEvents.OnChangedComponent;
+import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.ComponentSystem;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
 import org.terasology.logic.location.LocationComponent;
+import org.terasology.math.Side;
 import org.terasology.math.TeraMath;
 import org.terasology.math.Vector3i;
 import org.terasology.physics.HitResult;
@@ -95,95 +98,177 @@ public class MinecartSystem implements ComponentSystem, UpdateSubscriberSystem {
 
             if (minecartComponent.isCreated) {
                 LocationComponent location = minecart.getComponent(LocationComponent.class);
-
-                HitResult hit = physics.rayTrace(location.getWorldPosition(), new Vector3f(0, -1, 0), 6, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
+                Vector3f minecartWorldPosition = location.getWorldPosition();
+                HitResult hit = physics.rayTrace(minecartWorldPosition, new Vector3f(0, -1, 0), 6, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
                 RigidBodyComponent rb = minecart.getComponent(RigidBodyComponent.class);
                 Vector3i blockPosition = hit.getBlockPosition();
-
+                float angularFactor = 0;
                 Block currentBlock = null;
 
                 if (blockPosition != null) {
                     currentBlock = worldProvider.getBlock(blockPosition);
                     EntityRef blockEntity = currentBlock.getEntity();
 
-                    if (blockPosition.toVector3f().equals(minecartComponent.prevBlockPosition)) {
+                    if (blockPosition.toVector3f().equals(minecartComponent.currentBlockPosition)) {
                         if (minecartComponent.currentPositionStatus.equals(MinecartComponent.PositionStatus.ON_THE_PATH)) {
-                            ConnectsToRailsComponent railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
-                            if (ConnectsToRailsComponent.RAILS.valueOf(railsComponent.type) != ConnectsToRailsComponent.RAILS.CURVE) {
-                                location.setWorldPosition(correctPosition(location.getWorldPosition(), minecartComponent.pathDirection, blockPosition.toVector3f()));
-                              /*  Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
-                                float yaw   = minecartComponent.moveDescriptor.getYaw();
-                                float pitch = minecartComponent.moveDescriptor.getPitch();
-                                QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * yaw, TeraMath.DEG_TO_RAD * pitch, 0);
-                                location.setWorldRotation(yawPitch);*/
-                                minecart.saveComponent(location);
-                            }
-                            //Vector3f velocity = new Vector3f(rb.velocity);
-                           // minecartComponent.moveDescriptor.correctVelocity(velocity);
-                           // minecart.send(new ChangeVelocityEvent(velocity));
+                            minecartComponent.positionCorrected = false;
+                            minecart.saveComponent(minecartComponent);
                         }
-                        minecartComponent.prevPosition.set(location.getWorldPosition());
-                        minecart.saveComponent(minecartComponent);
+                        float drive = minecartComponent.drive.lengthSquared()/100;
+                        float speed = rb.velocity.lengthSquared();
+                        ConnectsToRailsComponent railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
+                          if (speed/drive < 60 || ConnectsToRailsComponent.RAILS.valueOf(railsComponent.type).equals(ConnectsToRailsComponent.RAILS.CURVE)) {
+                            Vector3f velocity = new Vector3f(rb.velocity);
+                            moveDescriptor.calculateDirection(
+                                    velocity,
+                                    ConnectsToRailsComponent.RAILS.valueOf(railsComponent.type),
+                                    currentBlock.getDirection(),
+                                    minecartComponent
+                            );
+                            minecart.send(new ChangeVelocityEvent(velocity));
+                        }
+                        /*if (minecartComponent.currentUser!=null) {
+                            LocationComponent userLocation = minecartComponent.currentUser.getComponent(LocationComponent.class);
+                            userLocation.setWorldPosition(minecartWorldPosition);
+                            minecartComponent.currentUser.saveComponent(userLocation);
+                        }   */
                         continue;
                     }
 
                     if (blockEntity != null && blockEntity.hasComponent(ConnectsToRailsComponent.class)) {
                         Vector3f velocity = new Vector3f(rb.velocity);
-                        Vector3f direction = location.getWorldPosition();
-                        direction.sub(minecartComponent.prevPosition);
                         ConnectsToRailsComponent railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
                         minecartComponent.currentPositionStatus = MinecartComponent.PositionStatus.ON_THE_PATH;
                         moveDescriptor.calculateDirection(
-                                blockPosition.toVector3f(),
                                 velocity,
-                                direction,
                                 ConnectsToRailsComponent.RAILS.valueOf(railsComponent.type),
                                 currentBlock.getDirection(),
                                 minecartComponent
                         );
-                        rb.angularFactor = 0f;
-                        if (ConnectsToRailsComponent.RAILS.valueOf(railsComponent.type) != ConnectsToRailsComponent.RAILS.CURVE) {
-                            location.setWorldPosition(correctPosition(location.getWorldPosition(), minecartComponent.pathDirection, blockPosition.toVector3f()));
-                        }
 
-                        logger.info("Result velocity: " + velocity);
                         minecart.send(new ChangeVelocityEvent(velocity));
-                        /*Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
-                        float yaw   = minecartComponent.moveDescriptor.getYaw();
-                        float pitch = minecartComponent.moveDescriptor.getPitch();
-                        QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * yaw, TeraMath.DEG_TO_RAD * pitch, 0);
-                        location.setWorldRotation(yawPitch);*/
-                        //location.getWorldRotation().
-                        //QuaternionUtil.
-                        minecartComponent.prevBlockPosition = blockPosition.toVector3f();
-                        minecart.saveComponent(location);
-                        minecart.saveComponent(rb);
+                        minecartComponent.prevBlockPosition = minecartComponent.currentBlockPosition;
+                        minecartComponent.currentBlockPosition = blockPosition.toVector3f();
+                        minecartComponent.positionCorrected = false;
+                        angularFactor = 0f;
                     } else {
                         minecartComponent.pathDirection.set(1f, 1f, 1f);
                         minecartComponent.currentPositionStatus = MinecartComponent.PositionStatus.ON_THE_GROUND;
-                        rb.angularFactor = 1f;
+                        angularFactor = 1f;
                         minecart.saveComponent(rb);
                     }
                 } else {
                     minecartComponent.pathDirection.set(1f, 1f, 1f);
                     minecartComponent.currentPositionStatus = MinecartComponent.PositionStatus.ON_THE_AIR;
-                    rb.angularFactor = 1f;
+                    angularFactor = 1f;
                     minecart.saveComponent(rb);
 
                 }
-                minecartComponent.prevPosition.set(location.getWorldPosition());
-                minecart.saveComponent(minecartComponent);
-            }
+                minecartWorldPosition.x *= minecartComponent.pathDirection.x;
+                minecartWorldPosition.z *= minecartComponent.pathDirection.z;
 
+                if (rb.angularFactor != angularFactor) {
+                    rb.angularFactor = angularFactor;
+                    minecart.saveComponent(rb);
+                }
+
+                minecart.saveComponent(minecartComponent);
+                /*if (minecartComponent.currentUser!=null) {
+                    LocationComponent userLocation = minecartComponent.currentUser.getComponent(LocationComponent.class);
+                    userLocation.setWorldPosition(location.getWorldPosition());
+                    minecartComponent.currentUser.saveComponent(userLocation);
+                } */
+            }
         }
     }
 
-    private Vector3f correctPosition(Vector3f minecartPosition, Vector3f pathDirection, Vector3f blockPosition) {
-        if (pathDirection.z != 0) {
-            minecartPosition.x = blockPosition.x;
+    private void movePosition(MinecartComponent minecartComponent, Vector3f minecartPosition, Vector3f offsetCornerPoint) {
+        if (minecartComponent.pathDirection.x == 0 || minecartComponent.pathDirection.z == 0) {
+            if (minecartComponent.pathDirection.z != 0) {
+                minecartPosition.x = minecartComponent.currentBlockPosition.x;
+            } else {
+                minecartPosition.z = minecartComponent.currentBlockPosition.z;
+            }
         } else {
-            minecartPosition.z = blockPosition.z;
+            Vector3f revertDirection = new Vector3f(minecartComponent.pathDirection);
+            revertDirection.negate();
+            Vector3f startPosition = getStartCornerPosition(minecartComponent.currentBlockPosition, offsetCornerPoint, revertDirection);
+
+            Vector3f lastMinecartDirection = new Vector3f(minecartPosition);
+            lastMinecartDirection.sub(startPosition);
+
+            revertDirection.negate();
+
+            Vector3f newPos = new Vector3f(startPosition);
+            float pastLength = lastMinecartDirection.lengthSquared();
+
+            if ( pastLength >= 0.707f ) {
+                pastLength = 0.6f;
+            }
+            revertDirection.scale(pastLength);
+            newPos.add(revertDirection);
+            minecartPosition.x = newPos.x;
+            minecartPosition.z = newPos.z;
         }
-        return minecartPosition;
+    }
+
+    private Vector3f getStartCornerPosition(Vector3f blockPosition, Vector3f offsetPosition, Vector3f direction) {
+        Vector3f startPosition = new Vector3f(blockPosition);
+        if (Math.signum(offsetPosition.x) == Math.signum(direction.x)) {
+            startPosition.x += offsetPosition.x;
+        } else {
+            startPosition.z += offsetPosition.z;
+        }
+        return startPosition;
+    }
+
+    @ReceiveEvent(components = {MinecartComponent.class, LocationComponent.class})
+    public void correctPositionAndRotation(OnChangedComponent event, EntityRef entity) {
+        MinecartComponent minecartComponent = entity.getComponent(MinecartComponent.class);
+        LocationComponent location = entity.getComponent(LocationComponent.class);
+
+        if (minecartComponent.positionCorrected) {
+            return;
+        }
+
+        if (minecartComponent.isCreated && minecartComponent.currentPositionStatus == MinecartComponent.PositionStatus.ON_THE_PATH) {
+            Vector3f minecartWorldPosition = location.getWorldPosition();
+            Block currentBlock = worldProvider.getBlock(minecartComponent.currentBlockPosition);
+            Vector3f offsetCornerPoint = moveDescriptor.getRotationOffsetPoint(currentBlock.getDirection());
+            EntityRef blockEntity = currentBlock.getEntity();
+            Vector3f movedDistance = null;
+            ConnectsToRailsComponent railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
+
+            minecartComponent.positionCorrected = true;
+
+            if (false && minecartComponent.drive.lengthSquared() == 0) {
+                logger.info("minecartComponent.currentBlockPosition: " + minecartComponent.currentBlockPosition);
+                logger.info("railsComponent.type: " + ConnectsToRailsComponent.RAILS.valueOf(railsComponent.type));
+                logger.info("offsetCornerPoint: " + offsetCornerPoint);
+                logger.info("direction: " + minecartComponent.pathDirection);
+                logger.info("From: " + minecartWorldPosition);
+            }
+            movePosition(minecartComponent, minecartWorldPosition, offsetCornerPoint);
+
+            if (minecartComponent.pathDirection.x != 0 && minecartComponent.pathDirection.z != 0) {
+                movedDistance = new Vector3f(minecartWorldPosition);
+                movedDistance.sub(minecartComponent.prevPosition);
+            }
+
+            Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
+            Side side = moveDescriptor.correctSide(ConnectsToRailsComponent.RAILS.valueOf(railsComponent.type), currentBlock.getDirection());
+            moveDescriptor.getYawOnPath(minecartComponent, side, movedDistance);
+            moveDescriptor.getPitchOnPath(minecartComponent, ConnectsToRailsComponent.RAILS.valueOf(railsComponent.type));
+            QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * minecartComponent.yaw, TeraMath.DEG_TO_RAD * minecartComponent.pitch, 0);
+
+            location.setWorldRotation(yawPitch);
+            location.setWorldPosition(minecartWorldPosition);
+            if (false && minecartComponent.drive.lengthSquared() == 0) {
+                logger.info("To: " + minecartWorldPosition);
+            }
+            minecartComponent.prevPosition.set(minecartWorldPosition);
+            entity.saveComponent(minecartComponent);
+            entity.saveComponent(location);
+        }
     }
 }

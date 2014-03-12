@@ -38,7 +38,13 @@ public class MinecartComponent implements Component {
     @Replicate
     public float angleSign;
 
+    @Replicate
+    public boolean positionCorrected;
+
     public enum Types { locomotive, minecart };
+
+    @Replicate
+    public EntityRef currentUser;
 
     @Replicate
     public float pitch;
@@ -54,6 +60,9 @@ public class MinecartComponent implements Component {
 
     @Replicate
     public Vector3f prevPosition;
+
+    @Replicate
+    public Vector3f currentBlockPosition;
 
     @Replicate
     public Vector3f prevBlockPosition;

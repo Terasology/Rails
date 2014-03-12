@@ -29,6 +29,7 @@ import org.terasology.logic.location.Location;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.physics.events.ChangeVelocityEvent;
 import org.terasology.physics.events.CollideEvent;
+import org.terasology.physics.events.ForceEvent;
 import org.terasology.physics.events.ImpulseEvent;
 import org.terasology.registry.In;
 import org.terasology.entitySystem.systems.RegisterMode;
@@ -104,34 +105,29 @@ public class MinecartAction implements ComponentSystem {
 
     @ReceiveEvent(components = {MinecartComponent.class, LocationComponent.class}, priority = EventPriority.PRIORITY_HIGH)
     public void onBump(CollideEvent event, EntityRef entity) {
-       // logger.info("Bump event");
+        // logger.info("Bump event");
 
         MinecartComponent minecart = entity.getComponent(MinecartComponent.class);
         LocationComponent minecartLocation = entity.getComponent(LocationComponent.class);
         EntityRef other = event.getOtherEntity();
-
+        LocationComponent location = other.getComponent(LocationComponent.class);
+        Vector3f bumpForce = new Vector3f(minecartLocation.getWorldPosition());
+        bumpForce.sub(location.getWorldPosition());
+        bumpForce.normalize();
+        float bumpScale = 80;
+        if ( minecart.pathDirection.x != 0 && minecart.pathDirection.z != 0 && minecart.currentPositionStatus == MinecartComponent.PositionStatus.ON_THE_PATH) {
+            bumpScale = 40f;
+            bumpForce.absolute();
+        }
+        bumpForce.x *= minecart.pathDirection.x;
+        bumpForce.y *= minecart.pathDirection.y;
+        bumpForce.z *= minecart.pathDirection.z;
         if (other.hasComponent(CharacterComponent.class)) {
-            LocationComponent location = other.getComponent(LocationComponent.class);
-            Vector3f bumpForce = new Vector3f(minecartLocation.getWorldPosition());
-            bumpForce.sub(location.getWorldPosition());
-            bumpForce.normalize();
             bumpForce.scale(5f);
-            bumpForce.x *= minecart.pathDirection.x;
-            bumpForce.y *= minecart.pathDirection.y;
-            bumpForce.z *= minecart.pathDirection.z;
             entity.send(new ImpulseEvent(bumpForce));
-           // logger.info("Send bump force: " + bumpForce);
         } else {
-            RigidBodyComponent rb = entity.getComponent(RigidBodyComponent.class);
-            Vector3f velocity = new Vector3f(rb.velocity);
-
-            if ( velocity.x > 1 || velocity.z > 1) {
-                velocity.x *= minecart.pathDirection.x;
-                velocity.y *= minecart.pathDirection.y;
-                velocity.z *= minecart.pathDirection.z;
-                entity.send(new ChangeVelocityEvent(velocity));
-              //  logger.info("Send change velocity: " + velocity);
-            }
+            bumpForce.scale(bumpScale);
+            entity.send(new ForceEvent(bumpForce));
         }
     }
 
@@ -141,7 +137,7 @@ public class MinecartAction implements ComponentSystem {
         BlockItemFactory blockFactory = new BlockItemFactory(entityManager);
         GiveItemAction action = new GiveItemAction(localPlayer.getCharacterEntity(), entityManager.create("rails:minecart"));
         player.send(new GiveItemAction(EntityRef.NULL, blockFactory.newInstance(blockManager.getBlockFamily("rails:Rails"), 99)));
-       // player.send(new GiveItemAction(EntityRef.NULL, blockFactory.newInstance(blockManager.getBlockFamily("rails:RailsSlope"), 99)));
+        //player.send(new GiveItemAction(EntityRef.NULL, blockFactory.newInstance(blockManager.getBlockFamily("rails:RailsSlope"), 99)));
         localPlayer.getCharacterEntity().send(action);
     }
 
@@ -193,8 +189,8 @@ public class MinecartAction implements ComponentSystem {
         logger.info("onUseFunctional");
         MinecartComponent minecartComponent = minecartEntity.getComponent(MinecartComponent.class);
 
-        if(minecartComponent.isCreated) {
-            minecartComponent.drive.set(10f,0,10f);
+        if (minecartComponent.isCreated) {
+            minecartComponent.drive.set(3f, 0, 3f);
             minecartEntity.saveComponent(minecartComponent);
         }
     }

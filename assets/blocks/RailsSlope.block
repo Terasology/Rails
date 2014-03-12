@@ -1,10 +1,10 @@
 {
     "shadowCasting": "false",
     "translucent" : true,
-    "rotation" : "attachedToSurface",
-    "keepActive" : true,
+    "rotation" : "engine:attachedToSurface",
     "penetrable" : false,
     "shape" : "engine:slope",
+    "tile" : "Rails:TrainTrackSlope",
     "entity": {
         "prefab": "Rails:railSlope"
     }
