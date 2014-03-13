@@ -80,7 +80,6 @@ public class MoveDescriptor {
 
         if (isCorner && cornerDistanceMoved != null) {
             float percent = cornerDistanceMoved.length() / 0.007f;
-            logger.info("");
             if (percent > 100) {
                 minecart.yaw += minecart.angleSign * 90f;
             } else {
@@ -132,8 +131,6 @@ public class MoveDescriptor {
     }
 
     private void setCornerDirection(Side side, MinecartComponent minecart, Vector3f direction) {
-        logger.info("Before path: " + direction);
-        logger.info("Side: " + side);
         switch (side) {
             case LEFT:
                 if (direction.x > 0) {
@@ -188,7 +185,6 @@ public class MoveDescriptor {
                 }
                 break;
         }
-        logger.info("after path: " + minecart.pathDirection);
     }
 
     private void correctVelocity(MinecartComponent minecartComponent, Vector3f velocity, boolean isCorner) {

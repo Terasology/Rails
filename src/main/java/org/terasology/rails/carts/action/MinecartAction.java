@@ -24,13 +24,17 @@ import org.terasology.entitySystem.event.EventPriority;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.ComponentSystem;
 import org.terasology.logic.characters.CharacterComponent;
+import org.terasology.logic.characters.events.ToggleNoneMoveEvent;
 import org.terasology.logic.inventory.action.GiveItemAction;
 import org.terasology.logic.location.Location;
+import org.terasology.physics.CollisionGroup;
+import org.terasology.physics.StandardCollisionGroup;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.physics.events.ChangeVelocityEvent;
 import org.terasology.physics.events.CollideEvent;
 import org.terasology.physics.events.ForceEvent;
 import org.terasology.physics.events.ImpulseEvent;
+import org.terasology.rails.blocks.ConnectsToRailsComponent;
 import org.terasology.registry.In;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
@@ -51,6 +55,7 @@ import org.terasology.world.block.BlockComponent;
 import org.terasology.world.block.BlockManager;
 import org.terasology.world.block.items.BlockItemFactory;
 
+import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
 @RegisterSystem(RegisterMode.AUTHORITY)
@@ -105,10 +110,12 @@ public class MinecartAction implements ComponentSystem {
 
     @ReceiveEvent(components = {MinecartComponent.class, LocationComponent.class}, priority = EventPriority.PRIORITY_HIGH)
     public void onBump(CollideEvent event, EntityRef entity) {
-        // logger.info("Bump event");
-
         MinecartComponent minecart = entity.getComponent(MinecartComponent.class);
         LocationComponent minecartLocation = entity.getComponent(LocationComponent.class);
+        if (minecart == null || (minecart.characterInsideCart != null && minecart.characterInsideCart.equals(event.getOtherEntity()))) {
+            return;
+        }
+        logger.info("Bunp!!!");
         EntityRef other = event.getOtherEntity();
         LocationComponent location = other.getComponent(LocationComponent.class);
         Vector3f bumpForce = new Vector3f(minecartLocation.getWorldPosition());
@@ -145,6 +152,13 @@ public class MinecartAction implements ComponentSystem {
     public void onDestroyMinecart(BeforeDeactivateComponent event, EntityRef entity) {
         logger.info("Destroy minecart");
         MinecartComponent minecart = entity.getComponent(MinecartComponent.class);
+
+        if (minecart.characterInsideCart != null) {
+            Location.removeChild(entity, minecart.characterInsideCart);
+            minecart.characterInsideCart.send(new ToggleNoneMoveEvent(true));
+            minecart.characterInsideCart = null;
+        }
+
         for (EntityRef vehicle : minecart.vehicles) {
             Location.removeChild(entity, vehicle);
             if (vehicle != null && !vehicle.equals(EntityRef.NULL)) {
@@ -159,29 +173,28 @@ public class MinecartAction implements ComponentSystem {
     public void onPlaceFunctional(ActivateEvent event, EntityRef item) {
         logger.info("onPlaceFunctional");
 
-        MinecartComponent functionalItem = item.getComponent(MinecartComponent.class);
-
         Side surfaceDir = Side.inDirection(event.getHitNormal());
+
+        MinecartComponent functionalItem = item.getComponent(MinecartComponent.class);
 
         EntityRef targetEntity = event.getTarget();
 
         BlockComponent blockComponent = targetEntity.getComponent(BlockComponent.class);
+        ConnectsToRailsComponent connectsToRailsComponent = targetEntity.getComponent(ConnectsToRailsComponent.class);
 
-        if (blockComponent == null) {
+
+        if (blockComponent == null || connectsToRailsComponent == null) {
+            logger.info("is null");
             return;
         }
 
         Vector3i placementPos = new Vector3i(event.getTarget().getComponent(BlockComponent.class).getPosition());
-
-        if (!worldProvider.getBlock(placementPos).isPenetrable()) {
-            placementPos.add(surfaceDir.getVector3i());
-        }
-
-        placementPos.y += item.getComponent(MeshComponent.class).mesh.getAABB().maxY();
+        placementPos.y += 0.2f;
 
         logger.info("Created minecart at {}", placementPos);
 
         EntityRef entity = minecartFactory.create(placementPos.toVector3f(), functionalItem.type);
+        event.consume();
     }
 
     @ReceiveEvent(components = {MinecartComponent.class, LocationComponent.class})
@@ -190,8 +203,19 @@ public class MinecartAction implements ComponentSystem {
         MinecartComponent minecartComponent = minecartEntity.getComponent(MinecartComponent.class);
 
         if (minecartComponent.isCreated) {
-            minecartComponent.drive.set(3f, 0, 3f);
-            minecartEntity.saveComponent(minecartComponent);
+            if (minecartComponent.drive.length() < 1) {
+                event.getInstigator().send(new ToggleNoneMoveEvent(false));
+                minecartComponent.characterInsideCart = event.getInstigator();
+                Location.attachChild(minecartEntity, minecartComponent.characterInsideCart, new Vector3f(0,3f,0), new Quat4f());
+                minecartComponent.drive.set(3f, 0, 3f);
+                minecartEntity.saveComponent(minecartComponent);
+            } else {
+                event.getInstigator().send(new ToggleNoneMoveEvent(true));
+                Location.removeChild(minecartEntity, minecartComponent.characterInsideCart);
+                minecartComponent.characterInsideCart = null;
+                minecartComponent.drive.set(0f, 0, 0f);
+                minecartEntity.saveComponent(minecartComponent);
+            }
         }
     }
 

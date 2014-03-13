@@ -44,7 +44,7 @@ public class MinecartComponent implements Component {
     public enum Types { locomotive, minecart };
 
     @Replicate
-    public EntityRef currentUser;
+    public EntityRef characterInsideCart;
 
     @Replicate
     public float pitch;

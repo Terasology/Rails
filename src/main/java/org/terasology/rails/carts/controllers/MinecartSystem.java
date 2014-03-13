@@ -127,11 +127,7 @@ public class MinecartSystem implements ComponentSystem, UpdateSubscriberSystem {
                             );
                             minecart.send(new ChangeVelocityEvent(velocity));
                         }
-                        /*if (minecartComponent.currentUser!=null) {
-                            LocationComponent userLocation = minecartComponent.currentUser.getComponent(LocationComponent.class);
-                            userLocation.setWorldPosition(minecartWorldPosition);
-                            minecartComponent.currentUser.saveComponent(userLocation);
-                        }   */
+
                         continue;
                     }
 
@@ -139,6 +135,8 @@ public class MinecartSystem implements ComponentSystem, UpdateSubscriberSystem {
                         Vector3f velocity = new Vector3f(rb.velocity);
                         ConnectsToRailsComponent railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
                         minecartComponent.currentPositionStatus = MinecartComponent.PositionStatus.ON_THE_PATH;
+                        minecartComponent.prevBlockPosition = minecartComponent.currentBlockPosition;
+                        minecartComponent.currentBlockPosition = blockPosition.toVector3f();
                         moveDescriptor.calculateDirection(
                                 velocity,
                                 ConnectsToRailsComponent.RAILS.valueOf(railsComponent.type),
@@ -147,8 +145,6 @@ public class MinecartSystem implements ComponentSystem, UpdateSubscriberSystem {
                         );
 
                         minecart.send(new ChangeVelocityEvent(velocity));
-                        minecartComponent.prevBlockPosition = minecartComponent.currentBlockPosition;
-                        minecartComponent.currentBlockPosition = blockPosition.toVector3f();
                         minecartComponent.positionCorrected = false;
                         angularFactor = 0f;
                     } else {
@@ -173,11 +169,6 @@ public class MinecartSystem implements ComponentSystem, UpdateSubscriberSystem {
                 }
 
                 minecart.saveComponent(minecartComponent);
-                /*if (minecartComponent.currentUser!=null) {
-                    LocationComponent userLocation = minecartComponent.currentUser.getComponent(LocationComponent.class);
-                    userLocation.setWorldPosition(location.getWorldPosition());
-                    minecartComponent.currentUser.saveComponent(userLocation);
-                } */
             }
         }
     }
