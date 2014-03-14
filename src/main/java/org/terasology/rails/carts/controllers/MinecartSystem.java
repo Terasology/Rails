@@ -22,10 +22,7 @@ import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.entity.lifecycleEvents.OnChangedComponent;
 import org.terasology.entitySystem.event.ReceiveEvent;
-import org.terasology.entitySystem.systems.ComponentSystem;
-import org.terasology.entitySystem.systems.RegisterMode;
-import org.terasology.entitySystem.systems.RegisterSystem;
-import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
+import org.terasology.entitySystem.systems.*;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.Side;
 import org.terasology.math.TeraMath;
@@ -34,7 +31,6 @@ import org.terasology.physics.HitResult;
 import org.terasology.physics.Physics;
 import org.terasology.physics.StandardCollisionGroup;
 import org.terasology.physics.components.RigidBodyComponent;
-import org.terasology.physics.engine.RigidBody;
 import org.terasology.physics.events.ChangeVelocityEvent;
 import org.terasology.rails.blocks.ConnectsToRailsComponent;
 import org.terasology.rails.carts.components.MinecartComponent;
@@ -46,7 +42,7 @@ import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
 @RegisterSystem(RegisterMode.AUTHORITY)
-public class MinecartSystem implements ComponentSystem, UpdateSubscriberSystem {
+public class MinecartSystem extends BaseComponentSystem implements UpdateSubscriberSystem {
     @In
     private EntityManager entityManager;
 
@@ -63,26 +59,6 @@ public class MinecartSystem implements ComponentSystem, UpdateSubscriberSystem {
     @Override
     public void initialise() {
         moveDescriptor = new MoveDescriptor();
-    }
-
-    @Override
-    public void preBegin() {
-
-    }
-
-    @Override
-    public void postBegin() {
-
-    }
-
-    @Override
-    public void preSave() {
-
-    }
-
-    @Override
-    public void postSave() {
-
     }
 
     @Override
@@ -254,6 +230,9 @@ public class MinecartSystem implements ComponentSystem, UpdateSubscriberSystem {
 
             location.setWorldRotation(yawPitch);
             location.setWorldPosition(minecartWorldPosition);
+            /*if (minecartComponent.characterInsideCart != null) {
+                minecartComponent.characterInsideCart.send(new UpdateCameraPositionEvent());
+            }                            */
             if (false && minecartComponent.drive.lengthSquared() == 0) {
                 logger.info("To: " + minecartWorldPosition);
             }

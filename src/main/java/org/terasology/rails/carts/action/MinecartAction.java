@@ -24,7 +24,8 @@ import org.terasology.entitySystem.event.EventPriority;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.ComponentSystem;
 import org.terasology.logic.characters.CharacterComponent;
-import org.terasology.logic.characters.events.ToggleNoneMoveEvent;
+import org.terasology.logic.characters.MovementMode;
+import org.terasology.logic.characters.events.SetMovementModeEvent;
 import org.terasology.logic.inventory.action.GiveItemAction;
 import org.terasology.logic.location.Location;
 import org.terasology.physics.CollisionGroup;
@@ -155,7 +156,7 @@ public class MinecartAction implements ComponentSystem {
 
         if (minecart.characterInsideCart != null) {
             Location.removeChild(entity, minecart.characterInsideCart);
-            minecart.characterInsideCart.send(new ToggleNoneMoveEvent(true));
+            minecart.characterInsideCart.send(new SetMovementModeEvent(MovementMode.WALKING));
             minecart.characterInsideCart = null;
         }
 
@@ -204,15 +205,22 @@ public class MinecartAction implements ComponentSystem {
 
         if (minecartComponent.isCreated) {
             if (minecartComponent.drive.length() < 1) {
-                event.getInstigator().send(new ToggleNoneMoveEvent(false));
+                event.getInstigator().send(new SetMovementModeEvent(MovementMode.NONE));
                 minecartComponent.characterInsideCart = event.getInstigator();
-                Location.attachChild(minecartEntity, minecartComponent.characterInsideCart, new Vector3f(0,3f,0), new Quat4f());
+                Location.attachChild(minecartEntity, minecartComponent.characterInsideCart, new Vector3f(0,1.5f,0), new Quat4f());
+                RigidBodyComponent minecartRigidBody = minecartEntity.getComponent(RigidBodyComponent.class);
+                minecartRigidBody.collidesWith.remove(StandardCollisionGroup.CHARACTER);
+                minecartRigidBody.collidesWith.remove(StandardCollisionGroup.DEFAULT);
                 minecartComponent.drive.set(3f, 0, 3f);
                 minecartEntity.saveComponent(minecartComponent);
+                minecartEntity.saveComponent(minecartRigidBody);
             } else {
-                event.getInstigator().send(new ToggleNoneMoveEvent(true));
+                event.getInstigator().send(new SetMovementModeEvent(MovementMode.WALKING));
                 Location.removeChild(minecartEntity, minecartComponent.characterInsideCart);
                 minecartComponent.characterInsideCart = null;
+                RigidBodyComponent minecartRigidBody = minecartEntity.getComponent(RigidBodyComponent.class);
+                minecartRigidBody.collidesWith.add(StandardCollisionGroup.CHARACTER);
+                minecartRigidBody.collidesWith.add(StandardCollisionGroup.DEFAULT);
                 minecartComponent.drive.set(0f, 0, 0f);
                 minecartEntity.saveComponent(minecartComponent);
             }
