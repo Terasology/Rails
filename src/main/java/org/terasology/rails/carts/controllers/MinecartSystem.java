@@ -78,7 +78,6 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                 HitResult hit = physics.rayTrace(minecartWorldPosition, new Vector3f(0, -1, 0), 6, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
                 RigidBodyComponent rb = minecart.getComponent(RigidBodyComponent.class);
                 Vector3i blockPosition = hit.getBlockPosition();
-                float angularFactor = 0;
                 Block currentBlock = null;
 
                 if (blockPosition != null) {
@@ -122,25 +121,22 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
 
                         minecart.send(new ChangeVelocityEvent(velocity));
                         minecartComponent.positionCorrected = false;
-                        angularFactor = 0f;
                     } else {
                         minecartComponent.pathDirection.set(1f, 1f, 1f);
                         minecartComponent.currentPositionStatus = MinecartComponent.PositionStatus.ON_THE_GROUND;
-                        angularFactor = 1f;
                         minecart.saveComponent(rb);
                     }
                 } else {
                     minecartComponent.pathDirection.set(1f, 1f, 1f);
                     minecartComponent.currentPositionStatus = MinecartComponent.PositionStatus.ON_THE_AIR;
-                    angularFactor = 1f;
                     minecart.saveComponent(rb);
 
                 }
                 minecartWorldPosition.x *= minecartComponent.pathDirection.x;
                 minecartWorldPosition.z *= minecartComponent.pathDirection.z;
 
-                if (rb.angularFactor != angularFactor) {
-                    rb.angularFactor = angularFactor;
+                if (!rb.angularFactor.equals(minecartComponent.pathDirection)) {
+                    rb.angularFactor = minecartComponent.pathDirection;
                     minecart.saveComponent(rb);
                 }
 
@@ -207,14 +203,6 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             ConnectsToRailsComponent railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
 
             minecartComponent.positionCorrected = true;
-
-            if (false && minecartComponent.drive.lengthSquared() == 0) {
-                logger.info("minecartComponent.currentBlockPosition: " + minecartComponent.currentBlockPosition);
-                logger.info("railsComponent.type: " + ConnectsToRailsComponent.RAILS.valueOf(railsComponent.type));
-                logger.info("offsetCornerPoint: " + offsetCornerPoint);
-                logger.info("direction: " + minecartComponent.pathDirection);
-                logger.info("From: " + minecartWorldPosition);
-            }
             movePosition(minecartComponent, minecartWorldPosition, offsetCornerPoint);
 
             if (minecartComponent.pathDirection.x != 0 && minecartComponent.pathDirection.z != 0) {
@@ -230,12 +218,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
 
             location.setWorldRotation(yawPitch);
             location.setWorldPosition(minecartWorldPosition);
-            /*if (minecartComponent.characterInsideCart != null) {
-                minecartComponent.characterInsideCart.send(new UpdateCameraPositionEvent());
-            }                            */
-            if (false && minecartComponent.drive.lengthSquared() == 0) {
-                logger.info("To: " + minecartWorldPosition);
-            }
+
             minecartComponent.prevPosition.set(minecartWorldPosition);
             entity.saveComponent(minecartComponent);
             entity.saveComponent(location);

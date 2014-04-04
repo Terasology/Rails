@@ -44,9 +44,33 @@
             "prefab": "Rails:rail"
         }
     },
+    "one_connection_slope": {
+        "tile" : "Rails:TrainTrack",
+        "shape" : "engine:slope",
+        "tiles" : {
+          "sides" : "Rails:TrainTrackEmpty",
+          "top" : "Rails:TrainTrack",
+          "bottom" : "Rails:TrainTrackEmpty"
+        },
+        "entity": {
+            "prefab": "Rails:rail"
+        }
+    },
     "line_connection": {
         "tile" : "Rails:TrainTrack",
         "shape" : "engine:horizontalOffsetPlane",
+        "tiles" : {
+          "sides" : "Rails:TrainTrackEmpty",
+          "top" : "Rails:TrainTrack",
+          "bottom" : "Rails:TrainTrackEmpty"
+        },
+        "entity": {
+            "prefab": "Rails:rail"
+        }
+    },
+    "slope_connection": {
+        "tile" : "Rails:TrainTrack",
+        "shape" : "engine:slope",
         "tiles" : {
           "sides" : "Rails:TrainTrackEmpty",
           "top" : "Rails:TrainTrack",

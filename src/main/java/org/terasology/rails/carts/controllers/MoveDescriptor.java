@@ -55,9 +55,8 @@ public class MoveDescriptor {
             case TEE:
                 break;
         }
-
+        minecart.pathDirection.y = 1f;
         correctVelocity(minecart, velocity, isCorner);
-
     }
 
     public Vector3f getRotationOffsetPoint(Side cornerSide) {
