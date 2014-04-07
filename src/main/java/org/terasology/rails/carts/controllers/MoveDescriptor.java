@@ -29,7 +29,7 @@ public class MoveDescriptor {
 
     private final Logger logger = LoggerFactory.getLogger(MoveDescriptor.class);
     private static final Map<Side, Vector3f> CORNER_ROTATE_OFFSET_CENTER =
-            new HashMap<Side, Vector3f>() {{
+            new HashMap<Side, Vector3f>() { {
                 put(Side.LEFT, new Vector3f(-0.5f, 0, 0.5f));
                 put(Side.RIGHT, new Vector3f(0.5f, 0, -0.5f));
                 put(Side.FRONT, new Vector3f(-0.5f, 0, -0.5f));
@@ -40,19 +40,25 @@ public class MoveDescriptor {
         boolean isCorner = false;
         side = correctSide(blockType, side);
         switch (blockType) {
-            case PLANE:
-            case INTERSECTION:
             case SLOPE:
-                minecart.pathDirection = side.getVector3i().toVector3f();
-                minecart.pathDirection.absolute();
+                minecart.pathDirection = getDirectPath(side);
+                minecart.pathDirection.y = 1;
                 break;
+            case PLANE:
+                minecart.pathDirection = getDirectPath(side);
+                break;
+            case INTERSECTION:
+                Vector3f currentBlock = new Vector3f(minecart.currentBlockPosition);
+                currentBlock.sub(minecart.prevBlockPosition);
+                currentBlock.absolute();
+                currentBlock.y = 0;
+                break;
+            case TEE:
             case CURVE:
                 isCorner = true;
                 Vector3f direction =  new Vector3f(minecart.currentBlockPosition);
                 direction.sub(minecart.prevBlockPosition);
                 setCornerDirection(side, minecart, direction);
-                break;
-            case TEE:
                 break;
         }
         minecart.pathDirection.y = 1f;
@@ -66,7 +72,6 @@ public class MoveDescriptor {
     public Side correctSide(ConnectsToRailsComponent.RAILS blockType, Side side) {
         switch (blockType) {
             case PLANE:
-            case INTERSECTION:
                 side = side.yawClockwise(1);
                 break;
         }
@@ -127,6 +132,12 @@ public class MoveDescriptor {
                 break;
         }
 
+    }
+
+    private Vector3f getDirectPath(Side side) {
+        Vector3f directPath = side.getVector3i().toVector3f();
+        directPath.absolute();
+        return directPath;
     }
 
     private void setCornerDirection(Side side, MinecartComponent minecart, Vector3f direction) {

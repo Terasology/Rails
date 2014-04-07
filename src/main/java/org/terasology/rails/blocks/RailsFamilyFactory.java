@@ -57,7 +57,7 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
                 put(ONE_CONNECTIONS_SLOPE, SideBitFlag.getSides(Side.BACK, Side.TOP));
                 put(TWO_CONNECTIONS_LINE, SideBitFlag.getSides(Side.LEFT, Side.RIGHT));
                 put(TWO_CONNECTIONS_CORNER, SideBitFlag.getSides(Side.LEFT, Side.FRONT));
-                put(TWO_CONNECTIONS_SLOPE, SideBitFlag.getSides(Side.FRONT, Side.BACK, Side.TOP));
+                put(TWO_CONNECTIONS_SLOPE, SideBitFlag.getSides(Side.BACK, Side.FRONT, Side.TOP));
                 put(THREE_CONNECTIONS_T, SideBitFlag.getSides(Side.LEFT, Side.RIGHT, Side.FRONT));
                 put(FOUR_CONNECTIONS_CROSS, SideBitFlag.getSides(Side.RIGHT, Side.LEFT, Side.BACK, Side.FRONT));
             } };
@@ -110,7 +110,7 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
 
         final Block archetypeBlock = blocksForConnections.get(SideBitFlag.getSides(Side.RIGHT, Side.LEFT));
         return new RailsUpdatesFamily(connectionCondition, blockUri, blockDefinition.categories,
-                archetypeBlock, blocksForConnections, connectionSides);
+                archetypeBlock, blocksForConnections, (byte)(connectionSides&0b111110));
     }
 
     private void putBlockDefinition(TByteObjectMap<BlockDefinition> blockDefinitions, BlockBuilderHelper blockBuilder, JsonObject blockDefJson,

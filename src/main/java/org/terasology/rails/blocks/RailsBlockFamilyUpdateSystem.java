@@ -50,6 +50,7 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
 
     private int largeBlockUpdateCount;
     private Set<Vector3i> blocksUpdatedInLargeBlockUpdate = Sets.newHashSet();
+    private int[] checkOnHeight = {-1,0,1};
 
     @ReceiveEvent
     public void largeBlockUpdateStarting(LargeBlockUpdateStarting event, EntityRef entity) {
@@ -98,16 +99,19 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
     }
 
     private void processUpdateForBlockLocation(Vector3i blockLocation) {
-        for (Side side : Side.values()) {
-            Vector3i neighborLocation = new Vector3i(blockLocation);
-            neighborLocation.add(side.getVector3i());
-            Block neighborBlock = worldProvider.getBlock(neighborLocation);
-            final BlockFamily blockFamily = neighborBlock.getBlockFamily();
-            if (blockFamily instanceof RailsUpdatesFamily) {
-                RailsUpdatesFamily railsFamily = (RailsUpdatesFamily) blockFamily;
-                Block neighborBlockAfterUpdate = railsFamily.getBlockForNeighborRailUpdate(worldProvider, blockEntityRegistry, neighborLocation, neighborBlock);
-                if (neighborBlock != neighborBlockAfterUpdate) {
-                    worldProvider.setBlock(neighborLocation, neighborBlockAfterUpdate);
+        for (int height : checkOnHeight) {
+            for (Side side : Side.horizontalSides()) {
+                Vector3i neighborLocation = new Vector3i(blockLocation);
+                neighborLocation.add(side.getVector3i());
+                neighborLocation.y += height;
+                Block neighborBlock = worldProvider.getBlock(neighborLocation);
+                final BlockFamily blockFamily = neighborBlock.getBlockFamily();
+                if (blockFamily instanceof RailsUpdatesFamily) {
+                    RailsUpdatesFamily railsFamily = (RailsUpdatesFamily) blockFamily;
+                    Block neighborBlockAfterUpdate = railsFamily.getBlockForNeighborRailUpdate(worldProvider, blockEntityRegistry, neighborLocation, neighborBlock);
+                    if (neighborBlock != neighborBlockAfterUpdate && neighborBlockAfterUpdate != null) {
+                        worldProvider.setBlock(neighborLocation, neighborBlockAfterUpdate);
+                    }
                 }
             }
         }

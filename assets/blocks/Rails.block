@@ -45,11 +45,11 @@
         }
     },
     "one_connection_slope": {
-        "tile" : "Rails:TrainTrack",
+        "tile" : "Rails:TrainTrackSlope",
         "shape" : "engine:slope",
         "tiles" : {
           "sides" : "Rails:TrainTrackEmpty",
-          "top" : "Rails:TrainTrack",
+          "top" : "Rails:TrainTrackSlope",
           "bottom" : "Rails:TrainTrackEmpty"
         },
         "entity": {
@@ -69,11 +69,11 @@
         }
     },
     "slope_connection": {
-        "tile" : "Rails:TrainTrack",
+        "tile" : "Rails:TrainTrackSlope",
         "shape" : "engine:slope",
         "tiles" : {
           "sides" : "Rails:TrainTrackEmpty",
-          "top" : "Rails:TrainTrack",
+          "top" : "Rails:TrainTrackSlope",
           "bottom" : "Rails:TrainTrackEmpty"
         },
         "entity": {

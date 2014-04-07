@@ -22,8 +22,13 @@ import org.terasology.world.block.ForceBlockActive;
 
 @ForceBlockActive
 public class ConnectsToRailsComponent implements Component {
-    public static enum RAILS { PLANE, CURVE, TEE, SLOPE, INTERSECTION}
+    public static enum RAILS {
+        PLANE, CURVE, TEE, SLOPE, INTERSECTION
+    }
 
     @Replicate
-    public String type = "PLANE";
+    public boolean inversed = false;
+
+    @Replicate
+    public RAILS type = RAILS.PLANE;
 }

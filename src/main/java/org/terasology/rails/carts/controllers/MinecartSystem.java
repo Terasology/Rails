@@ -92,11 +92,11 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                         float drive = minecartComponent.drive.lengthSquared()/100;
                         float speed = rb.velocity.lengthSquared();
                         ConnectsToRailsComponent railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
-                          if (speed/drive < 60 || ConnectsToRailsComponent.RAILS.valueOf(railsComponent.type).equals(ConnectsToRailsComponent.RAILS.CURVE)) {
+                          if (speed/drive < 60 || railsComponent.type.equals(ConnectsToRailsComponent.RAILS.CURVE)) {
                             Vector3f velocity = new Vector3f(rb.velocity);
                             moveDescriptor.calculateDirection(
                                     velocity,
-                                    ConnectsToRailsComponent.RAILS.valueOf(railsComponent.type),
+                                    railsComponent.type,
                                     currentBlock.getDirection(),
                                     minecartComponent
                             );
@@ -114,7 +114,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                         minecartComponent.currentBlockPosition = blockPosition.toVector3f();
                         moveDescriptor.calculateDirection(
                                 velocity,
-                                ConnectsToRailsComponent.RAILS.valueOf(railsComponent.type),
+                                railsComponent.type,
                                 currentBlock.getDirection(),
                                 minecartComponent
                         );
@@ -211,9 +211,14 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             }
 
             Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
-            Side side = moveDescriptor.correctSide(ConnectsToRailsComponent.RAILS.valueOf(railsComponent.type), currentBlock.getDirection());
+            Side side = null;
+            if (railsComponent.type == ConnectsToRailsComponent.RAILS.INTERSECTION) {
+                side = moveDescriptor.correctSide(railsComponent.type, (minecartComponent.pathDirection.x != 0 ? Side.LEFT : Side.FRONT));
+            } else {
+                side = moveDescriptor.correctSide(railsComponent.type, currentBlock.getDirection());
+            }
             moveDescriptor.getYawOnPath(minecartComponent, side, movedDistance);
-            moveDescriptor.getPitchOnPath(minecartComponent, ConnectsToRailsComponent.RAILS.valueOf(railsComponent.type));
+            moveDescriptor.getPitchOnPath(minecartComponent, railsComponent.type);
             QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * minecartComponent.yaw, TeraMath.DEG_TO_RAD * minecartComponent.pitch, 0);
 
             location.setWorldRotation(yawPitch);
