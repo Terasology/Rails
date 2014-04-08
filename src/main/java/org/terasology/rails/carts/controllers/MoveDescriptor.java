@@ -37,7 +37,6 @@ public class MoveDescriptor {
             }};
 
     public void calculateDirection(Vector3f velocity, ConnectsToRailsComponent.RAILS blockType, Side side, MinecartComponent minecart) {
-        boolean isCorner = false;
         side = correctSide(blockType, side);
         switch (blockType) {
             case SLOPE:
@@ -53,16 +52,15 @@ public class MoveDescriptor {
                 currentBlock.absolute();
                 currentBlock.y = 0;
                 break;
+            case TEE_INVERSED:
             case TEE:
             case CURVE:
-                isCorner = true;
                 Vector3f direction =  new Vector3f(minecart.currentBlockPosition);
                 direction.sub(minecart.prevBlockPosition);
                 setCornerDirection(side, minecart, direction);
                 break;
         }
-        minecart.pathDirection.y = 1f;
-        correctVelocity(minecart, velocity, isCorner);
+        correctVelocity(minecart, velocity, blockType);
     }
 
     public Vector3f getRotationOffsetPoint(Side cornerSide) {
@@ -73,6 +71,9 @@ public class MoveDescriptor {
         switch (blockType) {
             case PLANE:
                 side = side.yawClockwise(1);
+                break;
+            case TEE:
+                side = side.yawClockwise(-1);
                 break;
         }
         return side;
@@ -197,9 +198,14 @@ public class MoveDescriptor {
         }
     }
 
-    private void correctVelocity(MinecartComponent minecartComponent, Vector3f velocity, boolean isCorner) {
+    private void correctVelocity(MinecartComponent minecartComponent, Vector3f velocity, ConnectsToRailsComponent.RAILS blockType) {
 
-        if (isCorner) {
+        if (
+            blockType == ConnectsToRailsComponent.RAILS.CURVE ||
+            blockType == ConnectsToRailsComponent.RAILS.TEE ||
+            blockType == ConnectsToRailsComponent.RAILS.TEE_INVERSED
+           ) {
+
             velocity.absolute();
             minecartComponent.drive.absolute();
 
@@ -213,12 +219,17 @@ public class MoveDescriptor {
         }
 
         velocity.x = velocity.x * minecartComponent.pathDirection.x;
+        velocity.y = velocity.y * minecartComponent.pathDirection.y;
         velocity.z = velocity.z * minecartComponent.pathDirection.z;
-        minecartComponent.drive.x = minecartComponent.drive.x * minecartComponent.pathDirection.x;
-        minecartComponent.drive.z = minecartComponent.drive.z * minecartComponent.pathDirection.z;
 
+        /*if (blockType == ConnectsToRailsComponent.RAILS.SLOPE && velocity.y <= 0) {
+            //velocity.y *= 2f;
+        }*/
 
         if ((minecartComponent.drive.lengthSquared() - velocity.lengthSquared()) > 0.1) {
+            minecartComponent.drive.absolute();
+            minecartComponent.drive.x *= Math.signum(velocity.x) * Math.abs(minecartComponent.pathDirection.x);
+            minecartComponent.drive.z *= Math.signum(velocity.z) * Math.abs(minecartComponent.pathDirection.z);
             velocity.interpolate(minecartComponent.drive, 0.2f);
         }
 

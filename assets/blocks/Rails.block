@@ -53,7 +53,7 @@
           "bottom" : "Rails:TrainTrackEmpty"
         },
         "entity": {
-            "prefab": "Rails:rail"
+            "prefab": "Rails:railSlope"
         }
     },
     "line_connection": {
@@ -77,7 +77,7 @@
           "bottom" : "Rails:TrainTrackEmpty"
         },
         "entity": {
-            "prefab": "Rails:rail"
+            "prefab": "Rails:railSlope"
         }
     },
     "2d_corner": {

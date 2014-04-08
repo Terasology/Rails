@@ -1,5 +1,6 @@
 package org.terasology.rails.carts.controllers;
 
+import com.bulletphysics.linearmath.QuaternionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityManager;
@@ -7,8 +8,11 @@ import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.location.Location;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.Rotation;
+import org.terasology.math.TeraMath;
 import org.terasology.math.Yaw;
 import org.terasology.rails.carts.components.MinecartComponent;
+
+import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
 public class MinecartFactory {

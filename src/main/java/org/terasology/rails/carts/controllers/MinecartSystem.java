@@ -89,10 +89,13 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                             minecartComponent.positionCorrected = false;
                             minecart.saveComponent(minecartComponent);
                         }
-                        float drive = minecartComponent.drive.lengthSquared()/100;
+                        float drive = minecartComponent.drive.lengthSquared() / 100;
                         float speed = rb.velocity.lengthSquared();
                         ConnectsToRailsComponent railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
-                          if (speed/drive < 60 || railsComponent.type.equals(ConnectsToRailsComponent.RAILS.CURVE)) {
+                        if (speed / drive < 60 ||
+                            railsComponent.type.equals(ConnectsToRailsComponent.RAILS.CURVE) ||
+                            railsComponent.type.equals(ConnectsToRailsComponent.RAILS.TEE) ||
+                            railsComponent.type.equals(ConnectsToRailsComponent.RAILS.TEE_INVERSED)) {
                             Vector3f velocity = new Vector3f(rb.velocity);
                             moveDescriptor.calculateDirection(
                                     velocity,
@@ -165,7 +168,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             Vector3f newPos = new Vector3f(startPosition);
             float pastLength = lastMinecartDirection.lengthSquared();
 
-            if ( pastLength >= 0.707f ) {
+            if (pastLength >= 0.707f) {
                 pastLength = 0.6f;
             }
             revertDirection.scale(pastLength);
@@ -217,9 +220,10 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             } else {
                 side = moveDescriptor.correctSide(railsComponent.type, currentBlock.getDirection());
             }
+
             moveDescriptor.getYawOnPath(minecartComponent, side, movedDistance);
             moveDescriptor.getPitchOnPath(minecartComponent, railsComponent.type);
-            QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * minecartComponent.yaw, TeraMath.DEG_TO_RAD * minecartComponent.pitch, 0);
+            QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * minecartComponent.yaw, 0, TeraMath.DEG_TO_RAD * minecartComponent.pitch);
 
             location.setWorldRotation(yawPitch);
             location.setWorldPosition(minecartWorldPosition);
