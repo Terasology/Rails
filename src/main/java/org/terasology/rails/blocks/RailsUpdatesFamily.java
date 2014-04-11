@@ -124,6 +124,7 @@ public class RailsUpdatesFamily extends AbstractBlockFamily {
                         continue;
                     }
                     if (connectionCondition.isConnectingTo(upLocation, connectSide, worldProvider, blockEntityRegistry)) {
+                        connections  = 0;
                         connections += SideBitFlag.getSide(connectSide);
                         connections += SideBitFlag.getSide(Side.TOP);
                         break;
@@ -138,6 +139,7 @@ public class RailsUpdatesFamily extends AbstractBlockFamily {
                     break;
                 }
                 if (connectionCondition.isConnectingTo(upLocation, connectSide, worldProvider, blockEntityRegistry)) {
+                    connections  = 0;
                     connections += SideBitFlag.getSide(connectSide);
                     connections += SideBitFlag.getSide(Side.TOP);
                     break;

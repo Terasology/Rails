@@ -119,6 +119,9 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
     @ReceiveEvent(components = {BlockItemComponent.class, ItemComponent.class}, priority = EventPriority.PRIORITY_HIGH)
     public void onPlaceBlock(ActivateEvent event, EntityRef item) {
         BlockComponent blockComponent = event.getTarget().getComponent(BlockComponent.class);
+        if (blockComponent == null) {
+            return;
+        }
         Vector3i targetBlock = blockComponent.getPosition();
         Block centerBlock = worldProvider.getBlock(targetBlock.x, targetBlock.y, targetBlock.z);
 

@@ -41,7 +41,6 @@ public class MoveDescriptor {
         switch (blockType) {
             case SLOPE:
                 minecart.pathDirection = getDirectPath(side);
-                minecart.pathDirection.y = 1;
                 break;
             case PLANE:
                 minecart.pathDirection = getDirectPath(side);
@@ -60,6 +59,7 @@ public class MoveDescriptor {
                 setCornerDirection(side, minecart, direction);
                 break;
         }
+        minecart.pathDirection.y = 1;
         correctVelocity(minecart, velocity, blockType);
     }
 
@@ -79,12 +79,12 @@ public class MoveDescriptor {
         return side;
     }
 
-    public void getYawOnPath(MinecartComponent minecart, Side side, Vector3f cornerDistanceMoved) {
+    public void getYawOnPath(MinecartComponent minecart, Side side, Vector3f distanceMoved) {
 
         boolean isCorner = minecart.pathDirection.x!=0 && minecart.pathDirection.z!=0;
 
-        if (isCorner && cornerDistanceMoved != null) {
-            float percent = cornerDistanceMoved.length() / 0.007f;
+        if (isCorner && distanceMoved != null) {
+            float percent = distanceMoved.length() / 0.007f;
             if (percent > 100) {
                 minecart.yaw += minecart.angleSign * 90f;
             } else {
@@ -200,11 +200,7 @@ public class MoveDescriptor {
 
     private void correctVelocity(MinecartComponent minecartComponent, Vector3f velocity, ConnectsToRailsComponent.RAILS blockType) {
 
-        if (
-            blockType == ConnectsToRailsComponent.RAILS.CURVE ||
-            blockType == ConnectsToRailsComponent.RAILS.TEE ||
-            blockType == ConnectsToRailsComponent.RAILS.TEE_INVERSED
-           ) {
+        if (isCorner(blockType)) {
 
             velocity.absolute();
             minecartComponent.drive.absolute();
@@ -222,10 +218,6 @@ public class MoveDescriptor {
         velocity.y = velocity.y * minecartComponent.pathDirection.y;
         velocity.z = velocity.z * minecartComponent.pathDirection.z;
 
-        /*if (blockType == ConnectsToRailsComponent.RAILS.SLOPE && velocity.y <= 0) {
-            //velocity.y *= 2f;
-        }*/
-
         if ((minecartComponent.drive.lengthSquared() - velocity.lengthSquared()) > 0.1) {
             minecartComponent.drive.absolute();
             minecartComponent.drive.x *= Math.signum(velocity.x) * Math.abs(minecartComponent.pathDirection.x);
@@ -242,5 +234,12 @@ public class MoveDescriptor {
         if (blockType.equals(ConnectsToRailsComponent.RAILS.SLOPE)) {
             minecart.pitch = 45;
         }
+    }
+
+
+    public boolean isCorner(ConnectsToRailsComponent.RAILS type) {
+        return type == ConnectsToRailsComponent.RAILS.CURVE ||
+                type == ConnectsToRailsComponent.RAILS.TEE ||
+                type == ConnectsToRailsComponent.RAILS.TEE_INVERSED;
     }
 }

@@ -47,7 +47,6 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
     public static final String ONE_CONNECTIONS_SLOPE = "one_connection_slope";
     public static final String TWO_CONNECTIONS_LINE = "line_connection";
     public static final String TWO_CONNECTIONS_CORNER = "2d_corner";
-    public static final String TWO_CONNECTIONS_SLOPE = "slope_connection";
     public static final String THREE_CONNECTIONS_T = "2d_t";
     public static final String FOUR_CONNECTIONS_CROSS = "cross";
     private static final Map<String, Byte> RAILS_MAPPING =
@@ -57,7 +56,6 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
                 put(ONE_CONNECTIONS_SLOPE, SideBitFlag.getSides(Side.BACK, Side.TOP));
                 put(TWO_CONNECTIONS_LINE, SideBitFlag.getSides(Side.LEFT, Side.RIGHT));
                 put(TWO_CONNECTIONS_CORNER, SideBitFlag.getSides(Side.LEFT, Side.FRONT));
-                put(TWO_CONNECTIONS_SLOPE, SideBitFlag.getSides(Side.BACK, Side.FRONT, Side.TOP));
                 put(THREE_CONNECTIONS_T, SideBitFlag.getSides(Side.LEFT, Side.RIGHT, Side.FRONT));
                 put(FOUR_CONNECTIONS_CROSS, SideBitFlag.getSides(Side.RIGHT, Side.LEFT, Side.BACK, Side.FRONT));
             } };
@@ -88,7 +86,6 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
 
         basicBlocks[3] = new TByteObjectHashMap<>();
         putBlockDefinition(basicBlocks[3], blockBuilder, blockDefJson, THREE_CONNECTIONS_T);
-        putBlockDefinition(basicBlocks[3], blockBuilder, blockDefJson, TWO_CONNECTIONS_SLOPE);
 
         basicBlocks[4] = new TByteObjectHashMap<>();
         putBlockDefinition(basicBlocks[4], blockBuilder, blockDefJson, FOUR_CONNECTIONS_CROSS);

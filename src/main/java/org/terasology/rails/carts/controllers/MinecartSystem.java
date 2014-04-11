@@ -24,6 +24,8 @@ import org.terasology.entitySystem.entity.lifecycleEvents.OnChangedComponent;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.*;
 import org.terasology.logic.location.LocationComponent;
+import org.terasology.logic.players.LocalPlayer;
+import org.terasology.math.AABB;
 import org.terasology.math.Side;
 import org.terasology.math.TeraMath;
 import org.terasology.math.Vector3i;
@@ -32,9 +34,11 @@ import org.terasology.physics.Physics;
 import org.terasology.physics.StandardCollisionGroup;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.physics.events.ChangeVelocityEvent;
+import org.terasology.physics.events.ForceEvent;
 import org.terasology.rails.blocks.ConnectsToRailsComponent;
 import org.terasology.rails.carts.components.MinecartComponent;
 import org.terasology.registry.In;
+import org.terasology.rendering.logic.MeshComponent;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
 
@@ -52,6 +56,9 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
     @In
     private Physics physics;
 
+    @In
+    private LocalPlayer localPlayer;
+
     private MoveDescriptor moveDescriptor;
 
     private final Logger logger = LoggerFactory.getLogger(MinecartSystem.class);
@@ -62,11 +69,6 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
     }
 
     @Override
-    public void shutdown() {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
     public void update(float delta) {
         for (EntityRef minecart : entityManager.getEntitiesWith(MinecartComponent.class)) {
 
@@ -74,12 +76,34 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
 
             if (minecartComponent.isCreated) {
                 LocationComponent location = minecart.getComponent(LocationComponent.class);
-                Vector3f minecartWorldPosition = location.getWorldPosition();
-                HitResult hit = physics.rayTrace(minecartWorldPosition, new Vector3f(0, -1, 0), 6, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
+                MeshComponent mesh     = minecart.getComponent(MeshComponent.class);
                 RigidBodyComponent rb = minecart.getComponent(RigidBodyComponent.class);
+
+                Vector3f minecartWorldPosition = location.getWorldPosition();
+                Vector3f velocity = new Vector3f(rb.velocity);
+
+                float rayLength = 2.3f;
+
+                if (minecartComponent.currentBlockPosition!=null) {
+                    AABB meshAABB = mesh.mesh.getAABB();
+                    rayLength = meshAABB.maxY() - meshAABB.minY() / 1.5f;
+                    Vector3f meshExtents = meshAABB.getExtents();
+                    meshExtents.y = 0;
+                    if (meshExtents.x > meshExtents.z) {
+                        meshExtents.z = 0;
+                        meshExtents.x *= Math.signum(velocity.x);
+                    } else {
+                        meshExtents.x = 0;
+                        meshExtents.z *= Math.signum(velocity.z);
+                    }
+                    minecartWorldPosition.add(meshExtents);
+                }
+
+                HitResult hit = physics.rayTrace(minecartWorldPosition, new Vector3f(0, -1f, 0), rayLength, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
+
                 Vector3i blockPosition = hit.getBlockPosition();
                 Block currentBlock = null;
-
+                Vector3f angularFactor = new Vector3f(rb.angularFactor);
                 if (blockPosition != null) {
                     currentBlock = worldProvider.getBlock(blockPosition);
                     EntityRef blockEntity = currentBlock.getEntity();
@@ -92,11 +116,8 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                         float drive = minecartComponent.drive.lengthSquared() / 100;
                         float speed = rb.velocity.lengthSquared();
                         ConnectsToRailsComponent railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
-                        if (speed / drive < 60 ||
-                            railsComponent.type.equals(ConnectsToRailsComponent.RAILS.CURVE) ||
-                            railsComponent.type.equals(ConnectsToRailsComponent.RAILS.TEE) ||
-                            railsComponent.type.equals(ConnectsToRailsComponent.RAILS.TEE_INVERSED)) {
-                            Vector3f velocity = new Vector3f(rb.velocity);
+                        if (speed / drive < 60 || isCorner(railsComponent.type)) {
+
                             moveDescriptor.calculateDirection(
                                     velocity,
                                     railsComponent.type,
@@ -106,11 +127,14 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                             minecart.send(new ChangeVelocityEvent(velocity));
                         }
 
+                        if (railsComponent.type.equals(ConnectsToRailsComponent.RAILS.SLOPE)) {
+                            minecart.send(new ForceEvent(new Vector3f(0, -10f, 0)));
+                        }
+
                         continue;
                     }
 
                     if (blockEntity != null && blockEntity.hasComponent(ConnectsToRailsComponent.class)) {
-                        Vector3f velocity = new Vector3f(rb.velocity);
                         ConnectsToRailsComponent railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
                         minecartComponent.currentPositionStatus = MinecartComponent.PositionStatus.ON_THE_PATH;
                         minecartComponent.prevBlockPosition = minecartComponent.currentBlockPosition;
@@ -124,22 +148,28 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
 
                         minecart.send(new ChangeVelocityEvent(velocity));
                         minecartComponent.positionCorrected = false;
+                        angularFactor.set(0f, 0f, 0f);
                     } else {
+                        minecartComponent.currentBlockPosition = null;
+                        minecartComponent.prevBlockPosition = null;
                         minecartComponent.pathDirection.set(1f, 1f, 1f);
+                        angularFactor.set(minecartComponent.pathDirection);
                         minecartComponent.currentPositionStatus = MinecartComponent.PositionStatus.ON_THE_GROUND;
                         minecart.saveComponent(rb);
                     }
                 } else {
+                    minecartComponent.currentBlockPosition = null;
+                    minecartComponent.prevBlockPosition = null;
                     minecartComponent.pathDirection.set(1f, 1f, 1f);
+                    angularFactor.set(minecartComponent.pathDirection);
                     minecartComponent.currentPositionStatus = MinecartComponent.PositionStatus.ON_THE_AIR;
                     minecart.saveComponent(rb);
 
                 }
-                minecartWorldPosition.x *= minecartComponent.pathDirection.x;
-                minecartWorldPosition.z *= minecartComponent.pathDirection.z;
 
-                if (!rb.angularFactor.equals(minecartComponent.pathDirection)) {
-                    rb.angularFactor = minecartComponent.pathDirection;
+                if (!rb.angularFactor.equals(angularFactor)) {
+                    rb.angularFactor.set(angularFactor);
+                    //rb.linearFactor.set(minecartComponent.pathDirection);
                     minecart.saveComponent(rb);
                 }
 
@@ -208,10 +238,8 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             minecartComponent.positionCorrected = true;
             movePosition(minecartComponent, minecartWorldPosition, offsetCornerPoint);
 
-            if (minecartComponent.pathDirection.x != 0 && minecartComponent.pathDirection.z != 0) {
-                movedDistance = new Vector3f(minecartWorldPosition);
-                movedDistance.sub(minecartComponent.prevPosition);
-            }
+            movedDistance = new Vector3f(minecartWorldPosition);
+            movedDistance.sub(minecartComponent.prevPosition);
 
             Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
             Side side = null;
@@ -223,7 +251,14 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
 
             moveDescriptor.getYawOnPath(minecartComponent, side, movedDistance);
             moveDescriptor.getPitchOnPath(minecartComponent, railsComponent.type);
-            QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * minecartComponent.yaw, 0, TeraMath.DEG_TO_RAD * minecartComponent.pitch);
+            if (movedDistance.y > 0.0001f) {
+                minecartComponent.pitch = (float)Math.atan2(movedDistance.y, movedDistance.x != 0?movedDistance.x:movedDistance.z);
+                /*if (railsComponent.type == ConnectsToRailsComponent.RAILS.SLOPE) {
+                    logger.info("movedDistance length: " + movedDistance.length());
+                }            */
+
+            }
+            QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * minecartComponent.yaw, 0, minecartComponent.pitch);
 
             location.setWorldRotation(yawPitch);
             location.setWorldPosition(minecartWorldPosition);
@@ -232,5 +267,11 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             entity.saveComponent(minecartComponent);
             entity.saveComponent(location);
         }
+    }
+
+    private boolean isCorner(ConnectsToRailsComponent.RAILS type) {
+        return type == ConnectsToRailsComponent.RAILS.CURVE ||
+                type == ConnectsToRailsComponent.RAILS.TEE ||
+                type == ConnectsToRailsComponent.RAILS.TEE_INVERSED;
     }
 }
