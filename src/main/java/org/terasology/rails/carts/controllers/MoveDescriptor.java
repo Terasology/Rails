@@ -15,6 +15,7 @@
  */
 package org.terasology.rails.carts.controllers;
 
+import com.bulletphysics.BulletGlobals;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.math.Rotation;
@@ -139,6 +140,22 @@ public class MoveDescriptor {
         Vector3f directPath = side.getVector3i().toVector3f();
         directPath.absolute();
         return directPath;
+    }
+
+    private float interpolateAngle(float from, float to, float delta) {
+        if (delta <= BulletGlobals.SIMD_EPSILON) {
+            return 0;
+        }
+
+        float diff = ((to - from) + Integer.MAX_VALUE / 2) % 360;
+
+        if (diff >= 180) {
+            diff -= 180;
+        }
+
+        from += delta*diff;
+
+        return (from + Integer.MAX_VALUE / 2) % 360;
     }
 
     private void setCornerDirection(Side side, MinecartComponent minecart, Vector3f direction) {

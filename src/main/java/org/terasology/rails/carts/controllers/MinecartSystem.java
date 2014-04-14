@@ -15,6 +15,7 @@
  */
 package org.terasology.rails.carts.controllers;
 
+import com.bulletphysics.linearmath.IntUtil;
 import com.bulletphysics.linearmath.QuaternionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,24 +85,29 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
 
                 float rayLength = 2.3f;
 
-                if (minecartComponent.currentBlockPosition!=null) {
+                if (minecartComponent.currentBlockPosition!=null && minecartComponent.prevBlockPosition!=null) {
                     AABB meshAABB = mesh.mesh.getAABB();
                     rayLength = meshAABB.maxY() - meshAABB.minY() / 1.5f;
                     Vector3f meshExtents = meshAABB.getExtents();
                     meshExtents.y = 0;
                     if (meshExtents.x > meshExtents.z) {
                         meshExtents.z = 0;
-                        meshExtents.x *= Math.signum(velocity.x);
+                        meshExtents.x /= Math.signum(velocity.x)*2.8;
                     } else {
                         meshExtents.x = 0;
-                        meshExtents.z *= Math.signum(velocity.z);
+                        meshExtents.z /= Math.signum(velocity.z)*2.8;
                     }
                     minecartWorldPosition.add(meshExtents);
                 }
 
-                HitResult hit = physics.rayTrace(minecartWorldPosition, new Vector3f(0, -1f, 0), rayLength, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
+                Vector3i blockPosition = new Vector3i(minecartWorldPosition);
+                logger.info("blockPosition: " + blockPosition);
+                logger.info("minecartWorldPosition: " + minecartWorldPosition);
 
-                Vector3i blockPosition = hit.getBlockPosition();
+                //HitResult hit = physics.rayTrace(minecartWorldPosition, new Vector3f(0, -1f, 0), rayLength, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
+
+                // = minecartWorldPosition;
+                //IntUtil.floorToInt(rayFromTrans.origin.x + 0.5f);
                 Block currentBlock = null;
                 Vector3f angularFactor = new Vector3f(rb.angularFactor);
                 if (blockPosition != null) {
@@ -117,7 +123,10 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                         float speed = rb.velocity.lengthSquared();
                         ConnectsToRailsComponent railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
                         if (speed / drive < 60 || isCorner(railsComponent.type)) {
-
+                            logger.info("-----------------------------------------");
+                            logger.info("prevBlockPosition: " + minecartComponent.prevBlockPosition);
+                            logger.info("currentBlockPosition: " + minecartComponent.currentBlockPosition);
+                            logger.info("-----------------------------------------");
                             moveDescriptor.calculateDirection(
                                     velocity,
                                     railsComponent.type,
@@ -127,15 +136,14 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                             minecart.send(new ChangeVelocityEvent(velocity));
                         }
 
-                        if (railsComponent.type.equals(ConnectsToRailsComponent.RAILS.SLOPE)) {
-                            minecart.send(new ForceEvent(new Vector3f(0, -10f, 0)));
-                        }
-
                         continue;
                     }
 
                     if (blockEntity != null && blockEntity.hasComponent(ConnectsToRailsComponent.class)) {
                         ConnectsToRailsComponent railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
+                        logger.info("type: " + railsComponent.type);
+                        logger.info("prevBlockPosition: " + minecartComponent.prevBlockPosition);
+                        logger.info("currentBlockPosition: " + minecartComponent.currentBlockPosition);
                         minecartComponent.currentPositionStatus = MinecartComponent.PositionStatus.ON_THE_PATH;
                         minecartComponent.prevBlockPosition = minecartComponent.currentBlockPosition;
                         minecartComponent.currentBlockPosition = blockPosition.toVector3f();
@@ -167,9 +175,9 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
 
                 }
 
-                if (!rb.angularFactor.equals(angularFactor)) {
+                if (!rb.angularFactor.equals(angularFactor) || !rb.linearFactor.equals(minecartComponent.pathDirection)) {
                     rb.angularFactor.set(angularFactor);
-                    //rb.linearFactor.set(minecartComponent.pathDirection);
+                    rb.linearFactor.set(minecartComponent.pathDirection);
                     minecart.saveComponent(rb);
                 }
 
@@ -252,7 +260,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             moveDescriptor.getYawOnPath(minecartComponent, side, movedDistance);
             moveDescriptor.getPitchOnPath(minecartComponent, railsComponent.type);
             if (movedDistance.y > 0.0001f) {
-                minecartComponent.pitch = (float)Math.atan2(movedDistance.y, movedDistance.x != 0?movedDistance.x:movedDistance.z);
+                ///minecartComponent.pitch = (float)Math.atan2(movedDistance.y, movedDistance.x != 0?movedDistance.x:movedDistance.z);
                 /*if (railsComponent.type == ConnectsToRailsComponent.RAILS.SLOPE) {
                     logger.info("movedDistance length: " + movedDistance.length());
                 }            */
