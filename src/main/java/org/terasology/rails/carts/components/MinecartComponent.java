@@ -50,16 +50,19 @@ public class MinecartComponent implements Component {
     public float pitch;
 
     @Replicate
+    public float targetYaw;
+
+    @Replicate
     public float yaw;
 
     @Replicate
     public Vector3f drive;
 
     @Replicate
-    public Vector3f pathDirection;
+    public Vector3f prevPosition;
 
     @Replicate
-    public Vector3f prevPosition;
+    public Vector3f pathDirection;
 
     @Replicate
     public Vector3f currentBlockPosition;

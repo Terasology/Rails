@@ -37,11 +37,12 @@ public class MoveDescriptor {
                 put(Side.BACK, new Vector3f(0.5f, 0, 0.5f));
             }};
 
-    public void calculateDirection(Vector3f velocity, ConnectsToRailsComponent.RAILS blockType, Side side, MinecartComponent minecart) {
+    public void calculateDirection(Vector3f velocity, ConnectsToRailsComponent.RAILS blockType, Side side, MinecartComponent minecart, int slopeFactor) {
         side = correctSide(blockType, side);
         switch (blockType) {
             case SLOPE:
                 minecart.pathDirection = getDirectPath(side);
+                //slopeFactor = 1;
                 break;
             case PLANE:
                 minecart.pathDirection = getDirectPath(side);
@@ -61,7 +62,7 @@ public class MoveDescriptor {
                 break;
         }
         minecart.pathDirection.y = 1;
-        correctVelocity(minecart, velocity, blockType);
+        correctVelocity(minecart, velocity, blockType, slopeFactor);
     }
 
     public Vector3f getRotationOffsetPoint(Side cornerSide) {
@@ -105,57 +106,42 @@ public class MoveDescriptor {
             case LEFT:
             case RIGHT:
                 if (minecart.yaw >= 360 || minecart.yaw < 45 && minecart.yaw > 0) {
-                    minecart.yaw = 0;
+                    minecart.targetYaw = 0;
                 }
 
                 if (minecart.yaw >= 135 && minecart.yaw < 180 || minecart.yaw > 180 && minecart.yaw < 225) {
-                    minecart.yaw = 180;
+                    minecart.targetYaw = 180;
                 }
 
                 if (minecart.yaw != 180 && minecart.yaw != 0) {
-                    minecart.yaw = 0;
+                    minecart.targetYaw = 0;
                 }
                 break;
             case FRONT:
             case BACK:
                 if (minecart.yaw == 0 || minecart.yaw >= 45 && minecart.yaw < 90 || minecart.yaw > 90 && minecart.yaw < 135) {
-                    minecart.yaw = 90;
+                    minecart.targetYaw = 90;
                     break;
                 }
 
                 if (minecart.yaw >= 225 && minecart.yaw < 270 || minecart.yaw > 270 && minecart.yaw < 315) {
-                    minecart.yaw = 270;
+                    minecart.targetYaw = 270;
                 }
 
                 if (minecart.yaw != 90 && minecart.yaw != 270) {
-                    minecart.yaw = 90;
+                    minecart.targetYaw = 90;
                 }
 
                 break;
         }
 
+        minecart.yaw = minecart.targetYaw;
     }
 
     private Vector3f getDirectPath(Side side) {
         Vector3f directPath = side.getVector3i().toVector3f();
         directPath.absolute();
         return directPath;
-    }
-
-    private float interpolateAngle(float from, float to, float delta) {
-        if (delta <= BulletGlobals.SIMD_EPSILON) {
-            return 0;
-        }
-
-        float diff = ((to - from) + Integer.MAX_VALUE / 2) % 360;
-
-        if (diff >= 180) {
-            diff -= 180;
-        }
-
-        from += delta*diff;
-
-        return (from + Integer.MAX_VALUE / 2) % 360;
     }
 
     private void setCornerDirection(Side side, MinecartComponent minecart, Vector3f direction) {
@@ -215,7 +201,7 @@ public class MoveDescriptor {
         }
     }
 
-    private void correctVelocity(MinecartComponent minecartComponent, Vector3f velocity, ConnectsToRailsComponent.RAILS blockType) {
+    private void correctVelocity(MinecartComponent minecartComponent, Vector3f velocity, ConnectsToRailsComponent.RAILS blockType, int slopeFactor) {
 
         if (isCorner(blockType)) {
 
@@ -240,6 +226,11 @@ public class MoveDescriptor {
             minecartComponent.drive.x *= Math.signum(velocity.x) * Math.abs(minecartComponent.pathDirection.x);
             minecartComponent.drive.z *= Math.signum(velocity.z) * Math.abs(minecartComponent.pathDirection.z);
             velocity.interpolate(minecartComponent.drive, 0.2f);
+        }
+
+        if (slopeFactor != 0) {
+            velocity.y = slopeFactor*Math.abs(velocity.x!=0?velocity.x:velocity.z);
+//            logger.info("velocity" + velocity);
         }
 
     }
