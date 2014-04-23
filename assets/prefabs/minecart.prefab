@@ -22,8 +22,8 @@
             "engine:default"
         ]
     },
-    "BoxShape": {
-         "extents" : [3, 3.5, 3]
+    "HullShape": {
+         "sourceMesh" : "Rails:minecart-bounds"
     },
 
     "Health": {

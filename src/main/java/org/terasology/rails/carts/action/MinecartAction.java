@@ -98,7 +98,7 @@ public class MinecartAction extends BaseComponentSystem {
         bumpForce.sub(location.getWorldPosition());
         bumpForce.normalize();
         float bumpScale = 80;
-        if ( minecart.pathDirection.x != 0 && minecart.pathDirection.z != 0 && minecart.currentPositionStatus == MinecartComponent.PositionStatus.ON_THE_PATH) {
+        if ( minecart.pathDirection.x != 0 && minecart.pathDirection.z != 0 ) {
             bumpScale = 40f;
             bumpForce.absolute();
         }

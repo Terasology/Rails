@@ -15,10 +15,8 @@
  */
 package org.terasology.rails.carts.controllers;
 
-import com.bulletphysics.BulletGlobals;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.terasology.math.Rotation;
 import org.terasology.math.Side;
 import org.terasology.rails.blocks.ConnectsToRailsComponent;
 import org.terasology.rails.carts.components.MinecartComponent;
@@ -37,28 +35,27 @@ public class MoveDescriptor {
                 put(Side.BACK, new Vector3f(0.5f, 0, 0.5f));
             }};
 
-    public void calculateDirection(Vector3f velocity, ConnectsToRailsComponent.RAILS blockType, Side side, MinecartComponent minecart, int slopeFactor) {
+    public void calculateDirection(Vector3f velocity, ConnectsToRailsComponent.RAILS blockType, Side side, MinecartComponent minecart, MotionState motionState, int slopeFactor) {
         side = correctSide(blockType, side);
         switch (blockType) {
             case SLOPE:
                 minecart.pathDirection = getDirectPath(side);
-                //slopeFactor = 1;
                 break;
             case PLANE:
                 minecart.pathDirection = getDirectPath(side);
                 break;
             case INTERSECTION:
-                Vector3f currentBlock = new Vector3f(minecart.currentBlockPosition);
-                currentBlock.sub(minecart.prevBlockPosition);
+                Vector3f currentBlock = new Vector3f(motionState.currentBlockPosition);
+                currentBlock.sub(motionState.prevBlockPosition);
                 currentBlock.absolute();
                 currentBlock.y = 0;
                 break;
             case TEE_INVERSED:
             case TEE:
             case CURVE:
-                Vector3f direction =  new Vector3f(minecart.currentBlockPosition);
-                direction.sub(minecart.prevBlockPosition);
-                setCornerDirection(side, minecart, direction);
+                Vector3f direction =  new Vector3f(motionState.currentBlockPosition);
+                direction.sub(motionState.prevBlockPosition);
+                setCornerDirection(side, minecart, motionState, direction);
                 break;
         }
         minecart.pathDirection.y = 1;
@@ -81,16 +78,17 @@ public class MoveDescriptor {
         return side;
     }
 
-    public void getYawOnPath(MinecartComponent minecart, Side side, Vector3f distanceMoved) {
+    public void getYawOnPath(MinecartComponent minecart, Side side, MotionState motionState, Vector3f distanceMoved) {
 
         boolean isCorner = minecart.pathDirection.x!=0 && minecart.pathDirection.z!=0;
 
         if (isCorner && distanceMoved != null) {
+            distanceMoved.y = 0;
             float percent = distanceMoved.length() / 0.007f;
             if (percent > 100) {
-                minecart.yaw += minecart.angleSign * 90f;
+                minecart.yaw += motionState.yawSign * 90f;
             } else {
-                minecart.yaw += minecart.angleSign * 90f * percent / 100;
+                minecart.yaw += motionState.yawSign * 90f * percent / 100;
             }
 
             if (minecart.yaw < 0) {
@@ -106,36 +104,34 @@ public class MoveDescriptor {
             case LEFT:
             case RIGHT:
                 if (minecart.yaw >= 360 || minecart.yaw < 45 && minecart.yaw > 0) {
-                    minecart.targetYaw = 0;
+                    minecart.yaw = 0;
                 }
 
                 if (minecart.yaw >= 135 && minecart.yaw < 180 || minecart.yaw > 180 && minecart.yaw < 225) {
-                    minecart.targetYaw = 180;
+                    minecart.yaw = 180;
                 }
 
                 if (minecart.yaw != 180 && minecart.yaw != 0) {
-                    minecart.targetYaw = 0;
+                    minecart.yaw = 0;
                 }
                 break;
             case FRONT:
             case BACK:
                 if (minecart.yaw == 0 || minecart.yaw >= 45 && minecart.yaw < 90 || minecart.yaw > 90 && minecart.yaw < 135) {
-                    minecart.targetYaw = 90;
+                    minecart.yaw = 90;
                     break;
                 }
 
                 if (minecart.yaw >= 225 && minecart.yaw < 270 || minecart.yaw > 270 && minecart.yaw < 315) {
-                    minecart.targetYaw = 270;
+                    minecart.yaw = 270;
                 }
 
                 if (minecart.yaw != 90 && minecart.yaw != 270) {
-                    minecart.targetYaw = 90;
+                    minecart.yaw = 90;
                 }
 
                 break;
         }
-
-        minecart.yaw = minecart.targetYaw;
     }
 
     private Vector3f getDirectPath(Side side) {
@@ -144,14 +140,14 @@ public class MoveDescriptor {
         return directPath;
     }
 
-    private void setCornerDirection(Side side, MinecartComponent minecart, Vector3f direction) {
+    private void setCornerDirection(Side side, MinecartComponent minecart, MotionState motionState, Vector3f direction) {
         switch (side) {
             case LEFT:
                 if (direction.x > 0) {
-                    minecart.angleSign = -1;
+                    motionState.yawSign = -1;
                     minecart.pathDirection.set(1f, 0, 1f);
                 } else if (direction.z < 0) {
-                    minecart.angleSign = 1;
+                    motionState.yawSign = 1;
                     minecart.pathDirection.set(-1f, 0, -1f);
                 } else if (direction.x < 0) {
                     minecart.pathDirection.set(-1f, 0, 0);
@@ -165,23 +161,23 @@ public class MoveDescriptor {
                 } else if (direction.z < 0) {
                     minecart.pathDirection.set(0, 0, -1f);
                 } else if (direction.x < 0) {
-                    minecart.angleSign = -1;
+                    motionState.yawSign = -1;
                     minecart.pathDirection.set(-1f, 0, -1f);
                 } else if (direction.z > 0) {
-                    minecart.angleSign = 1;
+                    motionState.yawSign = 1;
                     minecart.pathDirection.set(1f, 0, 1f);
                 }
                 break;
             case FRONT:
                 if (direction.x > 0) {
-                    minecart.angleSign = 1;
+                    motionState.yawSign = 1;
                     minecart.pathDirection.set(1f, 0, -1f);
                 } else if (direction.z < 0) {
                     minecart.pathDirection.set(0, 0, -1f);
                 } else if (direction.x < 0) {
                     minecart.pathDirection.set(0, 0, -1f);
                 } else if (direction.z > 0) {
-                    minecart.angleSign = -1;
+                    motionState.yawSign = -1;
                     minecart.pathDirection.set(-1f, 0, 1f);
                 }
                 break;
@@ -189,10 +185,10 @@ public class MoveDescriptor {
                 if (direction.x > 0) {
                     minecart.pathDirection.set(-1f, 0, 0);
                 } else if (direction.z < 0) {
-                    minecart.angleSign = -1;
+                    motionState.yawSign = -1;
                     minecart.pathDirection.set(1f, 0, -1f);
                 } else if (direction.x < 0) {
-                    minecart.angleSign = 1;
+                    motionState.yawSign = 1;
                     minecart.pathDirection.set(-1, 0, 1f);
                 } else if (direction.z > 0) {
                     minecart.pathDirection.set(0, 0, 1f);
@@ -223,24 +219,33 @@ public class MoveDescriptor {
 
         if ((minecartComponent.drive.lengthSquared() - velocity.lengthSquared()) > 0.1) {
             minecartComponent.drive.absolute();
+
             minecartComponent.drive.x *= Math.signum(velocity.x) * Math.abs(minecartComponent.pathDirection.x);
             minecartComponent.drive.z *= Math.signum(velocity.z) * Math.abs(minecartComponent.pathDirection.z);
-            velocity.interpolate(minecartComponent.drive, 0.2f);
+            velocity.interpolate(minecartComponent.drive, 0.5f);
         }
 
         if (slopeFactor != 0) {
-            velocity.y = slopeFactor*Math.abs(velocity.x!=0?velocity.x:velocity.z);
-//            logger.info("velocity" + velocity);
+            velocity.y = slopeFactor* Math.abs(minecartComponent.pathDirection.x !=0 ? velocity.x : velocity.z);
         }
 
     }
 
-    public void getPitchOnPath(MinecartComponent minecart, ConnectsToRailsComponent.RAILS blockType) {
+    public void getPitchOnPath(MinecartComponent minecart, Side side, ConnectsToRailsComponent.RAILS blockType) {
 
         minecart.pitch = 0;
 
         if (blockType.equals(ConnectsToRailsComponent.RAILS.SLOPE)) {
-            minecart.pitch = 45;
+            switch (side) {
+                case LEFT:
+                case BACK:
+                    minecart.pitch = 45;
+                    break;
+                case RIGHT:
+                case FRONT:
+                    minecart.pitch = -45;
+                    break;
+            }
         }
     }
 

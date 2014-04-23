@@ -35,12 +35,6 @@ public class MinecartComponent implements Component {
     @Replicate
     public List<EntityRef> vehicles = new ArrayList<EntityRef>();
 
-    @Replicate
-    public float angleSign;
-
-    @Replicate
-    public boolean positionCorrected;
-
     public enum Types { locomotive, minecart };
 
     @Replicate
@@ -50,28 +44,11 @@ public class MinecartComponent implements Component {
     public float pitch;
 
     @Replicate
-    public float targetYaw;
-
-    @Replicate
     public float yaw;
 
     @Replicate
     public Vector3f drive;
 
     @Replicate
-    public Vector3f prevPosition;
-
-    @Replicate
     public Vector3f pathDirection;
-
-    @Replicate
-    public Vector3f currentBlockPosition;
-
-    @Replicate
-    public Vector3f prevBlockPosition;
-
-    @Replicate
-    public PositionStatus currentPositionStatus = PositionStatus.ON_THE_AIR;
-
-    public static enum PositionStatus {ON_THE_AIR, ON_THE_GROUND, ON_THE_PATH, ON_THE_LIQUID};
 }
