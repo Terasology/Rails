@@ -173,6 +173,22 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                                 motionState,
                                 slopeFactor
                         );
+
+                        if ( motionState.prevBlockPosition != null ) {
+                            Vector3i prevBlockPostion = new Vector3i(motionState.prevBlockPosition);
+
+                            if (velocity.y > 0 && slopeFactor == 0) {
+                                Block prevblock = worldProvider.getBlock(prevBlockPostion);
+                                EntityRef prevBlockEntity = prevblock.getEntity();
+                                ConnectsToRailsComponent prevBlockRailsComponent = prevBlockEntity.getComponent(ConnectsToRailsComponent.class);
+
+                                if ( prevBlockRailsComponent != null &&  prevBlockRailsComponent.type.equals(ConnectsToRailsComponent.RAILS.SLOPE)) {
+                                    velocity.y *= -1;
+                                }
+
+                                logger.info("Get down!!! 1");
+                            }
+                        }
                         minecart.send(new ChangeVelocityEvent(velocity));
                     }
                 }
@@ -192,6 +208,23 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                         motionState,
                         slopeFactor
                 );
+
+
+                if ( motionState.prevBlockPosition != null ) {
+                    Vector3i prevBlockPostion = new Vector3i(motionState.prevBlockPosition);
+
+                    if (velocity.y > 0 && slopeFactor < 1) {
+                        Block prevblock = worldProvider.getBlock(prevBlockPostion);
+                        EntityRef prevBlockEntity = prevblock.getEntity();
+                        ConnectsToRailsComponent prevBlockRailsComponent = prevBlockEntity.getComponent(ConnectsToRailsComponent.class);
+
+                        if ( prevBlockRailsComponent != null &&  prevBlockRailsComponent.type.equals(ConnectsToRailsComponent.RAILS.SLOPE)) {
+                            velocity.y *= -1;
+                        }
+
+                        logger.info("Get down!!! 2");
+                    }
+                }
 
                 minecart.send(new ChangeVelocityEvent(velocity));
                 motionState.positionCorrected = false;

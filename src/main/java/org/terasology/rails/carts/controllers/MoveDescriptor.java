@@ -246,12 +246,12 @@ public class MoveDescriptor {
                 case LEFT:
                 case BACK:
                     minecart.pitch = 45 * motionState.pitchSign;
-                    logger.info("Yaw is " + minecart.yaw + "Side is " + side);
+                    //logger.info("Yaw is " + minecart.yaw + "Side is " + side);
                     break;
                 case RIGHT:
                 case FRONT:
                     minecart.pitch = -48 * motionState.pitchSign;
-                    logger.info("Yaw is " + minecart.yaw + "Side is " + side);
+                    //logger.info("Yaw is " + minecart.yaw + "Side is " + side);
                     break;
             }
         }
