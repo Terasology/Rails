@@ -147,7 +147,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             currentBlock = worldProvider.getBlock(blockPosition);
             blockEntity = currentBlock.getEntity();
             ConnectsToRailsComponent railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
-            if (slopeFactor == 0 && railsComponent!=null && railsComponent.type.equals(ConnectsToRailsComponent.RAILS.SLOPE)) {
+            if (slopeFactor == 0 && railsComponent!=null && railsComponent.type.equals(ConnectsToRailsComponent.RAILS.SLOPE) && motionState.prevBlockPosition != null) {
                 Vector3f distance = new Vector3f(blockPosition.x, blockPosition.y, blockPosition.z);
                 distance.sub(motionState.prevBlockPosition);
                 if (distance.y < 0) {
@@ -262,7 +262,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             }
 
             moveDescriptor.getYawOnPath(minecartComponent, side, motionState, distance);
-            moveDescriptor.getPitchOnPath(minecartComponent, side, railsComponent.type);
+            moveDescriptor.getPitchOnPath(minecartComponent, motionState, side, railsComponent.type);
 
             QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * minecartComponent.yaw, 0,  minecartComponent.pitch);
 

@@ -105,31 +105,37 @@ public class MoveDescriptor {
             case RIGHT:
                 if (minecart.yaw >= 360 || minecart.yaw < 45 && minecart.yaw > 0) {
                     minecart.yaw = 0;
+                    motionState.pitchSign = 1;
                 }
 
                 if (minecart.yaw >= 135 && minecart.yaw < 180 || minecart.yaw > 180 && minecart.yaw < 225) {
                     minecart.yaw = 180;
+                    motionState.pitchSign = -1;
                 }
 
                 if (minecart.yaw != 180 && minecart.yaw != 0) {
                     minecart.yaw = 0;
+                    motionState.pitchSign = 1;
                 }
+
                 break;
             case FRONT:
             case BACK:
                 if (minecart.yaw == 0 || minecart.yaw >= 45 && minecart.yaw < 90 || minecart.yaw > 90 && minecart.yaw < 135) {
                     minecart.yaw = 90;
+                    motionState.pitchSign = 1;
                     break;
                 }
 
                 if (minecart.yaw >= 225 && minecart.yaw < 270 || minecart.yaw > 270 && minecart.yaw < 315) {
                     minecart.yaw = 270;
+                    motionState.pitchSign = -1;
                 }
 
                 if (minecart.yaw != 90 && minecart.yaw != 270) {
                     minecart.yaw = 90;
+                    motionState.pitchSign = 1;
                 }
-
                 break;
         }
     }
@@ -231,7 +237,7 @@ public class MoveDescriptor {
 
     }
 
-    public void getPitchOnPath(MinecartComponent minecart, Side side, ConnectsToRailsComponent.RAILS blockType) {
+    public void getPitchOnPath(MinecartComponent minecart, MotionState motionState, Side side, ConnectsToRailsComponent.RAILS blockType) {
 
         minecart.pitch = 0;
 
@@ -239,11 +245,13 @@ public class MoveDescriptor {
             switch (side) {
                 case LEFT:
                 case BACK:
-                    minecart.pitch = 45;
+                    minecart.pitch = 45 * motionState.pitchSign;
+                    logger.info("Yaw is " + minecart.yaw);
                     break;
                 case RIGHT:
                 case FRONT:
-                    minecart.pitch = -45;
+                    minecart.pitch = -45 * motionState.pitchSign;
+                    logger.info("Yaw is " + minecart.yaw);
                     break;
             }
         }
