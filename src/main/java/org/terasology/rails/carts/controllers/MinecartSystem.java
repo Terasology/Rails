@@ -247,7 +247,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             ConnectsToRailsComponent railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
 
             motionState.positionCorrected = true;
-            position = fixPosition(minecartComponent, motionState, position, offsetCornerPoint);
+            position = setPositionOnTheRail(minecartComponent, motionState, position, offsetCornerPoint);
 
             Vector3f distance = new Vector3f(position);
             distance.sub(motionState.prevPosition);
@@ -264,7 +264,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             moveDescriptor.getYawOnPath(minecartComponent, side, motionState, distance);
             moveDescriptor.getPitchOnPath(minecartComponent, motionState, side, railsComponent.type);
 
-            QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * minecartComponent.yaw, 0,  minecartComponent.pitch);
+            QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * minecartComponent.yaw, 0,  TeraMath.DEG_TO_RAD * minecartComponent.pitch);
 
             motionState.prevPosition.set(position);
 
@@ -276,7 +276,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
     }
 
 
-    private Vector3f fixPosition(MinecartComponent minecartComponent, MotionState motionState, Vector3f position, Vector3f offsetCornerPoint) {
+    private Vector3f setPositionOnTheRail(MinecartComponent minecartComponent, MotionState motionState, Vector3f position, Vector3f offsetCornerPoint) {
         Vector3f fixedPosition = new Vector3f(position);
         if (minecartComponent.pathDirection.x == 0 || minecartComponent.pathDirection.z == 0) {
             if (minecartComponent.pathDirection.z != 0) {
