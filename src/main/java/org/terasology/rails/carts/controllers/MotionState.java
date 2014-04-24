@@ -19,11 +19,12 @@ import javax.vecmath.Vector3f;
 
 public class MotionState {
     public Vector3f prevPosition    = new Vector3f();
-    public Vector3f currentBlockPosition = null;
-    public Vector3f prevBlockPosition = null;
+    public Vector3f currentBlockPosition = new Vector3f();
+    public Vector3f prevBlockPosition = new Vector3f();
     public boolean positionCorrected = false;
     public int yawSign = 1;
     public int pitchSign = 1;
+    public boolean nextBlockIsSlope = false;
     public PositionStatus currentPositionStatus = PositionStatus.ON_THE_AIR;
     public static enum PositionStatus {ON_THE_AIR, ON_THE_GROUND, ON_THE_PATH, ON_THE_LIQUID};
 }

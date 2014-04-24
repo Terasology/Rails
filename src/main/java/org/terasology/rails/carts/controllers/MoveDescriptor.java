@@ -237,16 +237,40 @@ public class MoveDescriptor {
 
     }
 
-    public void getPitchOnPath(MinecartComponent minecart, MotionState motionState, Side side, ConnectsToRailsComponent.RAILS blockType) {
+    public void getPitchOnPath(MinecartComponent minecart, Vector3f position, MotionState motionState, Side side, ConnectsToRailsComponent.RAILS blockType) {
 
         minecart.pitch = 0;
 
-        if (blockType.equals(ConnectsToRailsComponent.RAILS.SLOPE)) {
+        if (blockType.equals(ConnectsToRailsComponent.RAILS.SLOPE) || motionState.nextBlockIsSlope) {
             switch (side) {
                 case LEFT:
                 case BACK:
                     minecart.pitch = 45 * motionState.pitchSign;
-                    //logger.info("Yaw is " + minecart.yaw + "Side is " + side);
+
+                    if (motionState.nextBlockIsSlope) {
+                        float targetY = motionState.currentBlockPosition.y + 0.5f;
+                        float sourceY = position.y - 0.5f;
+
+                        logger.info("targetY origin " + targetY);
+                        logger.info("sourceY " + sourceY);
+
+                        targetY = targetY - sourceY;
+                        logger.info("targetY before " + targetY);
+                        if ( targetY > 1 ) {
+                            targetY = 1;
+                        }
+                        float percent = 3.5f*(1 - targetY);
+
+                        if (percent > 1) {
+                            percent = 1;
+                        }
+                        logger.info("percent " + percent);
+                        minecart.pitch = minecart.pitch*percent;
+                        if (minecart.pitch > 45 || minecart.pitch < -45) {
+                            minecart.pitch = 45*Math.signum(minecart.pitch);
+                        }
+                    }
+                  // logger.info("Yaw is " + minecart.yaw + "Side is " + side);
                     break;
                 case RIGHT:
                 case FRONT:

@@ -136,6 +136,8 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                 ConnectsToRailsComponent railsComponent = possibleSlopeBlockEntity.getComponent(ConnectsToRailsComponent.class);
                 if (railsComponent!=null && railsComponent.type == ConnectsToRailsComponent.RAILS.SLOPE) {
                     slopeFactor = 1;
+                  //  logger.info("nextBlockIsSlope is true");
+                    motionState.nextBlockIsSlope = true;
                 }
             }
         }
@@ -147,13 +149,15 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             currentBlock = worldProvider.getBlock(blockPosition);
             blockEntity = currentBlock.getEntity();
             ConnectsToRailsComponent railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
-            if (slopeFactor == 0 && railsComponent!=null && railsComponent.type.equals(ConnectsToRailsComponent.RAILS.SLOPE) && motionState.prevBlockPosition != null) {
+            if (railsComponent!=null && railsComponent.type.equals(ConnectsToRailsComponent.RAILS.SLOPE)) {
                 Vector3f distance = new Vector3f(blockPosition.x, blockPosition.y, blockPosition.z);
                 distance.sub(motionState.prevBlockPosition);
                 if (distance.y < 0) {
                     slopeFactor = -1;
                 } else {
                     slopeFactor = 1;
+                   // logger.info("nextBlockIsSlope is false");
+                    motionState.nextBlockIsSlope = false;
                 }
             }
             if (isSameBlock(blockPosition, motionState.currentBlockPosition)) {
@@ -174,19 +178,16 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                                 slopeFactor
                         );
 
-                        if ( motionState.prevBlockPosition != null ) {
-                            Vector3i prevBlockPostion = new Vector3i(motionState.prevBlockPosition);
+                        Vector3i prevBlockPosition = new Vector3i(motionState.prevBlockPosition);
 
-                            if (velocity.y > 0 && slopeFactor == 0) {
-                                Block prevblock = worldProvider.getBlock(prevBlockPostion);
-                                EntityRef prevBlockEntity = prevblock.getEntity();
-                                ConnectsToRailsComponent prevBlockRailsComponent = prevBlockEntity.getComponent(ConnectsToRailsComponent.class);
+                        if (velocity.y > 0 && slopeFactor == 0) {
+                            Block prevblock = worldProvider.getBlock(prevBlockPosition);
+                            EntityRef prevBlockEntity = prevblock.getEntity();
+                            ConnectsToRailsComponent prevBlockRailsComponent = prevBlockEntity.getComponent(ConnectsToRailsComponent.class);
 
-                                if ( prevBlockRailsComponent != null &&  prevBlockRailsComponent.type.equals(ConnectsToRailsComponent.RAILS.SLOPE)) {
-                                    velocity.y *= -1;
-                                }
-
-                                logger.info("Get down!!! 1");
+                            if ( prevBlockRailsComponent != null &&  prevBlockRailsComponent.type == ConnectsToRailsComponent.RAILS.SLOPE) {
+                                velocity.y *= -1;
+                               // logger.info("Get down!!! 1");
                             }
                         }
                         minecart.send(new ChangeVelocityEvent(velocity));
@@ -196,10 +197,10 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                 return;
             }
 
+            motionState.prevBlockPosition = motionState.currentBlockPosition;
+            motionState.currentBlockPosition = blockPosition.toVector3f();
             if (blockEntity != null && blockEntity.hasComponent(ConnectsToRailsComponent.class)) {
                 motionState.currentPositionStatus = MotionState.PositionStatus.ON_THE_PATH;
-                motionState.prevBlockPosition = motionState.currentBlockPosition;
-                motionState.currentBlockPosition = blockPosition.toVector3f();
                 moveDescriptor.calculateDirection(
                         velocity,
                         railsComponent.type,
@@ -210,7 +211,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                 );
 
 
-                if ( motionState.prevBlockPosition != null ) {
+                if ( motionState.prevBlockPosition.length() > 0 ) {
                     Vector3i prevBlockPostion = new Vector3i(motionState.prevBlockPosition);
 
                     if (velocity.y > 0 && slopeFactor < 1) {
@@ -218,11 +219,10 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                         EntityRef prevBlockEntity = prevblock.getEntity();
                         ConnectsToRailsComponent prevBlockRailsComponent = prevBlockEntity.getComponent(ConnectsToRailsComponent.class);
 
-                        if ( prevBlockRailsComponent != null &&  prevBlockRailsComponent.type.equals(ConnectsToRailsComponent.RAILS.SLOPE)) {
+                        if ( prevBlockRailsComponent != null &&  prevBlockRailsComponent.type == ConnectsToRailsComponent.RAILS.SLOPE) {
                             velocity.y *= -1;
+                          //  logger.info("Get down!!! 2");
                         }
-
-                        logger.info("Get down!!! 2");
                     }
                 }
 
@@ -230,16 +230,12 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                 motionState.positionCorrected = false;
                 angularFactor.set(0f, 0f, 0f);
             } else {
-                motionState.currentBlockPosition = null;
-                motionState.prevBlockPosition = null;
                 minecartComponent.pathDirection.set(1f, 1f, 1f);
                 angularFactor.set(minecartComponent.pathDirection);
                 motionState.currentPositionStatus = MotionState.PositionStatus.ON_THE_GROUND;
                 minecart.saveComponent(rigidBody);
             }
         } else {
-            motionState.currentBlockPosition = null;
-            motionState.prevBlockPosition = null;
             minecartComponent.pathDirection.set(1f, 1f, 1f);
             angularFactor.set(minecartComponent.pathDirection);
             motionState.currentPositionStatus = MotionState.PositionStatus.ON_THE_AIR;
@@ -295,7 +291,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             }
 
             moveDescriptor.getYawOnPath(minecartComponent, side, motionState, distance);
-            moveDescriptor.getPitchOnPath(minecartComponent, motionState, side, railsComponent.type);
+            moveDescriptor.getPitchOnPath(minecartComponent, position, motionState, side, railsComponent.type);
 
             QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * minecartComponent.yaw, 0,  TeraMath.DEG_TO_RAD * minecartComponent.pitch);
 
