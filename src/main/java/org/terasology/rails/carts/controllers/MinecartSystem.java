@@ -136,7 +136,6 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                 ConnectsToRailsComponent railsComponent = possibleSlopeBlockEntity.getComponent(ConnectsToRailsComponent.class);
                 if (railsComponent!=null && railsComponent.type == ConnectsToRailsComponent.RAILS.SLOPE) {
                     slopeFactor = 1;
-                  //  logger.info("nextBlockIsSlope is true");
                     motionState.nextBlockIsSlope = true;
                 }
             }
@@ -199,10 +198,6 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             motionState.currentBlockPosition = blockPosition.toVector3f();
             if (blockEntity != null && blockEntity.hasComponent(ConnectsToRailsComponent.class)) {
                 motionState.currentPositionStatus = MotionState.PositionStatus.ON_THE_PATH;
-
-                if (moveDescriptor.isCorner(railsComponent.type)) {
-                    logger.info("currentBlock.getDirection() " + currentBlock.getDirection());
-                }
 
                 moveDescriptor.calculateDirection(
                         velocity,
@@ -281,18 +276,9 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             }
 
             Vector3f offsetCornerPoint = moveDescriptor.getRotationOffsetPoint(side);
+
             motionState.positionCorrected = true;
-
-            if (railsComponent.type == ConnectsToRailsComponent.RAILS.TEE) {
-                logger.info("offset " + offsetCornerPoint);
-                logger.info("position before " + position);
-            }
-
             position = setPositionOnTheRail(minecartComponent, motionState, position, offsetCornerPoint);
-
-            if (railsComponent.type == ConnectsToRailsComponent.RAILS.TEE) {
-                logger.info("position after " + position);
-            }
 
             Vector3f distance = new Vector3f(position);
             distance.sub(motionState.prevPosition);
@@ -302,9 +288,10 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             moveDescriptor.getYawOnPath(minecartComponent, side, motionState, distance);
             moveDescriptor.getPitchOnPath(minecartComponent, position, motionState, side, railsComponent.type);
 
-            QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * minecartComponent.yaw, 0,  TeraMath.DEG_TO_RAD * minecartComponent.pitch);
+            QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * minecartComponent.yaw, 0, TeraMath.DEG_TO_RAD * minecartComponent.pitch);
 
             motionState.prevPosition.set(position);
+            rotateVehicles(distance, minecartComponent);
 
             location.setWorldRotation(yawPitch);
             location.setWorldPosition(position);
@@ -313,6 +300,22 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
         }
     }
 
+    private void rotateVehicles(Vector3f distanceMoved, MinecartComponent minecartComponent) {
+        for(EntityRef vehicle : minecartComponent.vehicles) {
+            LocationComponent locationComponent = vehicle.getComponent(LocationComponent.class);
+            if (locationComponent == null) {
+                continue;
+            }
+            Quat4f rotate = locationComponent.getWorldRotation();
+            float angle = QuaternionUtil.getAngle(rotate);
+            if (angle>=TeraMath.PI*2) {
+                angle = 0;
+            }
+            QuaternionUtil.setRotation(rotate, new Vector3f(0,0,1), angle + 2*TeraMath.DEG_TO_RAD);
+            locationComponent.setLocalRotation(rotate);
+            vehicle.saveComponent(locationComponent);
+        }
+    }
 
     private Vector3f setPositionOnTheRail(MinecartComponent minecartComponent, MotionState motionState, Vector3f position, Vector3f offsetCornerPoint) {
         Vector3f fixedPosition = new Vector3f(position);
