@@ -137,10 +137,16 @@ public class MinecartAction extends BaseComponentSystem {
         }
 
         for (EntityRef vehicle : minecart.vehicles) {
-            Location.removeChild(entity, vehicle);
+            LocationComponent vehicleLoc = vehicle.getComponent(LocationComponent.class);
+            /*EntityRef damper = vehicleLoc.getParent();
+            Location.removeChild(damper, vehicle);
+            Location.removeChild(entity, damper);*/
             if (vehicle != null && !vehicle.equals(EntityRef.NULL)) {
                 vehicle.destroy();
             }
+            /*if (damper != null && !damper.equals(EntityRef.NULL)) {
+                damper.destroy();
+            } */
         }
 
         entity.saveComponent(minecart);

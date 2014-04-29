@@ -117,7 +117,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
         Vector3i blockPosition = null;
         EntityRef blockEntity = null;
 
-        if (minecartComponent.pathDirection!=null) {
+        if (minecartComponent.pathDirection != null) {
 
             Vector3f direction = new Vector3f(minecartComponent.pathDirection);
 
@@ -127,28 +127,28 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             }
 
             direction.y = 0f;
-            hit =  physics.rayTrace(position, direction, 1.2f, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
+            hit = physics.rayTrace(position, direction, 1.2f, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
 
-            blockPosition  = hit.getBlockPosition();
+            blockPosition = hit.getBlockPosition();
             if (blockPosition != null) {
                 Block possibleSlopeBlock = worldProvider.getBlock(blockPosition);
                 EntityRef possibleSlopeBlockEntity = possibleSlopeBlock.getEntity();
                 ConnectsToRailsComponent railsComponent = possibleSlopeBlockEntity.getComponent(ConnectsToRailsComponent.class);
-                if (railsComponent!=null && railsComponent.type == ConnectsToRailsComponent.RAILS.SLOPE) {
+                if (railsComponent != null && railsComponent.type == ConnectsToRailsComponent.RAILS.SLOPE) {
                     slopeFactor = 1;
                     motionState.nextBlockIsSlope = true;
                 }
             }
         }
 
-        hit =  physics.rayTrace(position, new Vector3f(0,-1f,0), 1.3f, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
-        blockPosition  = hit.getBlockPosition();
+        hit = physics.rayTrace(position, new Vector3f(0, -1f, 0), 1.3f, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
+        blockPosition = hit.getBlockPosition();
 
         if (blockPosition != null) {
             currentBlock = worldProvider.getBlock(blockPosition);
             blockEntity = currentBlock.getEntity();
             ConnectsToRailsComponent railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
-            if (railsComponent!=null && railsComponent.type.equals(ConnectsToRailsComponent.RAILS.SLOPE)) {
+            if (railsComponent != null && railsComponent.type.equals(ConnectsToRailsComponent.RAILS.SLOPE)) {
                 Vector3f distance = new Vector3f(blockPosition.x, blockPosition.y, blockPosition.z);
                 distance.sub(motionState.prevBlockPosition);
                 if (distance.y < 0) {
@@ -183,7 +183,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                             EntityRef prevBlockEntity = prevblock.getEntity();
                             ConnectsToRailsComponent prevBlockRailsComponent = prevBlockEntity.getComponent(ConnectsToRailsComponent.class);
 
-                            if ( prevBlockRailsComponent != null &&  prevBlockRailsComponent.type == ConnectsToRailsComponent.RAILS.SLOPE) {
+                            if (prevBlockRailsComponent != null && prevBlockRailsComponent.type == ConnectsToRailsComponent.RAILS.SLOPE) {
                                 velocity.y *= -1;
                             }
                         }
@@ -208,7 +208,11 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                         slopeFactor
                 );
 
-                if ( motionState.prevBlockPosition.length() > 0 ) {
+                if (moveDescriptor.isCorner(railsComponent.type)) {
+                    logger.info("side:" + currentBlock.getDirection());
+                }
+
+                if (motionState.prevBlockPosition.length() > 0) {
                     Vector3i prevBlockPostion = new Vector3i(motionState.prevBlockPosition);
 
                     if (velocity.y > 0 && slopeFactor < 1) {
@@ -216,7 +220,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                         EntityRef prevBlockEntity = prevblock.getEntity();
                         ConnectsToRailsComponent prevBlockRailsComponent = prevBlockEntity.getComponent(ConnectsToRailsComponent.class);
 
-                        if ( prevBlockRailsComponent != null &&  prevBlockRailsComponent.type == ConnectsToRailsComponent.RAILS.SLOPE) {
+                        if (prevBlockRailsComponent != null && prevBlockRailsComponent.type == ConnectsToRailsComponent.RAILS.SLOPE) {
                             velocity.y *= -1;
                         }
                     }
@@ -247,7 +251,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
     }
 
     private boolean isSameBlock(Vector3i block, Vector3f anotherBlock) {
-        if (block == null || anotherBlock==null) {
+        if (block == null || anotherBlock == null) {
             return false;
         }
         return block.x == anotherBlock.x && block.y == anotherBlock.y && block.z == anotherBlock.z;
@@ -262,12 +266,12 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             return;
         }
 
+
         if (minecartComponent.isCreated && motionState.currentPositionStatus == MotionState.PositionStatus.ON_THE_PATH) {
-            Vector3f position = location.getWorldPosition();
             Block currentBlock = worldProvider.getBlock(motionState.currentBlockPosition);
             EntityRef blockEntity = currentBlock.getEntity();
             ConnectsToRailsComponent railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
-
+            Vector3f position = location.getWorldPosition();
             Side side;
             if (railsComponent.type == ConnectsToRailsComponent.RAILS.INTERSECTION) {
                 side = moveDescriptor.correctSide(railsComponent.type, (minecartComponent.pathDirection.x != 0 ? Side.LEFT : Side.FRONT));
@@ -276,6 +280,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             }
 
             Vector3f offsetCornerPoint = moveDescriptor.getRotationOffsetPoint(side);
+
 
             motionState.positionCorrected = true;
             position = setPositionOnTheRail(minecartComponent, motionState, position, offsetCornerPoint);
@@ -291,27 +296,37 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * minecartComponent.yaw, 0, TeraMath.DEG_TO_RAD * minecartComponent.pitch);
 
             motionState.prevPosition.set(position);
-            rotateVehicles(distance, minecartComponent);
 
-            location.setWorldRotation(yawPitch);
             location.setWorldPosition(position);
+            location.setWorldRotation(yawPitch);
+
             entity.saveComponent(minecartComponent);
             entity.saveComponent(location);
         }
+        RigidBodyComponent rb = entity.getComponent(RigidBodyComponent.class);
+        rotateVehicles(rb.velocity, minecartComponent);
+
     }
 
-    private void rotateVehicles(Vector3f distanceMoved, MinecartComponent minecartComponent) {
-        for(EntityRef vehicle : minecartComponent.vehicles) {
+    private void rotateVehicles(Vector3f velocity, MinecartComponent minecartComponent) {
+        velocity.y = 0;
+        if (velocity.length() == 0) {
+            return;
+        }
+        for (EntityRef vehicle : minecartComponent.vehicles) {
             LocationComponent locationComponent = vehicle.getComponent(LocationComponent.class);
             if (locationComponent == null) {
                 continue;
             }
-            Quat4f rotate = locationComponent.getWorldRotation();
-            float angle = QuaternionUtil.getAngle(rotate);
-            if (angle>=TeraMath.PI*2) {
+            Quat4f rotate = new Quat4f(0, 0, 0, 1);
+            float angleSign = velocity.x >= 0 && velocity.z >= 0 ? 1 : -1;
+            float angle = angleSign*velocity.length() + QuaternionUtil.getAngle(locationComponent.getLocalRotation());
+            if (angle >= TeraMath.PI * 2 || angle < 0) {
                 angle = 0;
             }
-            QuaternionUtil.setRotation(rotate, new Vector3f(0,0,1), angle + 2*TeraMath.DEG_TO_RAD);
+            //logger.info("angle " + angle);
+            //logger.info("distanceMoved.length() " + distanceMoved.length());
+            QuaternionUtil.setRotation(rotate, new Vector3f(1, 0, 0), angle);
             locationComponent.setLocalRotation(rotate);
             vehicle.saveComponent(locationComponent);
         }

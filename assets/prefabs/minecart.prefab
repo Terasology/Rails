@@ -8,7 +8,7 @@
         "scale": 0.32
     },
     "Mesh": {
-        "mesh": "Rails:minecart",
+        "mesh": "Rails:minecart_aligned",
         "material": "Rails:minecart"
     },
     "RigidBody": {
@@ -23,7 +23,7 @@
         ]
     },
     "HullShape": {
-         "sourceMesh" : "Rails:minecart-bounds"
+         "sourceMesh" : "Rails:minecart_bounds_aligned"
     },
 
     "Health": {

@@ -83,6 +83,9 @@ public class MoveDescriptor {
         boolean isCorner = minecart.pathDirection.x!=0 && minecart.pathDirection.z!=0;
 
         if (isCorner && distanceMoved != null) {
+            if (minecart.prevYaw == -1) {
+                minecart.prevYaw = minecart.yaw;
+            }
             distanceMoved.y = 0;
             float percent = distanceMoved.length() / 0.007f;
             if (percent > 100) {
@@ -91,18 +94,23 @@ public class MoveDescriptor {
                 minecart.yaw += motionState.yawSign * 90f * percent / 100;
             }
 
+            /*if ((motionState.yawSign > 0 && minecart.yaw > minecart.prevYaw + motionState.yawSign*90f) || (motionState.yawSign < 0 && minecart.yaw < minecart.prevYaw + motionState.yawSign*90f)) {
+                minecart.yaw = minecart.prevYaw + motionState.yawSign*90f;
+            }                   */
+
             if (minecart.yaw < 0) {
                 minecart.yaw = 360 + minecart.yaw;
             } else if (minecart.yaw > 360) {
                 minecart.yaw = minecart.yaw - 360;
             }
+            logger.info("Yaw on the corner: " + minecart.yaw);
             return;
         }
 
-
+        minecart.prevYaw = -1;
         switch (side) {
-            case LEFT:
-            case RIGHT:
+            case FRONT:
+            case BACK:
                 if (minecart.yaw >= 360 || minecart.yaw < 45 && minecart.yaw > 0) {
                     minecart.yaw = 0;
                     motionState.pitchSign = 1;
@@ -119,8 +127,8 @@ public class MoveDescriptor {
                 }
 
                 break;
-            case FRONT:
-            case BACK:
+            case LEFT:
+            case RIGHT:
                 if (minecart.yaw == 0 || minecart.yaw >= 45 && minecart.yaw < 90 || minecart.yaw > 90 && minecart.yaw < 135) {
                     minecart.yaw = 90;
                     motionState.pitchSign = 1;

@@ -16,6 +16,7 @@
 package org.terasology.rails.carts.components;
 
 
+import com.google.common.collect.Lists;
 import org.terasology.entitySystem.Component;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.network.Replicate;
@@ -33,7 +34,7 @@ public class MinecartComponent implements Component {
     public static Types type = Types.minecart;
 
     @Replicate
-    public List<EntityRef> vehicles = new ArrayList<EntityRef>();
+    public List<EntityRef> vehicles = Lists.newArrayList();
 
     public enum Types { locomotive, minecart };
 
@@ -42,6 +43,9 @@ public class MinecartComponent implements Component {
 
     @Replicate
     public float pitch;
+
+    @Replicate
+    public float prevYaw;
 
     @Replicate
     public float yaw;

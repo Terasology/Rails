@@ -46,8 +46,9 @@ public class MinecartFactory {
             minecart.isCreated = true;
             minecart.drive = new Vector3f();
             minecart.pathDirection = new Vector3f();
-            attachVehicle(entity, minecart, new Vector3f(1.4f, -1.2f, 0f));
-            attachVehicle(entity, minecart, new Vector3f(2.4f, -1.2f, 0f));
+            attachVehicle(entity, minecart, new Vector3f(-0.125f, -1.5f, 0.55f));
+            attachVehicle(entity, minecart, new Vector3f(-0.125f, -1.5f, -0.55f));
+            //attachVehicle(entity, minecart, new Vector3f()/*new Vector3f(2.4f, -1.2f, 0f)*/);
 
             entity.saveComponent(minecart);
         }
@@ -56,13 +57,9 @@ public class MinecartFactory {
     }
 
     private void attachVehicle(EntityRef minecartEntity, MinecartComponent minecart, Vector3f position) {
-        EntityRef entity = entityManager.create("rails:vehicle");
-        LocationComponent locationVehicle = entity.getComponent(LocationComponent.class);
-        Location.attachChild(minecartEntity, entity);
-        locationVehicle.setLocalRotation(Rotation.rotate(Yaw.CLOCKWISE_90).getQuat4f());
-        locationVehicle.setLocalPosition(position);
-        entity.saveComponent(locationVehicle);
-        minecart.vehicles.add(entity);
+        EntityRef vehicle = entityManager.create("rails:vehicle");
+        Location.attachChild(minecartEntity, vehicle, position, new Quat4f());
+        minecart.vehicles.add(vehicle);
     }
 
     public void setEntityManager(EntityManager entityManager) {
