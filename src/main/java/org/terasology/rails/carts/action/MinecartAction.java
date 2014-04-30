@@ -187,7 +187,7 @@ public class MinecartAction extends BaseComponentSystem {
             //    RigidBodyComponent minecartRigidBody = minecartEntity.getComponent(RigidBodyComponent.class);
            //     minecartRigidBody.collidesWith.remove(StandardCollisionGroup.CHARACTER);
            //     minecartRigidBody.collidesWith.remove(StandardCollisionGroup.DEFAULT);
-                minecartComponent.drive.set(1f, 0, 1f);
+                minecartComponent.drive.set(5f, 0, 5f);
                 minecartEntity.saveComponent(minecartComponent);
            //     minecartEntity.saveComponent(minecartRigidBody);
             } else {

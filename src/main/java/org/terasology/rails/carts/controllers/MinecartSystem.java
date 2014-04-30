@@ -208,10 +208,6 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                         slopeFactor
                 );
 
-                if (moveDescriptor.isCorner(railsComponent.type)) {
-                    logger.info("side:" + currentBlock.getDirection());
-                }
-
                 if (motionState.prevBlockPosition.length() > 0) {
                     Vector3i prevBlockPostion = new Vector3i(motionState.prevBlockPosition);
 
@@ -279,11 +275,8 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                 side = moveDescriptor.correctSide(railsComponent.type, currentBlock.getDirection());
             }
 
-            Vector3f offsetCornerPoint = moveDescriptor.getRotationOffsetPoint(side);
-
-
             motionState.positionCorrected = true;
-            position = setPositionOnTheRail(minecartComponent, motionState, position, offsetCornerPoint);
+            position = setPositionOnTheRail(minecartComponent, motionState, position, side);
 
             Vector3f distance = new Vector3f(position);
             distance.sub(motionState.prevPosition);
@@ -332,7 +325,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
         }
     }
 
-    private Vector3f setPositionOnTheRail(MinecartComponent minecartComponent, MotionState motionState, Vector3f position, Vector3f offsetCornerPoint) {
+    private Vector3f setPositionOnTheRail(MinecartComponent minecartComponent, MotionState motionState, Vector3f position, Side side) {
         Vector3f fixedPosition = new Vector3f(position);
         if (minecartComponent.pathDirection.x == 0 || minecartComponent.pathDirection.z == 0) {
             if (minecartComponent.pathDirection.z != 0) {
@@ -341,6 +334,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                 fixedPosition.z = motionState.currentBlockPosition.z;
             }
         } else {
+            Vector3f offsetCornerPoint = moveDescriptor.getRotationOffsetPoint(side);
             Vector3f revertDirection = new Vector3f(minecartComponent.pathDirection);
             revertDirection.negate();
             Vector3f startPosition = getStartCornerPosition(motionState.currentBlockPosition, offsetCornerPoint, revertDirection);
@@ -351,17 +345,24 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             revertDirection.negate();
 
             Vector3f newPos = new Vector3f(startPosition);
-            float pastLength = lastMinecartDirection.lengthSquared();
+            float pastLength = lastMinecartDirection.length();
 
-            if (pastLength >= 0.707f) {
-                pastLength = 0.6f;
+            if (pastLength >= 0.45f) {
+                pastLength = 0.45f;
             }
             revertDirection.scale(pastLength);
             newPos.add(revertDirection);
             fixedPosition.x = newPos.x;
             fixedPosition.z = newPos.z;
-        }
 
+            if ((minecartComponent.pathDirection.x > 0 && fixedPosition.x > motionState.currentBlockPosition.x) || (minecartComponent.pathDirection.x < 0 && fixedPosition.x < motionState.currentBlockPosition.x)) {
+                fixedPosition.x = motionState.currentBlockPosition.x;
+            }else if ((minecartComponent.pathDirection.z > 0 && fixedPosition.z > motionState.currentBlockPosition.z) || (minecartComponent.pathDirection.z < 0 && fixedPosition.z < motionState.currentBlockPosition.z)) {
+                fixedPosition.z = motionState.currentBlockPosition.z;
+            }
+
+            //logger.info("side: " + side + " pastLength: " + pastLength + " offsetCornerPoint:" + offsetCornerPoint +  " start position: " + startPosition +  " fixedPosition: " + fixedPosition + " position: " + position + " motionState.currentBlockPosition: " + motionState.currentBlockPosition);
+        }
         return fixedPosition;
     }
 }
