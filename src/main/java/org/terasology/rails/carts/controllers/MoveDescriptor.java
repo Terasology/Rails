@@ -94,17 +94,19 @@ public class MoveDescriptor {
     public void getYawOnPath(MinecartComponent minecart, Side side, MotionState motionState, ConnectsToRailsComponent.RAILS type, Vector3f distanceMoved) {
 
         if (isCorner(type) && distanceMoved != null) {
+            logger.info("--------------------------------------------");
+            logger.info("distanceMoved: " + distanceMoved);
             if (minecart.prevYaw == -1) {
                 minecart.prevYaw = minecart.yaw;
             }
             distanceMoved.y = 0;
+            logger.info("distanceMoved.length(): " + distanceMoved.length());
             float percent = distanceMoved.length() / 0.01f;
-            if (percent > 100) {
-                minecart.yaw += motionState.yawSign * 90f;
-            } else {
-                minecart.yaw += motionState.yawSign * 90f * percent / 100;
-            }
+            //logger.info("percent: " + percent);
 
+            //logger.info("BEFORE: " + minecart.yaw);
+            minecart.yaw += motionState.yawSign * 90f * percent / 100;
+            //logger.info("AFTER: " + minecart.yaw);
             if ((motionState.yawSign > 0 && minecart.yaw > minecart.prevYaw + 90f) || (motionState.yawSign < 0 && minecart.yaw < minecart.prevYaw-90f)) {
                 minecart.yaw = minecart.prevYaw + motionState.yawSign*90f;
             }
@@ -115,6 +117,7 @@ public class MoveDescriptor {
                 minecart.yaw = minecart.yaw - 360;
             }
             //logger.info("Yaw on the corner: " + minecart.yaw);
+            //logger.info("--------------------------------------------");
             return;
         }
 
@@ -166,40 +169,48 @@ public class MoveDescriptor {
     }
 
     private void setCornerDirection(Side side, MinecartComponent minecart, MotionState motionState, Vector3f direction, Vector3f position) {
-        motionState.yawSign = 0;
         boolean rotate = false;
+        boolean checkBouds = false;
         switch (side) {
             case LEFT:
                 if (direction.x > 0) {
                     motionState.yawSign = -1;
+                    checkBouds = true;
                 } else if (direction.z < 0) {
                     motionState.yawSign = 1;
+                    checkBouds = true;
                 }
                 break;
             case RIGHT:
                 if (direction.x < 0) {
                     motionState.yawSign = -1;
+                    checkBouds = true;
                 } else if (direction.z > 0) {
                     motionState.yawSign = 1;
+                    checkBouds = true;
                 }
                 break;
             case FRONT:
                 if (direction.x > 0) {
                     motionState.yawSign = 1;
+                    checkBouds = true;
                 } else if (direction.z > 0) {
                     motionState.yawSign = -1;
+                    checkBouds = true;
                 }
                 break;
             case BACK:
                 if (direction.z < 0) {
                     motionState.yawSign = -1;
+                    checkBouds = true;
                 } else if (direction.x < 0) {
                     motionState.yawSign = 1;
+                    checkBouds = true;
                 }
                 break;
         }
 
-        if (motionState.yawSign != 0) {
+        if (checkBouds) {
             if (direction.x != 0) {
                 if (direction.x > 0 && motionState.currentBlockPosition.x  < position.x) {
                     rotate = true;
@@ -256,16 +267,8 @@ public class MoveDescriptor {
                 minecartComponent.drive.x = minecartComponent.drive.z;
             }
             minecartComponent.drive.absolute();
-
-            logger.info("1.1: Try to set drive: " + minecartComponent.drive);
-            logger.info("1.2: Try to set velocity: " + velocity);
-            logger.info("1.3: Try to set pathDirection: " + minecartComponent.pathDirection);
-
             minecartComponent.drive.x *= Math.signum(velocity.x) * minecartComponent.pathDirection.x;
             minecartComponent.drive.z *= Math.signum(velocity.z) * minecartComponent.pathDirection.z;
-
-            logger.info("2: Try to set drive: " + minecartComponent.drive);
-
             velocity.interpolate(minecartComponent.drive, 0.5f);
         }
 
@@ -318,7 +321,7 @@ public class MoveDescriptor {
                     minecart.pitch = 45*Math.signum(minecart.pitch);
                 }
             }
-            logger.info("yaw: " + minecart.yaw);
+            //logger.info("yaw: " + minecart.yaw);
         }
     }
 

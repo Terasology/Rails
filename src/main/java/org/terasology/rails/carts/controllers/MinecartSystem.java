@@ -272,9 +272,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
 
             Vector3f distance = new Vector3f(position);
             distance.sub(motionState.prevPosition);
-
             Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
-
             moveDescriptor.getYawOnPath(minecartComponent, side, motionState, railsComponent.type, distance);
             moveDescriptor.getPitchOnPath(minecartComponent, position, motionState, side, railsComponent.type);
 

@@ -23,16 +23,13 @@ import org.terasology.entitySystem.entity.lifecycleEvents.BeforeDeactivateCompon
 import org.terasology.entitySystem.event.EventPriority;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
-import org.terasology.entitySystem.systems.ComponentSystem;
 import org.terasology.logic.characters.CharacterComponent;
 import org.terasology.logic.characters.MovementMode;
 import org.terasology.logic.characters.events.SetMovementModeEvent;
 import org.terasology.logic.inventory.action.GiveItemAction;
 import org.terasology.logic.location.Location;
-import org.terasology.physics.CollisionGroup;
 import org.terasology.physics.StandardCollisionGroup;
 import org.terasology.physics.components.RigidBodyComponent;
-import org.terasology.physics.events.ChangeVelocityEvent;
 import org.terasology.physics.events.CollideEvent;
 import org.terasology.physics.events.ForceEvent;
 import org.terasology.physics.events.ImpulseEvent;
@@ -47,11 +44,9 @@ import org.terasology.logic.inventory.ItemComponent;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.logic.players.LocalPlayer;
 import org.terasology.logic.players.event.OnPlayerSpawnedEvent;
-import org.terasology.math.Side;
 import org.terasology.math.Vector3i;
 import org.terasology.rails.carts.components.MinecartComponent;
 import org.terasology.rails.carts.controllers.MinecartFactory;
-import org.terasology.rendering.logic.MeshComponent;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.BlockComponent;
 import org.terasology.world.block.BlockManager;
@@ -68,15 +63,12 @@ public class MinecartAction extends BaseComponentSystem {
     private WorldProvider worldProvider;
     @In
     private InventoryManager inventoryManager;
-
-    private MinecartFactory minecartFactory;
-
     @In
     private BlockManager blockManager;
-
     @In
     private LocalPlayer localPlayer;
 
+    private MinecartFactory minecartFactory;
     private final Logger logger = LoggerFactory.getLogger(MinecartAction.class);
 
     @Override
@@ -118,10 +110,8 @@ public class MinecartAction extends BaseComponentSystem {
     @ReceiveEvent
     public void onPlayerSpawn(OnPlayerSpawnedEvent event, EntityRef player, InventoryComponent inventory) {
         BlockItemFactory blockFactory = new BlockItemFactory(entityManager);
-        GiveItemAction action = new GiveItemAction(localPlayer.getCharacterEntity(), entityManager.create("rails:minecart"));
-        player.send(new GiveItemAction(EntityRef.NULL, blockFactory.newInstance(blockManager.getBlockFamily("rails:Rails"), 99)));
-        player.send(new GiveItemAction(EntityRef.NULL, blockFactory.newInstance(blockManager.getBlockFamily("sand"), 99)));
-        localPlayer.getCharacterEntity().send(action);
+        inventoryManager.giveItem(player,player,entityManager.create("rails:minecart"));
+        inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("rails:Rails"), 99));
     }
 
     @ReceiveEvent(components = {MinecartComponent.class, LocationComponent.class}, priority = EventPriority.PRIORITY_HIGH)
@@ -136,16 +126,9 @@ public class MinecartAction extends BaseComponentSystem {
         }
 
         for (EntityRef vehicle : minecart.vehicles) {
-            LocationComponent vehicleLoc = vehicle.getComponent(LocationComponent.class);
-            /*EntityRef damper = vehicleLoc.getParent();
-            Location.removeChild(damper, vehicle);
-            Location.removeChild(entity, damper);*/
             if (vehicle != null && !vehicle.equals(EntityRef.NULL)) {
                 vehicle.destroy();
             }
-            /*if (damper != null && !damper.equals(EntityRef.NULL)) {
-                damper.destroy();
-            } */
         }
 
         entity.saveComponent(minecart);
@@ -154,12 +137,9 @@ public class MinecartAction extends BaseComponentSystem {
     @ReceiveEvent(components = {MinecartComponent.class, ItemComponent.class})
     public void onPlaceFunctional(ActivateEvent event, EntityRef item) {
         MinecartComponent functionalItem = item.getComponent(MinecartComponent.class);
-
         EntityRef targetEntity = event.getTarget();
-
         BlockComponent blockComponent = targetEntity.getComponent(BlockComponent.class);
         ConnectsToRailsComponent connectsToRailsComponent = targetEntity.getComponent(ConnectsToRailsComponent.class);
-
 
         if (blockComponent == null || connectsToRailsComponent == null) {
             return;
@@ -177,29 +157,26 @@ public class MinecartAction extends BaseComponentSystem {
     @ReceiveEvent(components = {MinecartComponent.class, LocationComponent.class})
     public void onUseFunctional(ActivateEvent event, EntityRef minecartEntity) {
         MinecartComponent minecartComponent = minecartEntity.getComponent(MinecartComponent.class);
-
+        RigidBodyComponent minecartRigidBody = minecartEntity.getComponent(RigidBodyComponent.class);
         if (minecartComponent.isCreated) {
             if (minecartComponent.drive.length() < 1) {
                 event.getInstigator().send(new SetMovementModeEvent(MovementMode.NONE));
                 minecartComponent.characterInsideCart = event.getInstigator();
                 Location.attachChild(minecartEntity, minecartComponent.characterInsideCart, new Vector3f(0,1.5f,0), new Quat4f());
-                RigidBodyComponent minecartRigidBody = minecartEntity.getComponent(RigidBodyComponent.class);
                 minecartRigidBody.collidesWith.remove(StandardCollisionGroup.CHARACTER);
                 minecartRigidBody.collidesWith.remove(StandardCollisionGroup.DEFAULT);
-                minecartComponent.drive.set(5f, 0, 5f);
-                minecartEntity.saveComponent(minecartComponent);
-                minecartEntity.saveComponent(minecartRigidBody);
+                minecartComponent.drive.set(1f, 0, 1f);
             } else {
                 event.getInstigator().send(new SetMovementModeEvent(MovementMode.WALKING));
                 Location.removeChild(minecartEntity, minecartComponent.characterInsideCart);
                 minecartComponent.characterInsideCart = null;
-                RigidBodyComponent minecartRigidBody = minecartEntity.getComponent(RigidBodyComponent.class);
                 minecartRigidBody.collidesWith.add(StandardCollisionGroup.CHARACTER);
                 minecartRigidBody.collidesWith.add(StandardCollisionGroup.DEFAULT);
                 minecartComponent.drive.set(0f, 0, 0f);
-                minecartEntity.saveComponent(minecartComponent);
             }
-            logger.info("minecartComponent.drive: " + minecartComponent.drive);
+            minecartEntity.saveComponent(minecartComponent);
+            minecartEntity.saveComponent(minecartRigidBody);
+            logger.info("Set minecraft drive: " + minecartComponent.drive);
         }
     }
 
