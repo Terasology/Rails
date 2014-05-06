@@ -121,7 +121,6 @@ public class MinecartAction extends BaseComponentSystem {
         GiveItemAction action = new GiveItemAction(localPlayer.getCharacterEntity(), entityManager.create("rails:minecart"));
         player.send(new GiveItemAction(EntityRef.NULL, blockFactory.newInstance(blockManager.getBlockFamily("rails:Rails"), 99)));
         player.send(new GiveItemAction(EntityRef.NULL, blockFactory.newInstance(blockManager.getBlockFamily("sand"), 99)));
-        //player.send(new GiveItemAction(EntityRef.NULL, blockFactory.newInstance(blockManager.getBlockFamily("rails:RailsSlope"), 99)));
         localPlayer.getCharacterEntity().send(action);
     }
 
@@ -181,22 +180,22 @@ public class MinecartAction extends BaseComponentSystem {
 
         if (minecartComponent.isCreated) {
             if (minecartComponent.drive.length() < 1) {
-               // event.getInstigator().send(new SetMovementModeEvent(MovementMode.NONE));
-            //    minecartComponent.characterInsideCart = event.getInstigator();
-            //    Location.attachChild(minecartEntity, minecartComponent.characterInsideCart, new Vector3f(0,1.5f,0), new Quat4f());
-            //    RigidBodyComponent minecartRigidBody = minecartEntity.getComponent(RigidBodyComponent.class);
-           //     minecartRigidBody.collidesWith.remove(StandardCollisionGroup.CHARACTER);
-           //     minecartRigidBody.collidesWith.remove(StandardCollisionGroup.DEFAULT);
+                event.getInstigator().send(new SetMovementModeEvent(MovementMode.NONE));
+                minecartComponent.characterInsideCart = event.getInstigator();
+                Location.attachChild(minecartEntity, minecartComponent.characterInsideCart, new Vector3f(0,1.5f,0), new Quat4f());
+                RigidBodyComponent minecartRigidBody = minecartEntity.getComponent(RigidBodyComponent.class);
+                minecartRigidBody.collidesWith.remove(StandardCollisionGroup.CHARACTER);
+                minecartRigidBody.collidesWith.remove(StandardCollisionGroup.DEFAULT);
                 minecartComponent.drive.set(5f, 0, 5f);
                 minecartEntity.saveComponent(minecartComponent);
-           //     minecartEntity.saveComponent(minecartRigidBody);
+                minecartEntity.saveComponent(minecartRigidBody);
             } else {
-           //     event.getInstigator().send(new SetMovementModeEvent(MovementMode.WALKING));
-          //      Location.removeChild(minecartEntity, minecartComponent.characterInsideCart);
-         //       minecartComponent.characterInsideCart = null;
-          //      RigidBodyComponent minecartRigidBody = minecartEntity.getComponent(RigidBodyComponent.class);
-         //       minecartRigidBody.collidesWith.add(StandardCollisionGroup.CHARACTER);
-         //       minecartRigidBody.collidesWith.add(StandardCollisionGroup.DEFAULT);
+                event.getInstigator().send(new SetMovementModeEvent(MovementMode.WALKING));
+                Location.removeChild(minecartEntity, minecartComponent.characterInsideCart);
+                minecartComponent.characterInsideCart = null;
+                RigidBodyComponent minecartRigidBody = minecartEntity.getComponent(RigidBodyComponent.class);
+                minecartRigidBody.collidesWith.add(StandardCollisionGroup.CHARACTER);
+                minecartRigidBody.collidesWith.add(StandardCollisionGroup.DEFAULT);
                 minecartComponent.drive.set(0f, 0, 0f);
                 minecartEntity.saveComponent(minecartComponent);
             }

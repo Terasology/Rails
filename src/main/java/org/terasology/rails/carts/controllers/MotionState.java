@@ -21,7 +21,6 @@ public class MotionState {
     public Vector3f prevPosition    = new Vector3f();
     public Vector3f currentBlockPosition = new Vector3f();
     public Vector3f prevBlockPosition = new Vector3f();
-    public boolean positionCorrected = false;
     public int yawSign = 1;
     public int pitchSign = 1;
     public boolean nextBlockIsSlope = false;

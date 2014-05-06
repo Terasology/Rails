@@ -22,8 +22,10 @@ import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.entity.lifecycleEvents.OnChangedComponent;
+import org.terasology.entitySystem.event.EventPriority;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.*;
+import org.terasology.logic.inventory.InventoryManager;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.logic.players.LocalPlayer;
 import org.terasology.math.Side;
@@ -48,15 +50,14 @@ import java.util.Map;
 public class MinecartSystem extends BaseComponentSystem implements UpdateSubscriberSystem {
     @In
     private EntityManager entityManager;
-
     @In
     private WorldProvider worldProvider;
-
     @In
     private Physics physics;
-
     @In
     private LocalPlayer localPlayer;
+    @In
+    private InventoryManager inventoryManager;
 
     private MoveDescriptor moveDescriptor;
     private Map<EntityRef, MotionState> moveStates = Maps.newHashMap();
@@ -77,17 +78,6 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                 moveMinecart(minecart);
             }
         }
-    }
-
-
-    private Vector3f getStartCornerPosition(Vector3f blockPosition, Vector3f offsetPosition, Vector3f direction) {
-        Vector3f startPosition = new Vector3f(blockPosition);
-        if (Math.signum(offsetPosition.x) == Math.signum(direction.x)) {
-            startPosition.x += offsetPosition.x;
-        } else {
-            startPosition.z += offsetPosition.z;
-        }
-        return startPosition;
     }
 
     private MotionState getCurrentState(EntityRef minecart) {
@@ -160,9 +150,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             }
             if (isSameBlock(blockPosition, motionState.currentBlockPosition)) {
                 if (motionState.currentPositionStatus.equals(MotionState.PositionStatus.ON_THE_PATH)) {
-                    motionState.positionCorrected = false;
                     minecart.saveComponent(minecartComponent);
-
                     float drive = minecartComponent.drive.lengthSquared() / 100;
                     float speed = rigidBody.velocity.lengthSquared();
 
@@ -173,6 +161,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                                 currentBlock.getDirection(),
                                 minecartComponent,
                                 motionState,
+                                position,
                                 slopeFactor
                         );
 
@@ -191,6 +180,11 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                     }
                 }
 
+                if (!rigidBody.linearFactor.equals(minecartComponent.pathDirection)) {
+                    rigidBody.linearFactor.set(minecartComponent.pathDirection);
+                    rigidBody.linearFactor.absolute();
+                    minecart.saveComponent(rigidBody);
+                }
                 return;
             }
 
@@ -198,16 +192,15 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             motionState.currentBlockPosition = blockPosition.toVector3f();
             if (blockEntity != null && blockEntity.hasComponent(ConnectsToRailsComponent.class)) {
                 motionState.currentPositionStatus = MotionState.PositionStatus.ON_THE_PATH;
-
                 moveDescriptor.calculateDirection(
                         velocity,
                         railsComponent.type,
                         currentBlock.getDirection(),
                         minecartComponent,
                         motionState,
+                        position,
                         slopeFactor
                 );
-
                 if (motionState.prevBlockPosition.length() > 0) {
                     Vector3i prevBlockPostion = new Vector3i(motionState.prevBlockPosition);
 
@@ -223,7 +216,6 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                 }
 
                 minecart.send(new ChangeVelocityEvent(velocity));
-                motionState.positionCorrected = false;
                 angularFactor.set(0f, 0f, 0f);
             } else {
                 minecartComponent.pathDirection.set(1f, 1f, 1f);
@@ -253,21 +245,22 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
         return block.x == anotherBlock.x && block.y == anotherBlock.y && block.z == anotherBlock.z;
     }
 
-    @ReceiveEvent(components = {MinecartComponent.class, LocationComponent.class})
+    @ReceiveEvent(components = {MinecartComponent.class, LocationComponent.class}, priority = EventPriority.PRIORITY_LOW)
     public void correctPositionAndRotation(OnChangedComponent event, EntityRef entity) {
         MinecartComponent minecartComponent = entity.getComponent(MinecartComponent.class);
         LocationComponent location = entity.getComponent(LocationComponent.class);
         MotionState motionState = getCurrentState(entity);
-        if (motionState == null || motionState.positionCorrected) {
+        Vector3f position = location.getWorldPosition();
+        RigidBodyComponent rb = entity.getComponent(RigidBodyComponent.class);
+
+        if (motionState == null || position.equals(motionState.prevPosition)) {
             return;
         }
-
 
         if (minecartComponent.isCreated && motionState.currentPositionStatus == MotionState.PositionStatus.ON_THE_PATH) {
             Block currentBlock = worldProvider.getBlock(motionState.currentBlockPosition);
             EntityRef blockEntity = currentBlock.getEntity();
             ConnectsToRailsComponent railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
-            Vector3f position = location.getWorldPosition();
             Side side;
             if (railsComponent.type == ConnectsToRailsComponent.RAILS.INTERSECTION) {
                 side = moveDescriptor.correctSide(railsComponent.type, (minecartComponent.pathDirection.x != 0 ? Side.LEFT : Side.FRONT));
@@ -275,18 +268,17 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                 side = moveDescriptor.correctSide(railsComponent.type, currentBlock.getDirection());
             }
 
-            motionState.positionCorrected = true;
-            position = setPositionOnTheRail(minecartComponent, motionState, position, side);
+            position = setPositionOnTheRail(minecartComponent.pathDirection, motionState.currentBlockPosition, position);
 
             Vector3f distance = new Vector3f(position);
             distance.sub(motionState.prevPosition);
 
             Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
 
-            moveDescriptor.getYawOnPath(minecartComponent, side, motionState, distance);
+            moveDescriptor.getYawOnPath(minecartComponent, side, motionState, railsComponent.type, distance);
             moveDescriptor.getPitchOnPath(minecartComponent, position, motionState, side, railsComponent.type);
 
-            QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * minecartComponent.yaw, 0, TeraMath.DEG_TO_RAD * minecartComponent.pitch);
+            QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * minecartComponent.yaw, TeraMath.DEG_TO_RAD * minecartComponent.pitch, 0);
 
             motionState.prevPosition.set(position);
 
@@ -296,7 +288,6 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             entity.saveComponent(minecartComponent);
             entity.saveComponent(location);
         }
-        RigidBodyComponent rb = entity.getComponent(RigidBodyComponent.class);
         rotateVehicles(rb.velocity, minecartComponent);
 
     }
@@ -314,54 +305,25 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             Quat4f rotate = new Quat4f(0, 0, 0, 1);
             float angleSign = velocity.x >= 0 && velocity.z >= 0 ? 1 : -1;
             float angle = angleSign*velocity.length() + QuaternionUtil.getAngle(locationComponent.getLocalRotation());
-            if (angle >= TeraMath.PI * 2 || angle < 0) {
+            if (angle > TeraMath.PI * 2) {
                 angle = 0;
+            } else if ( angle < 0 ) {
+                angle = TeraMath.PI * 2;
             }
-            //logger.info("angle " + angle);
-            //logger.info("distanceMoved.length() " + distanceMoved.length());
             QuaternionUtil.setRotation(rotate, new Vector3f(1, 0, 0), angle);
             locationComponent.setLocalRotation(rotate);
             vehicle.saveComponent(locationComponent);
         }
     }
 
-    private Vector3f setPositionOnTheRail(MinecartComponent minecartComponent, MotionState motionState, Vector3f position, Side side) {
+    private Vector3f setPositionOnTheRail(Vector3f direction, Vector3f blockPositon, Vector3f position) {
         Vector3f fixedPosition = new Vector3f(position);
-        if (minecartComponent.pathDirection.x == 0 || minecartComponent.pathDirection.z == 0) {
-            if (minecartComponent.pathDirection.z != 0) {
-                fixedPosition.x = motionState.currentBlockPosition.x;
+        if (direction.x == 0 || direction.z == 0) {
+            if (direction.z != 0) {
+                fixedPosition.x = blockPositon.x;
             } else {
-                fixedPosition.z = motionState.currentBlockPosition.z;
+                fixedPosition.z = blockPositon.z;
             }
-        } else {
-            Vector3f offsetCornerPoint = moveDescriptor.getRotationOffsetPoint(side);
-            Vector3f revertDirection = new Vector3f(minecartComponent.pathDirection);
-            revertDirection.negate();
-            Vector3f startPosition = getStartCornerPosition(motionState.currentBlockPosition, offsetCornerPoint, revertDirection);
-
-            Vector3f lastMinecartDirection = new Vector3f(position);
-            lastMinecartDirection.sub(startPosition);
-
-            revertDirection.negate();
-
-            Vector3f newPos = new Vector3f(startPosition);
-            float pastLength = lastMinecartDirection.length();
-
-            if (pastLength >= 0.45f) {
-                pastLength = 0.45f;
-            }
-            revertDirection.scale(pastLength);
-            newPos.add(revertDirection);
-            fixedPosition.x = newPos.x;
-            fixedPosition.z = newPos.z;
-
-            if ((minecartComponent.pathDirection.x > 0 && fixedPosition.x > motionState.currentBlockPosition.x) || (minecartComponent.pathDirection.x < 0 && fixedPosition.x < motionState.currentBlockPosition.x)) {
-                fixedPosition.x = motionState.currentBlockPosition.x;
-            }else if ((minecartComponent.pathDirection.z > 0 && fixedPosition.z > motionState.currentBlockPosition.z) || (minecartComponent.pathDirection.z < 0 && fixedPosition.z < motionState.currentBlockPosition.z)) {
-                fixedPosition.z = motionState.currentBlockPosition.z;
-            }
-
-            //logger.info("side: " + side + " pastLength: " + pastLength + " offsetCornerPoint:" + offsetCornerPoint +  " start position: " + startPosition +  " fixedPosition: " + fixedPosition + " position: " + position + " motionState.currentBlockPosition: " + motionState.currentBlockPosition);
         }
         return fixedPosition;
     }

@@ -5,7 +5,7 @@
         "usage": "IN_DIRECTION"
     },
     "Location": {
-        "scale": 0.32
+        "scale": 0.35
     },
     "Mesh": {
         "mesh": "Rails:minecart_aligned",
@@ -22,6 +22,7 @@
             "engine:default"
         ]
     },
+
     "HullShape": {
          "sourceMesh" : "Rails:minecart_bounds_aligned"
     },
