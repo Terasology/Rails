@@ -15,6 +15,7 @@
  */
 package org.terasology.rails.carts.controllers;
 
+import org.terasology.math.Vector3i;
 import org.terasology.rails.carts.components.MinecartComponent;
 
 import javax.vecmath.Vector3f;
@@ -31,11 +32,19 @@ public class MotionState {
     public PositionStatus currentPositionStatus = PositionStatus.ON_THE_AIR;
     public static enum PositionStatus {ON_THE_AIR, ON_THE_GROUND, ON_THE_PATH, ON_THE_LIQUID};
 
-    public void setCurrentState(Vector3f pathDirection, Vector3f angularFactor, Vector3f newBlockPosition, PositionStatus currentPositionStatus) {
+    public void setCurrentState(Vector3f pathDirection, Vector3f angularFactor, Vector3i newBlockPosition, PositionStatus currentPositionStatus) {
         this.angularFactor = angularFactor;
-        minecartComponent.pathDirection.set(pathDirection);
+        this.minecartComponent.pathDirection.set(pathDirection);
         this.currentPositionStatus = currentPositionStatus;
-        prevBlockPosition = currentBlockPosition;
-        currentBlockPosition = newBlockPosition;
+        if (newBlockPosition != null) {
+            setCurrentBlockPosition(newBlockPosition.toVector3f());
+        }
+    }
+
+    public void setCurrentBlockPosition(Vector3f currentBlockPosition) {
+        if (this.currentBlockPosition.x != currentBlockPosition.x || this.currentBlockPosition.y != currentBlockPosition.y || this.currentBlockPosition.z != currentBlockPosition.z) {
+            this.prevBlockPosition = this.currentBlockPosition;
+            this.currentBlockPosition = currentBlockPosition;
+        }
     }
 }

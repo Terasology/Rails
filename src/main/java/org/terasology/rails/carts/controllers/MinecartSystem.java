@@ -131,11 +131,12 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             }
 
             if (currentBlock.isRails()) {
-                if (currentBlock.isSameBlock(motionState.currentBlockPosition) && !speedIsSlower(minecartComponent.drive, velocity) && slopeFactor == 0) {
-                    motionState.setCurrentState(FREE_MOTION, FREE_MOTION, currentBlock.getBlockPosition().toVector3f(), MotionState.PositionStatus.ON_THE_PATH);
+                if (currentBlock.isSameBlock(motionState.currentBlockPosition) && !lowSpeed(minecartComponent.drive, velocity) && slopeFactor == 0) {
+                    motionState.setCurrentState(FREE_MOTION, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_PATH);
                     return;
                 }
                 motionState.yawSign = 0;
+                motionState.setCurrentBlockPosition(currentBlock.getBlockPosition().toVector3f());
                 moveDescriptor.calculateDirection(
                         velocity,
                         currentBlock,
@@ -144,7 +145,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                         position,
                         slopeFactor
                 );
-                motionState.setCurrentState(minecartComponent.pathDirection, LOCKED_MOTION, currentBlock.getBlockPosition().toVector3f(), MotionState.PositionStatus.ON_THE_PATH);
+                motionState.setCurrentState(minecartComponent.pathDirection, LOCKED_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_PATH);
 
                 if (motionState.prevBlockPosition.length() > 0) {
                     Vector3i prevBlockPostion = new Vector3i(motionState.prevBlockPosition);
@@ -161,10 +162,10 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                 }
                 minecart.send(new ChangeVelocityEvent(velocity));
             } else {
-                motionState.setCurrentState(FREE_MOTION, FREE_MOTION, currentBlock.getBlockPosition().toVector3f(), MotionState.PositionStatus.ON_THE_GROUND);
+                motionState.setCurrentState(FREE_MOTION, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_GROUND);
             }
         } else {
-            motionState.setCurrentState(FREE_MOTION, FREE_MOTION, currentBlock.getBlockPosition().toVector3f(), MotionState.PositionStatus.ON_THE_AIR);
+            motionState.setCurrentState(FREE_MOTION, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_AIR);
         }
 
         setAngularAndLinearFactors(minecart, rigidBody, minecartComponent.pathDirection, motionState.angularFactor);
@@ -215,7 +216,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
 
     }
 
-    private boolean speedIsSlower(Vector3f drive, Vector3f velocity) {
+    private boolean lowSpeed(Vector3f drive, Vector3f velocity) {
         float driveSpeed = drive.lengthSquared() / 100;
         float velocitySpeed = velocity.lengthSquared();
         return (velocitySpeed / driveSpeed) < 60;
@@ -265,12 +266,13 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             }
             Quat4f rotate = new Quat4f(0, 0, 0, 1);
             float angleSign = velocity.x >= 0 && velocity.z >= 0 ? 1 : -1;
-            float angle = angleSign*(velocity.length()/TeraMath.PI) + QuaternionUtil.getAngle(locationComponent.getLocalRotation());
-            if (angle > TeraMath.PI * 2) {
+            float angle = angleSign*(velocity.length()/MinecartHelper.TWO_PI) + QuaternionUtil.getAngle(locationComponent.getLocalRotation());
+            if (angle > MinecartHelper.TWO_PI) {
                 angle = 0;
             } else if ( angle < 0 ) {
-                angle = TeraMath.PI * 2;
+                angle = MinecartHelper.TWO_PI;
             }
+
             QuaternionUtil.setRotation(rotate, new Vector3f(1, 0, 0), angle);
             locationComponent.setLocalRotation(rotate);
             vehicle.saveComponent(locationComponent);

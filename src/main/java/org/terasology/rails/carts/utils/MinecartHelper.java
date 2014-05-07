@@ -15,11 +15,15 @@
  */
 package org.terasology.rails.carts.utils;
 
+import org.terasology.math.TeraMath;
 import org.terasology.math.Vector3i;
 
 import javax.vecmath.Vector3f;
 
 public class MinecartHelper {
+
+    public static final float TWO_PI = TeraMath.PI*2;
+
     public static void setVectorToDirection(Vector3f in, Vector3f direction) {
         in.x *= Math.signum(direction.x);
         in.y *= Math.signum(direction.y);
