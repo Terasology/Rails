@@ -5,7 +5,7 @@
         "usage": "IN_DIRECTION"
     },
     "Location": {
-        "scale": 0.35
+        "scale": 0.32
     },
     "Mesh": {
         "mesh": "Rails:minecart_aligned",

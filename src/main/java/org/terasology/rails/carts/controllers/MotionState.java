@@ -15,15 +15,25 @@
  */
 package org.terasology.rails.carts.controllers;
 
+import org.terasology.rails.carts.components.MinecartComponent;
+
 import javax.vecmath.Vector3f;
 
 public class MotionState {
     public Vector3f prevPosition    = new Vector3f();
     public Vector3f currentBlockPosition = new Vector3f();
     public Vector3f prevBlockPosition = new Vector3f();
+    public Vector3f angularFactor = new Vector3f();
+    public MinecartComponent minecartComponent = null;
     public int yawSign = 1;
     public int pitchSign = 1;
     public boolean nextBlockIsSlope = false;
     public PositionStatus currentPositionStatus = PositionStatus.ON_THE_AIR;
     public static enum PositionStatus {ON_THE_AIR, ON_THE_GROUND, ON_THE_PATH, ON_THE_LIQUID};
+
+    public void setCurrentState(Vector3f pathDirection, Vector3f angularFactor, PositionStatus currentPositionStatus) {
+        this.angularFactor = angularFactor;
+        minecartComponent.pathDirection.set(pathDirection);
+        this.currentPositionStatus = currentPositionStatus;
+    }
 }
