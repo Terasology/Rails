@@ -239,16 +239,11 @@ public class MoveDescriptor {
             MinecartHelper.setVectorToDirection(velocity, minecartComponent.pathDirection);
         }
 
-        if ((minecartComponent.drive.lengthSquared() - velocity.lengthSquared()) > 0.1) {
-            if ( minecartComponent.drive.x != 0 ) {
-                minecartComponent.drive.z = minecartComponent.drive.x;
-            } else {
-                minecartComponent.drive.x = minecartComponent.drive.z;
-            }
-            minecartComponent.drive.absolute();
-            minecartComponent.drive.x *= Math.signum(velocity.x) * minecartComponent.pathDirection.x;
-            minecartComponent.drive.z *= Math.signum(velocity.z) * minecartComponent.pathDirection.z;
-            velocity.interpolate(minecartComponent.drive, 0.5f);
+        if ((minecartComponent.drive - velocity.lengthSquared()) > 0.1) {
+            Vector3f drive = new Vector3f(minecartComponent.drive, minecartComponent.drive, minecartComponent.drive);
+            drive.x *= Math.signum(velocity.x) * minecartComponent.pathDirection.x;
+            drive.z *= Math.signum(velocity.z) * minecartComponent.pathDirection.z;
+            velocity.interpolate(drive, 0.1f);
         }
 
         if (slopeFactor != 0) {

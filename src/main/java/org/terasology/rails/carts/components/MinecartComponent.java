@@ -51,7 +51,13 @@ public class MinecartComponent implements Component {
     public float yaw;
 
     @Replicate
-    public Vector3f drive;
+    public float drive;
+
+    @Replicate
+    public float changeDriveByStep = 2f;
+
+    @Replicate
+    public float maxDrive = 10f;
 
     @Replicate
     public Vector3f pathDirection;

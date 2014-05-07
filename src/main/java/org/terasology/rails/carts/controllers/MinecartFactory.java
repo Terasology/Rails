@@ -44,7 +44,7 @@ public class MinecartFactory {
         if (minecartLocation != null) {
             MinecartComponent minecart = entity.getComponent(MinecartComponent.class);
             minecart.isCreated = true;
-            minecart.drive = new Vector3f();
+            minecart.drive = 0;
             minecart.pathDirection = new Vector3f();
             attachVehicle(entity, minecart, new Vector3f(-0.125f, -1.5f, 0.55f));
             attachVehicle(entity, minecart, new Vector3f(-0.125f, -1.5f, -0.55f));

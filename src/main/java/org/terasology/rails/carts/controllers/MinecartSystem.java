@@ -25,12 +25,14 @@ import org.terasology.entitySystem.entity.lifecycleEvents.OnChangedComponent;
 import org.terasology.entitySystem.event.EventPriority;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.*;
+import org.terasology.input.binds.movement.ForwardsMovementAxis;
 import org.terasology.logic.inventory.InventoryManager;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.logic.players.LocalPlayer;
 import org.terasology.math.Side;
 import org.terasology.math.TeraMath;
 import org.terasology.math.Vector3i;
+import org.terasology.network.ClientComponent;
 import org.terasology.physics.HitResult;
 import org.terasology.physics.Physics;
 import org.terasology.physics.StandardCollisionGroup;
@@ -75,9 +77,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
     @Override
     public void update(float delta) {
         for (EntityRef minecart : entityManager.getEntitiesWith(MinecartComponent.class)) {
-
             MinecartComponent minecartComponent = minecart.getComponent(MinecartComponent.class);
-
             if (minecartComponent.isCreated) {
                 moveMinecart(minecart);
             }
@@ -131,22 +131,14 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             }
 
             if (currentBlock.isRails()) {
-                if (currentBlock.isSameBlock(motionState.currentBlockPosition) && !lowSpeed(minecartComponent.drive, velocity) && slopeFactor == 0) {
+                if (currentBlock.isSameBlock(motionState.currentBlockPosition) && !lowSpeed(minecartComponent.drive, velocity.length()) && slopeFactor == 0) {
                     motionState.setCurrentState(FREE_MOTION, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_PATH);
                     return;
                 }
                 motionState.yawSign = 0;
                 motionState.setCurrentBlockPosition(currentBlock.getBlockPosition().toVector3f());
-                moveDescriptor.calculateDirection(
-                        velocity,
-                        currentBlock,
-                        minecartComponent,
-                        motionState,
-                        position,
-                        slopeFactor
-                );
+                moveDescriptor.calculateDirection(velocity, currentBlock, minecartComponent, motionState, position, slopeFactor);
                 motionState.setCurrentState(minecartComponent.pathDirection, LOCKED_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_PATH);
-
                 if (motionState.prevBlockPosition.length() > 0) {
                     Vector3i prevBlockPostion = new Vector3i(motionState.prevBlockPosition);
 
@@ -216,9 +208,67 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
 
     }
 
-    private boolean lowSpeed(Vector3f drive, Vector3f velocity) {
-        float driveSpeed = drive.lengthSquared() / 100;
-        float velocitySpeed = velocity.lengthSquared();
+
+    @ReceiveEvent(components = {ClientComponent.class}, priority = EventPriority.PRIORITY_HIGH)
+    public void updateForwardsMovement(ForwardsMovementAxis event, EntityRef entity) {
+        ClientComponent clientComponent = entity.getComponent(ClientComponent.class);
+        LocationComponent location = clientComponent.character.getComponent(LocationComponent.class);
+        if (!location.getParent().equals(EntityRef.NULL)&&location.getParent().hasComponent(MinecartComponent.class)) {
+
+            EntityRef minecart = location.getParent();
+            MinecartComponent minecartComponent = minecart.getComponent(MinecartComponent.class);
+
+            MotionState motionState = moveStates.get(minecart);
+
+            if (motionState == null || motionState.currentBlockPosition.lengthSquared() == 0) {
+                return;
+            }
+            Block block = worldProvider.getBlock(motionState.currentBlockPosition);
+            if (block == null) {
+                return;
+            }
+            EntityRef blockEntity = block.getEntity();
+            if (blockEntity == null || !blockEntity.hasComponent(ConnectsToRailsComponent.class)) {
+                return;
+            }
+
+            ConnectsToRailsComponent connectsToRailsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
+
+            if (!connectsToRailsComponent.type.equals(ConnectsToRailsComponent.RAILS.PLANE)) {
+                return;
+            }
+
+            int value = (int) event.getValue();
+            Vector3f viewDirection = localPlayer.getViewDirection();
+
+            if (Math.abs(viewDirection.x) > Math.abs(viewDirection.z)) {
+                viewDirection.z = 0;
+            } else {
+                viewDirection.x = 0;
+            }
+            minecartComponent.drive += value * minecartComponent.changeDriveByStep;
+
+            if (minecartComponent.drive > minecartComponent.maxDrive)  {
+                minecartComponent.drive = minecartComponent.maxDrive;
+            } else if(minecartComponent.drive < 0) {
+                minecartComponent.drive = 0;
+            }
+
+            if (minecartComponent.drive > 0) {
+                Vector3f velocity = new Vector3f(minecartComponent.drive, 0, minecartComponent.drive);
+                velocity.x *= Math.signum(viewDirection.x) * minecartComponent.pathDirection.x;
+                velocity.z *= Math.signum(viewDirection.z) * minecartComponent.pathDirection.z;
+                if ( velocity.length() > 0 ) {
+                    minecart.send(new ChangeVelocityEvent(velocity));
+                }
+            }
+            minecart.saveComponent(minecartComponent);
+            event.consume();
+        }
+    }
+
+    private boolean lowSpeed(float drive, float velocitySpeed) {
+        float driveSpeed = drive / 100;
         return (velocitySpeed / driveSpeed) < 60;
     }
 
