@@ -169,9 +169,9 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
                 neighborLocation.add(side.getVector3i());
                 neighborLocation.y += height;
                 Block neighborBlock = worldProvider.getBlock(neighborLocation);
-                final BlockFamily blockFamily = neighborBlock.getBlockFamily();
-                if (blockFamily instanceof RailsUpdatesFamily) {
-                    RailsUpdatesFamily railsFamily = (RailsUpdatesFamily) blockFamily;
+                EntityRef blockEntity = blockEntityRegistry.getBlockEntityAt(neighborLocation);
+                if (blockEntity.hasComponent(ConnectsToRailsComponent.class)) {
+                    RailsUpdatesFamily railsFamily = (RailsUpdatesFamily)blockManager.getBlockFamily("rails:Rails");
                     Block neighborBlockAfterUpdate = railsFamily.getBlockForNeighborRailUpdate(worldProvider, blockEntityRegistry, neighborLocation, neighborBlock);
                     if (neighborBlock != neighborBlockAfterUpdate && neighborBlockAfterUpdate != null) {
                         worldProvider.setBlock(neighborLocation, neighborBlockAfterUpdate);
