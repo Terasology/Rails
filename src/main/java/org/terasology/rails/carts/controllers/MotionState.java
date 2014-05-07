@@ -31,9 +31,11 @@ public class MotionState {
     public PositionStatus currentPositionStatus = PositionStatus.ON_THE_AIR;
     public static enum PositionStatus {ON_THE_AIR, ON_THE_GROUND, ON_THE_PATH, ON_THE_LIQUID};
 
-    public void setCurrentState(Vector3f pathDirection, Vector3f angularFactor, PositionStatus currentPositionStatus) {
+    public void setCurrentState(Vector3f pathDirection, Vector3f angularFactor, Vector3f newBlockPosition, PositionStatus currentPositionStatus) {
         this.angularFactor = angularFactor;
         minecartComponent.pathDirection.set(pathDirection);
         this.currentPositionStatus = currentPositionStatus;
+        prevBlockPosition = currentBlockPosition;
+        currentBlockPosition = newBlockPosition;
     }
 }

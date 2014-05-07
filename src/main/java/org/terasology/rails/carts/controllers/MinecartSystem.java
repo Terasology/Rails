@@ -103,10 +103,9 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
 
         Vector3f position = location.getWorldPosition();
         Vector3f velocity = new Vector3f(rigidBody.velocity);
-        Vector3f angularFactor = new Vector3f(rigidBody.angularFactor);
-
         int slopeFactor = 0;
         MotionState motionState = getCurrentState(minecart);
+        motionState.angularFactor.set(rigidBody.angularFactor);
 
         if (!minecartComponent.pathDirection.equals(FREE_MOTION) || !minecartComponent.pathDirection.equals(LOCKED_MOTION)) {
             Vector3f direction = new Vector3f(minecartComponent.pathDirection);
@@ -120,7 +119,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
 
         BlockInfo currentBlock = getBlockInDirection(position, UNDER_MINECART_DIRECTION, 1.3f);
         if (!currentBlock.isEmptyBlock()) {
-            if (currentBlock.isRails() && currentBlock.isSlope()) {
+            if (slopeFactor == 0 && currentBlock.isRails() && currentBlock.isSlope()) {
                 Vector3f distance = new Vector3f(currentBlock.getBlockPosition().x, currentBlock.getBlockPosition().y, currentBlock.getBlockPosition().z);
                 distance.sub(motionState.prevBlockPosition);
                 if (distance.y < 0) {
@@ -130,43 +129,12 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                     motionState.nextBlockIsSlope = false;
                 }
             }
-            if (currentBlock.isSameBlock(motionState.currentBlockPosition)) {
-                if (motionState.currentPositionStatus.equals(MotionState.PositionStatus.ON_THE_PATH)) {
-                    minecart.saveComponent(minecartComponent);
-                    float drive = minecartComponent.drive.lengthSquared() / 100;
-                    float speed = rigidBody.velocity.lengthSquared();
 
-                    if (speed / drive < 60 || slopeFactor != 0) {
-                        moveDescriptor.calculateDirection(
-                                velocity,
-                                currentBlock,
-                                minecartComponent,
-                                motionState,
-                                position,
-                                slopeFactor
-                        );
-
-                        Vector3i prevBlockPosition = new Vector3i(motionState.prevBlockPosition);
-
-                        if (velocity.y > 0 && slopeFactor == 0) {
-                            Block prevblock = worldProvider.getBlock(prevBlockPosition);
-                            EntityRef prevBlockEntity = prevblock.getEntity();
-                            ConnectsToRailsComponent prevBlockRailsComponent = prevBlockEntity.getComponent(ConnectsToRailsComponent.class);
-
-                            if (prevBlockRailsComponent != null && prevBlockRailsComponent.type == ConnectsToRailsComponent.RAILS.SLOPE) {
-                                velocity.y *= -1;
-                            }
-                        }
-                        minecart.send(new ChangeVelocityEvent(velocity));
-                    }
-                }
-                setAngularAndLinearFactors(minecart, rigidBody, minecartComponent.pathDirection, angularFactor);
-                return;
-            }
-
-            motionState.prevBlockPosition = motionState.currentBlockPosition;
-            motionState.currentBlockPosition = currentBlock.getBlockPosition().toVector3f();
             if (currentBlock.isRails()) {
+                if (currentBlock.isSameBlock(motionState.currentBlockPosition) && !speedIsSlower(minecartComponent.drive, velocity) && slopeFactor == 0) {
+                    motionState.setCurrentState(FREE_MOTION, FREE_MOTION, currentBlock.getBlockPosition().toVector3f(), MotionState.PositionStatus.ON_THE_PATH);
+                    return;
+                }
                 motionState.yawSign = 0;
                 moveDescriptor.calculateDirection(
                         velocity,
@@ -176,7 +144,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                         position,
                         slopeFactor
                 );
-                motionState.currentPositionStatus = MotionState.PositionStatus.ON_THE_PATH;
+                motionState.setCurrentState(minecartComponent.pathDirection, LOCKED_MOTION, currentBlock.getBlockPosition().toVector3f(), MotionState.PositionStatus.ON_THE_PATH);
 
                 if (motionState.prevBlockPosition.length() > 0) {
                     Vector3i prevBlockPostion = new Vector3i(motionState.prevBlockPosition);
@@ -191,16 +159,15 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                         }
                     }
                 }
-
                 minecart.send(new ChangeVelocityEvent(velocity));
-                angularFactor.set(0f, 0f, 0f);
             } else {
-                motionState.setCurrentState(FREE_MOTION, FREE_MOTION, MotionState.PositionStatus.ON_THE_GROUND);
+                motionState.setCurrentState(FREE_MOTION, FREE_MOTION, currentBlock.getBlockPosition().toVector3f(), MotionState.PositionStatus.ON_THE_GROUND);
             }
         } else {
-            motionState.setCurrentState(FREE_MOTION, FREE_MOTION, MotionState.PositionStatus.ON_THE_AIR);
+            motionState.setCurrentState(FREE_MOTION, FREE_MOTION, currentBlock.getBlockPosition().toVector3f(), MotionState.PositionStatus.ON_THE_AIR);
         }
-        setAngularAndLinearFactors(minecart, rigidBody, minecartComponent.pathDirection, angularFactor);
+
+        setAngularAndLinearFactors(minecart, rigidBody, minecartComponent.pathDirection, motionState.angularFactor);
         minecart.saveComponent(minecartComponent);
     }
 
@@ -246,6 +213,12 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
         }
         rotateVehicles(rb.velocity, minecartComponent);
 
+    }
+
+    private boolean speedIsSlower(Vector3f drive, Vector3f velocity) {
+        float driveSpeed = drive.lengthSquared() / 100;
+        float velocitySpeed = velocity.lengthSquared();
+        return (velocitySpeed / driveSpeed) < 60;
     }
 
     private BlockInfo getBlockInDirection(Vector3f from, Vector3f to, float length) {
