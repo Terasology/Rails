@@ -50,7 +50,7 @@ public class BlockInfo {
     }
 
     public ConnectsToRailsComponent.RAILS getType() {
-        if (rails != null) {
+        if (isRails()) {
             return rails.type;
         } else {
             return null;
@@ -66,21 +66,22 @@ public class BlockInfo {
     }
 
     public boolean isCorner() {
-        return rails.type == ConnectsToRailsComponent.RAILS.CURVE ||
-               rails.type == ConnectsToRailsComponent.RAILS.TEE ||
-               rails.type == ConnectsToRailsComponent.RAILS.TEE_INVERSED;
+        return  isRails() &&
+               (rails.type == ConnectsToRailsComponent.RAILS.CURVE ||
+                rails.type == ConnectsToRailsComponent.RAILS.TEE ||
+                rails.type == ConnectsToRailsComponent.RAILS.TEE_INVERSED);
     }
 
     public boolean isSlope() {
-        return rails.type == ConnectsToRailsComponent.RAILS.SLOPE;
+        return isRails() && rails.type == ConnectsToRailsComponent.RAILS.SLOPE;
     }
 
     public boolean isIntersection() {
-        return rails.type == ConnectsToRailsComponent.RAILS.INTERSECTION;
+        return isRails() && rails.type == ConnectsToRailsComponent.RAILS.INTERSECTION;
     }
 
     public boolean isSameBlock(Vector3f anotherBlock) {
-        if (blockPosition.lengthSquared() > 0 || anotherBlock == null) {
+        if (blockPosition.lengthSquared() == 0 || anotherBlock == null) {
             return false;
         }
         return blockPosition.x == anotherBlock.x && blockPosition.y == anotherBlock.y && blockPosition.z == anotherBlock.z;

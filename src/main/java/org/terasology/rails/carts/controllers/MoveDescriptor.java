@@ -85,55 +85,36 @@ public class MoveDescriptor {
             float percent = distanceMoved.length() / 0.01f;
             minecart.yaw += motionState.yawSign * 90f * percent / 100;
             if ((motionState.yawSign > 0 && minecart.yaw > minecart.prevYaw + 90f) || (motionState.yawSign < 0 && minecart.yaw < minecart.prevYaw-90f)) {
+                logger.info("Mega condition 1");
                 minecart.yaw = minecart.prevYaw + motionState.yawSign*90f;
             }
 
             if (minecart.yaw < 0) {
                 minecart.yaw = 360 + minecart.yaw;
+                logger.info("Mega condition 2");
             } else if (minecart.yaw > 360) {
                 minecart.yaw = minecart.yaw - 360;
+                logger.info("Mega condition 3");
             }
             return;
         }
 
-        minecart.prevYaw = -1;
         switch (side) {
             case FRONT:
             case BACK:
-                if (minecart.yaw >= 360 || minecart.yaw < 45 && minecart.yaw > 0) {
-                    minecart.yaw = 0;
-                    motionState.pitchSign = 1;
-                }
-
-                if (minecart.yaw >= 135 && minecart.yaw < 180 || minecart.yaw > 180 && minecart.yaw < 225) {
-                    minecart.yaw = 180;
-                    motionState.pitchSign = -1;
-                }
-
-                if (minecart.yaw != 180 && minecart.yaw != 0) {
-                    minecart.yaw = 0;
-                    motionState.pitchSign = 1;
-                }
-
+                minecart.yaw = 180 * Math.round(minecart.yaw / 180);
                 break;
             case LEFT:
             case RIGHT:
-                if (minecart.yaw == 0 || minecart.yaw >= 45 && minecart.yaw < 90 || minecart.yaw > 90 && minecart.yaw < 135) {
+                minecart.yaw = 90 * Math.round(minecart.yaw / 90);
+                if (minecart.yaw == 0) {
                     minecart.yaw = 90;
-                    motionState.pitchSign = 1;
-                    break;
-                }
-
-                if (minecart.yaw >= 225 && minecart.yaw < 270 || minecart.yaw > 270 && minecart.yaw < 315) {
-                    minecart.yaw = 270;
-                    motionState.pitchSign = -1;
-                }
-
-                if (minecart.yaw != 90 && minecart.yaw != 270) {
-                    minecart.yaw = 90;
-                    motionState.pitchSign = 1;
                 }
                 break;
+        }
+
+        if (minecart.yaw >= 360) {
+            minecart.yaw = 360 - minecart.yaw;
         }
     }
 
@@ -151,44 +132,36 @@ public class MoveDescriptor {
                 if (direction.x > 0) {
                     motionState.yawSign = -1;
                     checkBouds = true;
-                   // logger.info("LEFT direction.x > 0");
                 } else if (direction.z < 0) {
                     motionState.yawSign = 1;
                     checkBouds = true;
-                    //logger.info("LEFT direction.z < 0");
                 }
                 break;
             case RIGHT:
                 if (direction.x < 0) {
                     motionState.yawSign = -1;
                     checkBouds = true;
-                  //  logger.info("RIGHT direction.x < 0");
                 } else if (direction.z > 0) {
                     motionState.yawSign = 1;
                     checkBouds = true;
-                   // logger.info("RIGHT direction.z > 0");
                 }
                 break;
             case FRONT:
                 if (direction.x > 0) {
                     motionState.yawSign = 1;
                     checkBouds = true;
-                    //logger.info("FRONT direction.x > 0");
                 } else if (direction.z > 0) {
                     motionState.yawSign = -1;
                     checkBouds = true;
-                    //logger.info("FRONT direction.z > 0");
                 }
                 break;
             case BACK:
                 if (direction.z < 0) {
                     motionState.yawSign = -1;
                     checkBouds = true;
-                   // logger.info("BACK direction.z < 0");
                 } else if (direction.x < 0) {
                     motionState.yawSign = 1;
                     checkBouds = true;
-                  //  logger.info("BACK direction.x < 0");
                 }
                 break;
         }
@@ -227,7 +200,7 @@ public class MoveDescriptor {
     private void correctVelocity(MinecartComponent minecartComponent, Vector3f velocity, BlockInfo blockInfo, int slopeFactor) {
 
         if (blockInfo.isCorner()) {
-            if ( velocity.x != 0 ) {
+            if (velocity.x != 0) {
                 velocity.z = velocity.x;
             } else {
                 velocity.x = velocity.z;
@@ -247,32 +220,30 @@ public class MoveDescriptor {
         }
 
         if (slopeFactor != 0) {
-            velocity.y = slopeFactor* Math.abs(minecartComponent.pathDirection.x !=0 ? velocity.x : velocity.z);
+            velocity.y = slopeFactor * Math.abs(minecartComponent.pathDirection.x != 0 ? velocity.x : velocity.z);
+        } else {
+            velocity.y = 0;
         }
 
     }
 
     public void setPitchOnPath(MinecartComponent minecart, Vector3f position, MotionState motionState, BlockInfo blockInfo) {
-        Side side = correctSide(blockInfo);
         minecart.pitch = 0;
 
-        Vector3f dir = new Vector3f(position);
-        dir.sub(motionState.prevPosition);
-
-        if (motionState.nextBlockIsSlope && (dir.x < 0 || dir.z > 0)) {
-            side = side.reverse();
-        }
-
         if (blockInfo.isSlope() || motionState.nextBlockIsSlope) {
-            switch (side) {
-                case LEFT:
-                case BACK:
-                    minecart.pitch = -45 * motionState.pitchSign;
-                    break;
-                case RIGHT:
-                case FRONT:
-                    minecart.pitch = 45 * motionState.pitchSign;
-                    break;
+            /*float yawSide = Math.round(minecart.yaw/90f);
+            float reverseSign = 1;
+
+            if (yawSide > 1) {
+                reverseSign = -1;
+            }*/
+            Vector3f dir = new Vector3f(position);
+            dir.sub(motionState.prevPosition);
+
+            if (dir.y > 0) {
+                minecart.pitch = -45f;
+            } else {
+                minecart.pitch = 45f;
             }
 
             if (motionState.nextBlockIsSlope) {
@@ -281,7 +252,7 @@ public class MoveDescriptor {
 
                 targetY = targetY - sourceY;
 
-                if ( targetY > 1 ) {
+                if (targetY > 1) {
                     targetY = 1;
                 }
                 float percent = 3.5f*(1 - targetY);
@@ -290,11 +261,13 @@ public class MoveDescriptor {
                     percent = 1;
                 }
 
-                minecart.pitch = minecart.pitch*percent;
+                minecart.pitch = minecart.pitch * percent;
                 if (minecart.pitch > 45 || minecart.pitch < -45) {
-                    minecart.pitch = 45*Math.signum(minecart.pitch);
+                    minecart.pitch = 45 * Math.signum(minecart.pitch);
                 }
             }
+
+            logger.info("pitch: " + minecart.pitch + " percent");
         }
     }
 }

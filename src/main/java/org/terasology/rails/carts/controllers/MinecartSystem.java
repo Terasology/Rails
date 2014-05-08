@@ -130,28 +130,38 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                 }
             }
 
+            if (slopeFactor == 0) {
+                motionState.nextBlockIsSlope = false;
+            }
+
             if (currentBlock.isRails()) {
-                if (currentBlock.isSameBlock(motionState.currentBlockPosition) && !lowSpeed(minecartComponent.drive, velocity.length()) && slopeFactor == 0) {
-                    motionState.setCurrentState(FREE_MOTION, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_PATH);
-                    return;
-                }
-                motionState.yawSign = 0;
-                motionState.setCurrentBlockPosition(currentBlock.getBlockPosition().toVector3f());
-                moveDescriptor.calculateDirection(velocity, currentBlock, minecartComponent, motionState, position, slopeFactor);
-                motionState.setCurrentState(minecartComponent.pathDirection, LOCKED_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_PATH);
-                if (motionState.prevBlockPosition.length() > 0) {
-                    Vector3i prevBlockPostion = new Vector3i(motionState.prevBlockPosition);
+                boolean isSameBlock = currentBlock.isSameBlock(motionState.currentBlockPosition);
+                if (isSameBlock && !isLowSpeed(minecartComponent.drive, velocity.length()) && slopeFactor == 0) {
+                    motionState.setCurrentState(minecartComponent.pathDirection, motionState.angularFactor, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_PATH);
+                } else {
+                    if (!isSameBlock) {
+                        motionState.yawSign = 0;
+                        minecartComponent.prevYaw = -1;
+                    }
+                    motionState.setCurrentBlockPosition(currentBlock.getBlockPosition().toVector3f());
+                    moveDescriptor.calculateDirection(velocity, currentBlock, minecartComponent, motionState, position, slopeFactor);
+                    motionState.setCurrentState(minecartComponent.pathDirection, LOCKED_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_PATH);
+                    if (motionState.prevBlockPosition.length() > 0) {
+                        Vector3i prevBlockPostion = new Vector3i(motionState.prevBlockPosition);
 
-                    if (velocity.y > 0 && slopeFactor < 1) {
-                        Block prevblock = worldProvider.getBlock(prevBlockPostion);
-                        EntityRef prevBlockEntity = prevblock.getEntity();
-                        ConnectsToRailsComponent prevBlockRailsComponent = prevBlockEntity.getComponent(ConnectsToRailsComponent.class);
+                        if (velocity.y > 0 && slopeFactor < 1) {
+                            Block prevblock = worldProvider.getBlock(prevBlockPostion);
+                            EntityRef prevBlockEntity = prevblock.getEntity();
+                            ConnectsToRailsComponent prevBlockRailsComponent = prevBlockEntity.getComponent(ConnectsToRailsComponent.class);
 
-                        if (prevBlockRailsComponent != null && prevBlockRailsComponent.type == ConnectsToRailsComponent.RAILS.SLOPE) {
-                            velocity.y *= -1;
+                            if (prevBlockRailsComponent != null && prevBlockRailsComponent.type == ConnectsToRailsComponent.RAILS.SLOPE) {
+                                velocity.y *= -1;
+                            }
                         }
                     }
                 }
+
+                correctPositionAndRotation(minecart);
                 minecart.send(new ChangeVelocityEvent(velocity));
             } else {
                 motionState.setCurrentState(FREE_MOTION, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_GROUND);
@@ -164,15 +174,14 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
         minecart.saveComponent(minecartComponent);
     }
 
-    @ReceiveEvent(components = {MinecartComponent.class, LocationComponent.class}, priority = EventPriority.PRIORITY_LOW)
-    public void correctPositionAndRotation(OnChangedComponent event, EntityRef entity) {
+    private void correctPositionAndRotation(EntityRef entity) {
         MinecartComponent minecartComponent = entity.getComponent(MinecartComponent.class);
         LocationComponent location = entity.getComponent(LocationComponent.class);
         MotionState motionState = getCurrentState(entity);
         Vector3f position = location.getWorldPosition();
         RigidBodyComponent rb = entity.getComponent(RigidBodyComponent.class);
 
-        if (motionState == null || position.equals(motionState.prevPosition)) {
+        if (motionState == null) {
             return;
         }
 
@@ -267,9 +276,9 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
         }
     }
 
-    private boolean lowSpeed(float drive, float velocitySpeed) {
+    private boolean isLowSpeed(float drive, float velocitySpeed) {
         float driveSpeed = drive / 100;
-        return (velocitySpeed / driveSpeed) < 60;
+        return (velocitySpeed / driveSpeed) < 90;
     }
 
     private BlockInfo getBlockInDirection(Vector3f from, Vector3f to, float length) {
@@ -315,8 +324,15 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                 continue;
             }
             Quat4f rotate = new Quat4f(0, 0, 0, 1);
+
+            float yawSide = Math.round(minecartComponent.yaw/90f);
+            float reverseSign = 1;
+            if (yawSide > 1) {
+                reverseSign = -1;
+            }
+
             float angleSign = velocity.x >= 0 && velocity.z >= 0 ? 1 : -1;
-            float angle = angleSign*(velocity.length()/MinecartHelper.TWO_PI) + QuaternionUtil.getAngle(locationComponent.getLocalRotation());
+            float angle = reverseSign*angleSign*(velocity.length()/MinecartHelper.TWO_PI) + QuaternionUtil.getAngle(locationComponent.getLocalRotation());
             if (angle > MinecartHelper.TWO_PI) {
                 angle = 0;
             } else if ( angle < 0 ) {
