@@ -85,16 +85,13 @@ public class MoveDescriptor {
             float percent = distanceMoved.length() / 0.01f;
             minecart.yaw += motionState.yawSign * 90f * percent / 100;
             if ((motionState.yawSign > 0 && minecart.yaw > minecart.prevYaw + 90f) || (motionState.yawSign < 0 && minecart.yaw < minecart.prevYaw-90f)) {
-                logger.info("Mega condition 1");
                 minecart.yaw = minecart.prevYaw + motionState.yawSign*90f;
             }
 
             if (minecart.yaw < 0) {
                 minecart.yaw = 360 + minecart.yaw;
-                logger.info("Mega condition 2");
             } else if (minecart.yaw > 360) {
                 minecart.yaw = minecart.yaw - 360;
-                logger.info("Mega condition 3");
             }
             return;
         }
@@ -221,8 +218,6 @@ public class MoveDescriptor {
 
         if (slopeFactor != 0) {
             velocity.y = slopeFactor * Math.abs(minecartComponent.pathDirection.x != 0 ? velocity.x : velocity.z);
-        } else {
-            velocity.y = 0;
         }
 
     }
@@ -231,14 +226,18 @@ public class MoveDescriptor {
         minecart.pitch = 0;
 
         if (blockInfo.isSlope() || motionState.nextBlockIsSlope) {
-            /*float yawSide = Math.round(minecart.yaw/90f);
-            float reverseSign = 1;
-
-            if (yawSide > 1) {
-                reverseSign = -1;
-            }*/
             Vector3f dir = new Vector3f(position);
             dir.sub(motionState.prevPosition);
+
+            float reverseSign = 1;
+            if (dir.x < 0 || dir.z < 0) {
+                reverseSign = -1;
+            }
+
+            float yawSide = Math.round(minecart.yaw/90f);
+            if (yawSide > 1) {
+                reverseSign = -reverseSign;
+            }
 
             if (dir.y > 0) {
                 minecart.pitch = -45f;
@@ -262,12 +261,12 @@ public class MoveDescriptor {
                 }
 
                 minecart.pitch = minecart.pitch * percent;
+
                 if (minecart.pitch > 45 || minecart.pitch < -45) {
                     minecart.pitch = 45 * Math.signum(minecart.pitch);
                 }
             }
-
-            logger.info("pitch: " + minecart.pitch + " percent");
+            minecart.pitch *= reverseSign;
         }
     }
 }
