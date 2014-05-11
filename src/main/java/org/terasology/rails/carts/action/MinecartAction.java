@@ -38,6 +38,7 @@ import org.terasology.physics.events.CollideEvent;
 import org.terasology.physics.events.ForceEvent;
 import org.terasology.physics.events.ImpulseEvent;
 import org.terasology.rails.blocks.ConnectsToRailsComponent;
+import org.terasology.rails.carts.utils.MinecartHelper;
 import org.terasology.registry.In;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
@@ -93,14 +94,10 @@ public class MinecartAction extends BaseComponentSystem {
         Vector3f bumpForce = new Vector3f(minecartLocation.getWorldPosition());
         bumpForce.sub(location.getWorldPosition());
         bumpForce.normalize();
-        float bumpScale = 80;
-        if ( minecart.pathDirection.x != 0 && minecart.pathDirection.z != 0 ) {
-            bumpScale = 40f;
-            bumpForce.absolute();
-        }
-        bumpForce.x *= minecart.pathDirection.x;
-        bumpForce.y *= minecart.pathDirection.y;
-        bumpForce.z *= minecart.pathDirection.z;
+        float bumpScale = 80f;
+        minecart.direction.set(minecart.pathDirection);
+        MinecartHelper.setVectorToDirection(bumpForce, minecart.pathDirection);
+        MinecartHelper.setVectorToDirection(minecart.direction, bumpForce);
 
         if (other.hasComponent(CharacterComponent.class)) {
             bumpForce.scale(5f);
@@ -109,6 +106,9 @@ public class MinecartAction extends BaseComponentSystem {
             bumpForce.scale(bumpScale);
             entity.send(new ForceEvent(bumpForce));
         }
+
+        logger.info("Sended force: " + bumpForce + " minecart direction: " + minecart.direction + " minecart psth direction: " + minecart.pathDirection);
+        entity.saveComponent(minecart);
     }
 
 

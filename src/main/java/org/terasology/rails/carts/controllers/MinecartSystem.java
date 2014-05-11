@@ -111,11 +111,9 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
         motionState.angularFactor.set(rigidBody.angularFactor);
 
         if (!minecartComponent.pathDirection.equals(FREE_MOTION) || !minecartComponent.pathDirection.equals(LOCKED_MOTION)) {
-            Vector3f direction = new Vector3f(minecartComponent.pathDirection);
-            MinecartHelper.setVectorToDirection(direction, velocity.x, 0, velocity.z);
             Vector3f downedPos = new Vector3f(position);
             downedPos.y -= 0.4f;
-            BlockInfo blockPossibleSlope = getBlockInDirection(downedPos, direction, 1.2f);
+            BlockInfo blockPossibleSlope = getBlockInDirection(downedPos, minecartComponent.direction, 1.2f);
             if (blockPossibleSlope.isRails() && blockPossibleSlope.isSlope()) {
                 slopeFactor = 1;
                 motionState.nextBlockIsSlope = true;
@@ -142,7 +140,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             if (currentBlock.isRails()) {
                 boolean isSameBlock = currentBlock.isSameBlock(motionState.currentBlockPosition);
                 if (isSameBlock && !isLowSpeed(minecartComponent.drive, velocity.length()) && slopeFactor == 0 && !currentBlock.isCorner()) {
-                    motionState.setCurrentState(minecartComponent.pathDirection, motionState.angularFactor, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_PATH);
+                    motionState.setCurrentState(minecartComponent.pathDirection, minecartComponent.direction, motionState.angularFactor, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_PATH);
                 } else {
                     if (!isSameBlock) {
                         motionState.yawSign = 0;
@@ -150,7 +148,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                     }
                     motionState.setCurrentBlockPosition(currentBlock.getBlockPosition().toVector3f());
                     moveDescriptor.calculateDirection(velocity, currentBlock, minecartComponent, motionState, position, slopeFactor);
-                    motionState.setCurrentState(minecartComponent.pathDirection, LOCKED_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_PATH);
+                    motionState.setCurrentState(minecartComponent.pathDirection, minecartComponent.direction, LOCKED_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_PATH);
                     if (motionState.prevBlockPosition.length() > 0) {
                         Vector3i prevBlockPostion = new Vector3i(motionState.prevBlockPosition);
 
@@ -169,10 +167,10 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                 correctPositionAndRotation(minecart);
                 minecart.send(new ChangeVelocityEvent(velocity));
             } else {
-                motionState.setCurrentState(FREE_MOTION, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_GROUND);
+                motionState.setCurrentState(FREE_MOTION, FREE_MOTION, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_GROUND);
             }
         } else {
-            motionState.setCurrentState(FREE_MOTION, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_AIR);
+            motionState.setCurrentState(FREE_MOTION, FREE_MOTION, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_AIR);
         }
 
         setAngularAndLinearFactors(minecart, rigidBody, minecartComponent.pathDirection, motionState.angularFactor);
@@ -281,8 +279,8 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
 
             if (minecartComponent.drive > 0) {
                 Vector3f velocity = new Vector3f(minecartComponent.drive, 0, minecartComponent.drive);
-                velocity.x *= Math.signum(viewDirection.x) * minecartComponent.pathDirection.x;
-                velocity.z *= Math.signum(viewDirection.z) * minecartComponent.pathDirection.z;
+                velocity.x *= minecartComponent.direction.x;
+                velocity.z *= minecartComponent.direction.z;
                 if ( velocity.length() > 0 ) {
                     minecart.send(new ChangeVelocityEvent(velocity));
                 }

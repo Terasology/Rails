@@ -32,9 +32,10 @@ public class MotionState {
     public PositionStatus currentPositionStatus = PositionStatus.ON_THE_AIR;
     public static enum PositionStatus {ON_THE_AIR, ON_THE_GROUND, ON_THE_PATH, ON_THE_LIQUID};
 
-    public void setCurrentState(Vector3f pathDirection, Vector3f angularFactor, Vector3i newBlockPosition, PositionStatus currentPositionStatus) {
+    public void setCurrentState(Vector3f pathDirection, Vector3f minecartDirection,  Vector3f angularFactor, Vector3i newBlockPosition, PositionStatus currentPositionStatus) {
         this.angularFactor = angularFactor;
         this.minecartComponent.pathDirection.set(pathDirection);
+        this.minecartComponent.direction.set(minecartDirection);
         this.currentPositionStatus = currentPositionStatus;
         if (newBlockPosition != null) {
             setCurrentBlockPosition(newBlockPosition.toVector3f());

@@ -61,4 +61,7 @@ public class MinecartComponent implements Component {
 
     @Replicate
     public Vector3f pathDirection;
+
+    @Replicate
+    public Vector3f direction;
 }

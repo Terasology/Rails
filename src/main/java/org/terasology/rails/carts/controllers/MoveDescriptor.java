@@ -54,12 +54,18 @@ public class MoveDescriptor {
             case TEE_INVERSED:
             case TEE:
             case CURVE:
-                Vector3f direction =  new Vector3f(velocity);
-                setCornerDirection(side, minecart, motionState, direction, position);
+                setCornerDirection(side, minecart, motionState, position);
                 break;
         }
+
         minecart.pathDirection.y = 1;
-        correctVelocity(minecart, velocity, blockInfo, slopeFactor);
+        if (slopeFactor != 0) {
+            minecart.direction.y = slopeFactor;
+        } else {
+            minecart.direction.y = 0;
+        }
+
+        correctVelocity(minecart, velocity, blockInfo);
     }
 
     public Side correctSide(BlockInfo blockInfo) {
@@ -121,42 +127,42 @@ public class MoveDescriptor {
         return directPath;
     }
 
-    private void setCornerDirection(Side side, MinecartComponent minecart, MotionState motionState, Vector3f direction, Vector3f position) {
+    private void setCornerDirection(Side side, MinecartComponent minecart, MotionState motionState, Vector3f position) {
         boolean rotate = false;
         boolean checkBouds = false;
         switch (side) {
             case LEFT:
-                if (direction.x > 0) {
+                if (minecart.direction.x > 0) {
                     motionState.yawSign = -1;
                     checkBouds = true;
-                } else if (direction.z < 0) {
+                } else if (minecart.direction.z < 0) {
                     motionState.yawSign = 1;
                     checkBouds = true;
                 }
                 break;
             case RIGHT:
-                if (direction.x < 0) {
+                if (minecart.direction.x < 0) {
                     motionState.yawSign = -1;
                     checkBouds = true;
-                } else if (direction.z > 0) {
+                } else if (minecart.direction.z > 0) {
                     motionState.yawSign = 1;
                     checkBouds = true;
                 }
                 break;
             case FRONT:
-                if (direction.x > 0) {
+                if (minecart.direction.x > 0) {
                     motionState.yawSign = 1;
                     checkBouds = true;
-                } else if (direction.z > 0) {
+                } else if (minecart.direction.z > 0) {
                     motionState.yawSign = -1;
                     checkBouds = true;
                 }
                 break;
             case BACK:
-                if (direction.z < 0) {
+                if (minecart.direction.z < 0) {
                     motionState.yawSign = -1;
                     checkBouds = true;
-                } else if (direction.x < 0) {
+                } else if (minecart.direction.x < 0) {
                     motionState.yawSign = 1;
                     checkBouds = true;
                 }
@@ -164,25 +170,27 @@ public class MoveDescriptor {
         }
 
         if (checkBouds) {
-            if (direction.x != 0) {
-                if (direction.x > 0 && motionState.currentBlockPosition.x  < position.x) {
+            if (minecart.direction.x != 0) {
+                if (minecart.direction.x > 0 && motionState.currentBlockPosition.x  < position.x) {
                     rotate = true;
-                } else if (direction.x < 0 && motionState.currentBlockPosition.x  > position.x) {
+                } else if (minecart.direction.x < 0 && motionState.currentBlockPosition.x  > position.x) {
                     rotate = true;
                 }
-            } else if (direction.z != 0) {
-                if (direction.z > 0 && motionState.currentBlockPosition.z  < position.z) {
+            } else if (minecart.direction.z != 0) {
+                if (minecart.direction.z > 0 && motionState.currentBlockPosition.z  < position.z) {
                     rotate = true;
-                } else if (direction.z < 0 && motionState.currentBlockPosition.z  > position.z) {
+                } else if (minecart.direction.z < 0 && motionState.currentBlockPosition.z  > position.z) {
                     rotate = true;
                 }
             }
         }
 
-        minecart.pathDirection.set(1 * Math.signum(direction.x), 1 * Math.signum(direction.y), 1 * Math.signum(direction.z));
         if (rotate) {
-            rotatePathDirection(minecart.pathDirection, motionState.yawSign);
+            rotatePathDirection(minecart.direction, motionState.yawSign);
         }
+
+        minecart.pathDirection.set(minecart.direction);
+        minecart.pathDirection.absolute();
     }
 
     private void rotatePathDirection(Vector3f dir, int angle) {
@@ -194,7 +202,7 @@ public class MoveDescriptor {
         }
     }
 
-    private void correctVelocity(MinecartComponent minecartComponent, Vector3f velocity, BlockInfo blockInfo, int slopeFactor) {
+    private void correctVelocity(MinecartComponent minecartComponent, Vector3f velocity, BlockInfo blockInfo) {
 
         if (blockInfo.isCorner()) {
             if (velocity.x != 0) {
@@ -202,22 +210,28 @@ public class MoveDescriptor {
             } else {
                 velocity.x = velocity.z;
             }
-            velocity.absolute();
-            MinecartHelper.setVectorToDirection(velocity, minecartComponent.pathDirection);
-            minecartComponent.pathDirection.absolute();
-        } else {
-            MinecartHelper.setVectorToDirection(velocity, minecartComponent.pathDirection);
         }
+
+        if (minecartComponent.direction.x != 0) {
+            minecartComponent.direction.z = minecartComponent.direction.x;
+        } else {
+            minecartComponent.direction.x = minecartComponent.direction.z;
+        }
+
+        MinecartHelper.setVectorToDirection(minecartComponent.direction, minecartComponent.pathDirection);
+
+        velocity.absolute();
+        MinecartHelper.setVectorToDirection(velocity, minecartComponent.direction);
 
         if ((minecartComponent.drive - velocity.lengthSquared()) > 0.1) {
             Vector3f drive = new Vector3f(minecartComponent.drive, minecartComponent.drive, minecartComponent.drive);
-            drive.x *= Math.signum(velocity.x) * minecartComponent.pathDirection.x;
-            drive.z *= Math.signum(velocity.z) * minecartComponent.pathDirection.z;
+            drive.x *= minecartComponent.direction.x;
+            drive.z *= minecartComponent.direction.z;
             velocity.interpolate(drive, 0.1f);
         }
 
-        if (slopeFactor != 0) {
-            velocity.y = slopeFactor * Math.abs(minecartComponent.pathDirection.x != 0 ? velocity.x : velocity.z);
+        if (minecartComponent.direction.y != 0) {
+            velocity.y =  minecartComponent.direction.y * Math.abs(minecartComponent.direction.x != 0 ? velocity.x : velocity.z);
         }
 
     }
@@ -226,11 +240,9 @@ public class MoveDescriptor {
         minecart.pitch = 0;
 
         if (blockInfo.isSlope() || motionState.nextBlockIsSlope) {
-            Vector3f dir = new Vector3f(position);
-            dir.sub(motionState.prevPosition);
 
             float reverseSign = 1;
-            if (dir.x < 0 || dir.z < 0) {
+            if (minecart.direction.x < 0 || minecart.direction.z < 0) {
                 reverseSign = -1;
             }
 
@@ -239,7 +251,7 @@ public class MoveDescriptor {
                 reverseSign = -reverseSign;
             }
 
-            if (dir.y > 0) {
+            if (minecart.direction.y > 0) {
                 minecart.pitch = -45f;
             } else {
                 minecart.pitch = 45f;
