@@ -211,7 +211,8 @@ public class MoveDescriptor {
                 velocity.x = velocity.z;
             }
         }
-
+        logger.info("----------------------------");
+        logger.info("1. direction: " + minecartComponent.direction);
         if (minecartComponent.direction.x != 0) {
             minecartComponent.direction.z = minecartComponent.direction.x;
         } else {
@@ -220,6 +221,7 @@ public class MoveDescriptor {
 
         MinecartHelper.setVectorToDirection(minecartComponent.direction, minecartComponent.pathDirection);
 
+        if (minecartComponent.drive != 0) {
         velocity.absolute();
         MinecartHelper.setVectorToDirection(velocity, minecartComponent.direction);
 
@@ -233,7 +235,10 @@ public class MoveDescriptor {
         if (minecartComponent.direction.y != 0) {
             velocity.y =  minecartComponent.direction.y * Math.abs(minecartComponent.direction.x != 0 ? velocity.x : velocity.z);
         }
+        }
 
+        logger.info("2. direction: " + minecartComponent.direction);
+        logger.info("----------------------------");
     }
 
     public void setPitchOnPath(MinecartComponent minecart, Vector3f position, MotionState motionState, BlockInfo blockInfo) {

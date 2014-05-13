@@ -170,18 +170,18 @@ public class MinecartAction extends BaseComponentSystem {
         RigidBodyComponent minecartRigidBody = minecartEntity.getComponent(RigidBodyComponent.class);
         if (minecartComponent.isCreated) {
             if (minecartComponent.characterInsideCart == null && (minecartComponent.pathDirection.x == 0 || minecartComponent.pathDirection.z == 0)) {
-                event.getInstigator().send(new SetMovementModeEvent(MovementMode.NONE));
+               /* event.getInstigator().send(new SetMovementModeEvent(MovementMode.NONE));
                 minecartComponent.characterInsideCart = event.getInstigator();
                 Location.attachChild(minecartEntity, minecartComponent.characterInsideCart, new Vector3f(0,1.5f,0), new Quat4f());
                 minecartRigidBody.collidesWith.remove(StandardCollisionGroup.CHARACTER);
-                minecartRigidBody.collidesWith.remove(StandardCollisionGroup.DEFAULT);
+                minecartRigidBody.collidesWith.remove(StandardCollisionGroup.DEFAULT); */
                 minecartComponent.drive = 5;
             } else {
-                event.getInstigator().send(new SetMovementModeEvent(MovementMode.WALKING));
+                /*event.getInstigator().send(new SetMovementModeEvent(MovementMode.WALKING));
                 Location.removeChild(minecartEntity, minecartComponent.characterInsideCart);
                 minecartComponent.characterInsideCart = null;
                 minecartRigidBody.collidesWith.add(StandardCollisionGroup.CHARACTER);
-                minecartRigidBody.collidesWith.add(StandardCollisionGroup.DEFAULT);
+                minecartRigidBody.collidesWith.add(StandardCollisionGroup.DEFAULT);  */
                 minecartComponent.drive = 0;
             }
             minecartEntity.saveComponent(minecartComponent);
