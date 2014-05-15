@@ -27,12 +27,14 @@ public class BlockInfo {
     private Vector3i blockPosition = new Vector3i();
     private EntityRef blockEntity = EntityRef.NULL;
     private ConnectsToRailsComponent rails = null;
+    private Vector3f hitPoint = null;
 
-    public BlockInfo(Block block, Vector3i blockPosition, EntityRef entity, ConnectsToRailsComponent component) {
+    public BlockInfo(Block block, Vector3i blockPosition, EntityRef entity, ConnectsToRailsComponent component, Vector3f hitPoint) {
         this.block = block;
         this.blockEntity = entity;
         this.rails = component;
         this.blockPosition = blockPosition;
+        this.hitPoint = hitPoint;
     }
 
     public boolean isEmptyBlock() {
@@ -85,5 +87,9 @@ public class BlockInfo {
             return false;
         }
         return blockPosition.x == anotherBlock.x && blockPosition.y == anotherBlock.y && blockPosition.z == anotherBlock.z;
+    }
+
+    public Vector3f hitPoint() {
+        return hitPoint;
     }
 }

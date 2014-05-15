@@ -120,7 +120,8 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             }
         }
 
-        BlockInfo currentBlock = getBlockInDirection(position, UNDER_MINECART_DIRECTION, 1.3f);
+        BlockInfo currentBlock = getBlockInDirection(position, UNDER_MINECART_DIRECTION, 3.3f);
+
         if (!currentBlock.isEmptyBlock()) {
             if (slopeFactor == 0 && currentBlock.isRails() && currentBlock.isSlope()) {
                 Vector3f distance = new Vector3f(currentBlock.getBlockPosition().x, currentBlock.getBlockPosition().y, currentBlock.getBlockPosition().z);
@@ -164,20 +165,24 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                     }
                 }
 
-                correctPositionAndRotation(minecart);
+                correctPositionAndRotation(minecart, currentBlock);
                 minecart.send(new ChangeVelocityEvent(velocity));
             } else {
-                motionState.setCurrentState(FREE_MOTION, FREE_MOTION, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_GROUND);
+                minecartComponent.direction.y=0;
+                motionState.setCurrentState(FREE_MOTION, minecartComponent.direction, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_GROUND);
+                logger.info("on the ground");
             }
         } else {
-            motionState.setCurrentState(FREE_MOTION, FREE_MOTION, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_AIR);
+            minecartComponent.direction.y=0;
+            motionState.setCurrentState(FREE_MOTION, minecartComponent.direction, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_AIR);
+            logger.info("on the air");
         }
 
         setAngularAndLinearFactors(minecart, rigidBody, minecartComponent.pathDirection, motionState.angularFactor);
         minecart.saveComponent(minecartComponent);
     }
 
-    private void correctPositionAndRotation(EntityRef entity) {
+    private void correctPositionAndRotation(EntityRef entity, BlockInfo blockInfo) {
         MinecartComponent minecartComponent = entity.getComponent(MinecartComponent.class);
         MeshComponent mesh = entity.getComponent(MeshComponent.class);
         LocationComponent location = entity.getComponent(LocationComponent.class);
@@ -190,11 +195,6 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
         }
 
         if (minecartComponent.isCreated && motionState.currentPositionStatus == MotionState.PositionStatus.ON_THE_PATH) {
-            Block currentBlock = worldProvider.getBlock(motionState.currentBlockPosition);
-            EntityRef blockEntity = currentBlock.getEntity();
-            ConnectsToRailsComponent railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
-            BlockInfo blockInfo = new BlockInfo(currentBlock, new Vector3i(motionState.currentBlockPosition), blockEntity, railsComponent);
-
             if (blockInfo.isIntersection()) {
                 blockInfo.getBlock().setDirection(minecartComponent.pathDirection.x != 0 ? Side.LEFT : Side.FRONT);
             }
@@ -307,8 +307,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             blockEntity = block.getEntity();
             railsComponent = blockEntity.getComponent(ConnectsToRailsComponent.class);
         }
-
-        return new BlockInfo(block, blockPosition, blockEntity, railsComponent);
+        return new BlockInfo(block, blockPosition, blockEntity, railsComponent, hit.getHitPoint());
     }
 
     private void setAngularAndLinearFactors (EntityRef entity, RigidBodyComponent rigidBodyComponent, Vector3f linearFactor, Vector3f angularFactor) {
@@ -369,14 +368,17 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             }
         }
 
-        if (!block.isSlope() && !motionState.nextBlockIsSlope) {
+        //if (!block.isSlope() && !motionState.nextBlockIsSlope) {
+          fixedPosition.y = block.hitPoint().y + minecartMaxExtends.y/2 + 0.05f;
+       // }
+        /*if (!block.isSlope() && !motionState.nextBlockIsSlope) {
             float halfHeight = minecartMaxExtends.y/2;
             float maxBlockHeight = block.getBlockPosition().y + block.getBlock().getCollisionOffset().y;
 
            // if ((maxBlockHeight + halfHeight)>position.y) {
                 fixedPosition.y = maxBlockHeight + halfHeight   ;
          //   }
-        }
+        }*/
 
         return fixedPosition;
     }

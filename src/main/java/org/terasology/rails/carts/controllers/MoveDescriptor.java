@@ -211,7 +211,7 @@ public class MoveDescriptor {
                 velocity.x = velocity.z;
             }
         }
-        logger.info("----------------------------");
+        logger.info("----------- " + blockInfo.getType() + " -----------------");
         logger.info("1. direction: " + minecartComponent.direction);
         if (minecartComponent.direction.x != 0) {
             minecartComponent.direction.z = minecartComponent.direction.x;
@@ -221,22 +221,20 @@ public class MoveDescriptor {
 
         MinecartHelper.setVectorToDirection(minecartComponent.direction, minecartComponent.pathDirection);
 
-        if (minecartComponent.drive != 0) {
         velocity.absolute();
         MinecartHelper.setVectorToDirection(velocity, minecartComponent.direction);
-
-        if ((minecartComponent.drive - velocity.lengthSquared()) > 0.1) {
+        float speed = velocity.length();
+        if (Math.abs((speed - minecartComponent.drive)) > 0.1f) {
             Vector3f drive = new Vector3f(minecartComponent.drive, minecartComponent.drive, minecartComponent.drive);
             drive.x *= minecartComponent.direction.x;
             drive.z *= minecartComponent.direction.z;
-            velocity.interpolate(drive, 0.1f);
+            velocity.interpolate(drive, 0.5f);
         }
 
         if (minecartComponent.direction.y != 0) {
             velocity.y =  minecartComponent.direction.y * Math.abs(minecartComponent.direction.x != 0 ? velocity.x : velocity.z);
         }
-        }
-
+        logger.info("velocity: " + velocity);
         logger.info("2. direction: " + minecartComponent.direction);
         logger.info("----------------------------");
     }
