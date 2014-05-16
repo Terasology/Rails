@@ -106,8 +106,6 @@ public class MinecartAction extends BaseComponentSystem {
             bumpForce.scale(bumpScale);
             entity.send(new ForceEvent(bumpForce));
         }
-
-        logger.info("Sended force: " + bumpForce + " minecart direction: " + minecart.direction + " minecart psth direction: " + minecart.pathDirection);
         entity.saveComponent(minecart);
     }
 
