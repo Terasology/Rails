@@ -19,6 +19,9 @@ import com.bulletphysics.linearmath.QuaternionUtil;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.terasology.asset.Assets;
+import org.terasology.audio.AudioManager;
+import org.terasology.audio.events.PlaySoundEvent;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.entity.lifecycleEvents.OnChangedComponent;
@@ -64,8 +67,12 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
     private LocalPlayer localPlayer;
     @In
     private InventoryManager inventoryManager;
+    @In
+    private org.terasology.engine.Time time;
+
 
     private MoveDescriptor moveDescriptor;
+    private Map<EntityRef, Long> soundStack = Maps.newHashMap();
     private Map<EntityRef, MotionState> moveStates = Maps.newHashMap();
     private final Logger logger = LoggerFactory.getLogger(MinecartSystem.class);
     private static final Vector3f FREE_MOTION   = new Vector3f(1f, 1f, 1f);
@@ -163,6 +170,9 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                             }
                         }
                     }
+                    if (!isSameBlock) {
+                        playSound(minecart, velocity, minecartComponent.drive);
+                    }
                 }
 
                 correctPositionAndRotation(minecart, currentBlock);
@@ -170,17 +180,38 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             } else {
                 minecartComponent.direction.y=0;
                 motionState.setCurrentState(FREE_MOTION, minecartComponent.direction, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_GROUND);
-                logger.info("on the ground");
             }
         } else {
             minecartComponent.direction.y=0;
             motionState.setCurrentState(FREE_MOTION, minecartComponent.direction, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_AIR);
-            logger.info("on the air");
         }
 
         setAngularAndLinearFactors(minecart, rigidBody, minecartComponent.pathDirection, motionState.angularFactor);
         minecart.saveComponent(minecartComponent);
     }
+
+    private void playSound(EntityRef minecart, Vector3f velocity, float drive) {
+
+        long currentTime = time.getGameTimeInMs();
+        if(!soundStack.containsKey(minecart)) {
+            soundStack.put(minecart, currentTime);
+        }
+
+        long soundProgress = currentTime - soundStack.get(minecart);
+
+        if ((velocity.z > 0.1 || velocity.x > 0.1) && (soundProgress == 0f||soundProgress>1000)) {
+            Vector3f tv = new Vector3f(velocity);
+            tv.y = 0;
+            float p = drive * 0.01f;
+            //float volume = ((tv.length() / p) * 0.01f)/10f;
+           // logger.info("timr: " + soundProgress);
+           // logger.info("volume: " + volume);
+            //audioManager.
+            minecart.send(new PlaySoundEvent(minecart, Assets.getSound("rails:vehicle"), 0.2f));
+            soundStack.put(minecart, currentTime);
+        }
+    }
+
 
     private void correctPositionAndRotation(EntityRef entity, BlockInfo blockInfo) {
         MinecartComponent minecartComponent = entity.getComponent(MinecartComponent.class);
