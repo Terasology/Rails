@@ -1,0 +1,51 @@
+{
+    "Item": {
+        "name": "Minecart",
+        "icon": "Rails:minecart.loco",
+        "usage": "IN_DIRECTION"
+    },
+    "Location": {
+        "scale": 0.45
+    },
+    "Mesh": {
+        "mesh": "Rails:loco",
+        "material": "Rails:loco"
+    },
+    "RigidBody": {
+        "mass": 250f,
+        /*"angularVelocity": [0,10,0],*/
+        "collisionGroup": "engine:world",
+        "collidesWith": [
+            "engine:world",
+            "engine:debris",
+            "engine:character",
+            "engine:default"
+        ]
+    },
+
+    "HullShape": {
+         "sourceMesh" : "Rails:loco-bounds"
+    },
+
+    "Health": {
+        "currentHealth": 1,
+        "maxHealth": 1,
+        "regenRate": 1,
+        "waitBeforeRegen": 2,
+        "destroyEntityOnNoHealth" : true
+
+    },
+
+    "Minecart": {
+        "type": "locomotive"
+    },
+    "Trigger": {
+        "detectGroups": [
+            "engine:world",
+            "engine:debris",
+            "engine:sensor",
+            "engine:kinematic",
+            "engine:default"
+        ]
+    }
+}

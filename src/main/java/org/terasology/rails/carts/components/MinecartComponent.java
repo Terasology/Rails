@@ -31,7 +31,7 @@ public class MinecartComponent implements Component {
     public boolean isCreated;
 
     @Replicate
-    public static Types type = Types.minecart;
+    public Types type = Types.minecart;
 
     @Replicate
     public List<EntityRef> vehicles = Lists.newArrayList();

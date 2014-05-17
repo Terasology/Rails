@@ -85,6 +85,9 @@ public class MinecartAction extends BaseComponentSystem {
     @ReceiveEvent(components = {MinecartComponent.class, LocationComponent.class}, priority = EventPriority.PRIORITY_HIGH)
     public void onBump(CollideEvent event, EntityRef entity) {
         MinecartComponent minecart = entity.getComponent(MinecartComponent.class);
+        if (minecart == null || !minecart.isCreated) {
+            return;
+        }
         LocationComponent minecartLocation = entity.getComponent(LocationComponent.class);
         if (minecart == null || (minecart.characterInsideCart != null && minecart.characterInsideCart.equals(event.getOtherEntity()))) {
             return;
@@ -114,6 +117,7 @@ public class MinecartAction extends BaseComponentSystem {
     public void onPlayerSpawn(OnPlayerSpawnedEvent event, EntityRef player, InventoryComponent inventory) {
         BlockItemFactory blockFactory = new BlockItemFactory(entityManager);
         inventoryManager.giveItem(player,player,entityManager.create("rails:minecart"));
+        inventoryManager.giveItem(player,player,entityManager.create("rails:loco"));
         inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("rails:Rails"), 99));
     }
 

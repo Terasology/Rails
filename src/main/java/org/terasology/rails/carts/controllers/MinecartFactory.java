@@ -28,6 +28,11 @@ public class MinecartFactory {
                 entity = createMinecart(position);
                 break;
             }
+
+            case locomotive: {
+                entity = createLocomotive(position);
+                break;
+            }
         }
 
         return entity;
@@ -49,6 +54,28 @@ public class MinecartFactory {
             minecart.direction = new Vector3f(1f, 1f, 1f);
             attachVehicle(entity, minecart, new Vector3f(-0.125f, -1.5f, 0.55f));
             attachVehicle(entity, minecart, new Vector3f(-0.125f, -1.5f, -0.55f));
+            entity.saveComponent(minecart);
+        }
+
+        return entity;
+    }
+
+    private EntityRef createLocomotive(Vector3f position) {
+        EntityRef entity = null;
+        entity = entityManager.create("rails:loco", position);
+
+        if (entity == null) {
+            return null;
+        }
+        LocationComponent minecartLocation = entity.getComponent(LocationComponent.class);
+        if (minecartLocation != null) {
+            MinecartComponent minecart = entity.getComponent(MinecartComponent.class);
+            minecart.isCreated = true;
+            minecart.drive = 0;
+            minecart.pathDirection = new Vector3f();
+            minecart.direction = new Vector3f(1f, 1f, 1f);
+            attachVehicle(entity, minecart, new Vector3f(-0.125f, -1f, 0.55f));
+            attachVehicle(entity, minecart, new Vector3f(-0.125f, -1f, -0.55f));
             entity.saveComponent(minecart);
         }
 

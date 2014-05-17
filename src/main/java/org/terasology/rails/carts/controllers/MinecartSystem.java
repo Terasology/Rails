@@ -399,8 +399,8 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             }
         }
 
-        //if (!block.isSlope() && !motionState.nextBlockIsSlope) {
-          fixedPosition.y = block.hitPoint().y + minecartMaxExtends.y/2 + 0.05f;
+        fixedPosition.y = block.hitPoint().y + minecartMaxExtends.y/2 + 0.05f;
+
        // }
         /*if (!block.isSlope() && !motionState.nextBlockIsSlope) {
             float halfHeight = minecartMaxExtends.y/2;
