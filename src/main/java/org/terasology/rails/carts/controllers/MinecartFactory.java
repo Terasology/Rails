@@ -75,7 +75,13 @@ public class MinecartFactory {
             minecart.pathDirection = new Vector3f();
             minecart.direction = new Vector3f(1f, 1f, 1f);
             attachVehicle(entity, minecart, new Vector3f(-0.125f, -1.2f, 0.55f), 0.75f);
+            attachVehicle(entity, minecart, new Vector3f(-0.125f, -1.2f, 0), 0.75f);
             attachVehicle(entity, minecart, new Vector3f(-0.125f, -1.2f, -0.55f), 0.75f);
+
+            //add pipe
+            EntityRef pipeEnity = entityManager.create("rails:pipe", position);
+            Location.attachChild(entity, pipeEnity, new Vector3f(0,1,0), new Quat4f());
+            minecart.pipe = pipeEnity;
             entity.saveComponent(minecart);
         }
 

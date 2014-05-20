@@ -36,6 +36,9 @@ public class MinecartComponent implements Component {
     @Replicate
     public List<EntityRef> vehicles = Lists.newArrayList();
 
+    @Replicate
+    public EntityRef pipe = null;
+
     public enum Types { locomotive, minecart };
 
     @Replicate

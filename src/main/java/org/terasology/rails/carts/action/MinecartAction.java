@@ -33,6 +33,7 @@ import org.terasology.logic.location.Location;
 import org.terasology.network.ClientComponent;
 import org.terasology.physics.StandardCollisionGroup;
 import org.terasology.physics.components.RigidBodyComponent;
+import org.terasology.physics.engine.RigidBody;
 import org.terasology.physics.events.ChangeVelocityEvent;
 import org.terasology.physics.events.CollideEvent;
 import org.terasology.physics.events.ForceEvent;
@@ -52,6 +53,7 @@ import org.terasology.logic.players.event.OnPlayerSpawnedEvent;
 import org.terasology.math.Vector3i;
 import org.terasology.rails.carts.components.MinecartComponent;
 import org.terasology.rails.carts.controllers.MinecartFactory;
+import org.terasology.rendering.logic.MeshComponent;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.BlockComponent;
 import org.terasology.world.block.BlockManager;
@@ -88,36 +90,27 @@ public class MinecartAction extends BaseComponentSystem {
         if (minecart == null || !minecart.isCreated) {
             return;
         }
-        LocationComponent minecartLocation = entity.getComponent(LocationComponent.class);
+
         if (minecart == null || (minecart.characterInsideCart != null && minecart.characterInsideCart.equals(event.getOtherEntity()))) {
             return;
         }
-        EntityRef other = event.getOtherEntity();
-        LocationComponent location = other.getComponent(LocationComponent.class);
-        Vector3f bumpForce = new Vector3f(minecartLocation.getWorldPosition());
-        bumpForce.sub(location.getWorldPosition());
-        bumpForce.normalize();
-        float bumpScale = 80f;
-        minecart.direction.set(minecart.pathDirection);
-        MinecartHelper.setVectorToDirection(bumpForce, minecart.pathDirection);
-        MinecartHelper.setVectorToDirection(minecart.direction, bumpForce);
 
-        if (other.hasComponent(CharacterComponent.class)) {
-            bumpForce.scale(5f);
-            entity.send(new ImpulseEvent(bumpForce));
-        } else {
-            bumpForce.scale(bumpScale);
-            entity.send(new ForceEvent(bumpForce));
+        switch (minecart.type) {
+            case minecart:
+                onBumpMinecart(entity, event.getOtherEntity());
+                break;
+            case locomotive:
+                onBumpLocomotive(entity, event.getOtherEntity());
+                break;
         }
-        entity.saveComponent(minecart);
     }
-
 
     @ReceiveEvent
     public void onPlayerSpawn(OnPlayerSpawnedEvent event, EntityRef player, InventoryComponent inventory) {
         BlockItemFactory blockFactory = new BlockItemFactory(entityManager);
         inventoryManager.giveItem(player,player,entityManager.create("rails:minecart"));
         inventoryManager.giveItem(player,player,entityManager.create("rails:loco"));
+        //inventoryManager.giveItem(player,player,entityManager.create("rails:wrench"));
         inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("rails:Rails"), 99));
     }
 
@@ -200,5 +193,39 @@ public class MinecartAction extends BaseComponentSystem {
                 minecartEntity.saveComponent(minecartComponent);
             }
         }
+    }
+
+    private void onBumpLocomotive(EntityRef locomotive, EntityRef enity) {
+
+    }
+
+    private void onBumpMinecart(EntityRef minecart, EntityRef entity) {
+        LocationComponent minecartLocation = minecart.getComponent(LocationComponent.class);
+        LocationComponent location = entity.getComponent(LocationComponent.class);
+        MinecartComponent minecartComponent = minecart.getComponent(MinecartComponent.class);
+        MinecartComponent entityMinecartComponent = entity.getComponent(MinecartComponent.class);
+        Vector3f diffPosition = new Vector3f(minecartLocation.getWorldPosition());
+        diffPosition.sub(location.getWorldPosition());
+        Vector3f forceDirection = new Vector3f(Math.signum(diffPosition.x), Math.signum(diffPosition.y), Math.signum(diffPosition.z));
+
+        if (entity.hasComponent(CharacterComponent.class)) {
+            forceDirection.scale(5f);
+            forceDirection.y = 0;
+            minecart.send(new ImpulseEvent(forceDirection));
+        } else if (entity.hasComponent(MinecartComponent.class)) {
+            float forceScale = 10f;
+            RigidBodyComponent rb = entity.getComponent(RigidBodyComponent.class);
+            minecartComponent.direction.set(minecartComponent.pathDirection);
+            MinecartHelper.setVectorToDirection(forceDirection, minecartComponent.pathDirection);
+            MinecartHelper.setVectorToDirection(minecartComponent.direction, forceDirection);
+            forceDirection.scale(forceScale);
+            rb.velocity.scale(0.1f);
+            forceDirection.y = 1f;
+            minecart.send(new ImpulseEvent(forceDirection));
+            entity.send(new ChangeVelocityEvent(rb.velocity));
+            logger.info("bump: " + forceDirection);
+            logger.info("dambump: " + rb.velocity);
+        }
+        minecart.saveComponent(minecartComponent);
     }
 }

@@ -33,6 +33,7 @@ import org.terasology.input.binds.movement.VerticalMovementAxis;
 import org.terasology.logic.common.ActivateEvent;
 import org.terasology.logic.inventory.InventoryManager;
 import org.terasology.logic.location.LocationComponent;
+import org.terasology.logic.particles.BlockParticleEffectComponent;
 import org.terasology.logic.players.LocalPlayer;
 import org.terasology.math.Side;
 import org.terasology.math.TeraMath;
@@ -249,6 +250,29 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             entity.saveComponent(location);
         }
         rotateVehicles(rb.velocity, minecartComponent);
+
+        if (minecartComponent.pipe != null) {
+            BlockParticleEffectComponent particleEffectComponent = minecartComponent.pipe.getComponent(BlockParticleEffectComponent.class);
+            if (minecartComponent.drive > 0 && particleEffectComponent.spawnCount == 0) {
+                particleEffectComponent.spawnCount = 2;
+                if (particleEffectComponent.targetVelocity.lengthSquared() == 0) {
+                    Vector3f smokeVelocity = new Vector3f(minecartComponent.direction);
+                    smokeVelocity.negate();
+                    if ( Math.signum(smokeVelocity.x) != Math.signum(particleEffectComponent.targetVelocity.x) ||
+                         Math.signum(smokeVelocity.z) != Math.signum(particleEffectComponent.targetVelocity.z)) {
+                        particleEffectComponent.targetVelocity.set(smokeVelocity);
+                        particleEffectComponent.targetVelocity.y = 0.7f;
+                        particleEffectComponent.targetVelocity.negate();
+                        particleEffectComponent.acceleration.set(particleEffectComponent.targetVelocity);
+                        particleEffectComponent.targetVelocity.scale(10f);
+                        particleEffectComponent.acceleration.scale(5f);
+                        minecartComponent.pipe.saveComponent(particleEffectComponent);
+                    }
+                }
+            } else {
+                particleEffectComponent.targetVelocity.set(0,0,0);
+            }
+        }
 
     }
 
