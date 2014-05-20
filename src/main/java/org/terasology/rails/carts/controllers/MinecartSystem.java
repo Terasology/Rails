@@ -361,14 +361,15 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
     private void showSmoke(MinecartComponent minecartComponent) {
         if (minecartComponent.pipe != null) {
             BlockParticleEffectComponent particleEffectComponent = minecartComponent.pipe.getComponent(BlockParticleEffectComponent.class);
-            if (minecartComponent.drive > 0) {
-                particleEffectComponent.spawnCount = 2;
+            if (minecartComponent.drive != 0) {
+                particleEffectComponent.spawnCount = 20;
                 particleEffectComponent.targetVelocity.set(minecartComponent.direction);
                 particleEffectComponent.targetVelocity.negate();
                 particleEffectComponent.targetVelocity.y = 0.7f;
-                particleEffectComponent.acceleration.set(particleEffectComponent.targetVelocity);
-                particleEffectComponent.targetVelocity.scale(5f);
-                particleEffectComponent.acceleration.scale(2.5f);
+                particleEffectComponent.acceleration.set(minecartComponent.pathDirection);
+                particleEffectComponent.acceleration.y = 0.7f;
+                particleEffectComponent.targetVelocity.scale(3f);
+                particleEffectComponent.acceleration.scale(1.5f);
                 minecartComponent.pipe.saveComponent(particleEffectComponent);
             } else {
                 particleEffectComponent.targetVelocity.set(0,0,0);
