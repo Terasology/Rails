@@ -17,6 +17,7 @@ package org.terasology.rails.carts.action;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.terasology.asset.Assets;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.entity.lifecycleEvents.BeforeDeactivateComponent;
@@ -25,12 +26,16 @@ import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.input.binds.movement.ForwardsMovementAxis;
 import org.terasology.input.binds.movement.VerticalMovementAxis;
+import org.terasology.input.cameraTarget.CameraTargetChangedEvent;
 import org.terasology.logic.characters.CharacterComponent;
 import org.terasology.logic.characters.MovementMode;
 import org.terasology.logic.characters.events.SetMovementModeEvent;
+import org.terasology.logic.inventory.InventoryUtils;
 import org.terasology.logic.inventory.action.GiveItemAction;
 import org.terasology.logic.location.Location;
 import org.terasology.network.ClientComponent;
+import org.terasology.physics.HitResult;
+import org.terasology.physics.Physics;
 import org.terasology.physics.StandardCollisionGroup;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.physics.engine.RigidBody;
@@ -39,6 +44,7 @@ import org.terasology.physics.events.CollideEvent;
 import org.terasology.physics.events.ForceEvent;
 import org.terasology.physics.events.ImpulseEvent;
 import org.terasology.rails.blocks.ConnectsToRailsComponent;
+import org.terasology.rails.carts.components.WrenchComponent;
 import org.terasology.rails.carts.utils.MinecartHelper;
 import org.terasology.registry.In;
 import org.terasology.entitySystem.systems.RegisterMode;
@@ -58,6 +64,8 @@ import org.terasology.world.WorldProvider;
 import org.terasology.world.block.BlockComponent;
 import org.terasology.world.block.BlockManager;
 import org.terasology.world.block.items.BlockItemFactory;
+import org.terasology.world.selection.BlockSelectionComponent;
+import org.terasology.world.selection.event.SetBlockSelectionEndingPointEvent;
 
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
@@ -74,6 +82,8 @@ public class MinecartAction extends BaseComponentSystem {
     private BlockManager blockManager;
     @In
     private LocalPlayer localPlayer;
+    @In
+    private Physics physics;
 
     private MinecartFactory minecartFactory;
     private final Logger logger = LoggerFactory.getLogger(MinecartAction.class);
@@ -110,7 +120,7 @@ public class MinecartAction extends BaseComponentSystem {
         BlockItemFactory blockFactory = new BlockItemFactory(entityManager);
         inventoryManager.giveItem(player,player,entityManager.create("rails:minecart"));
         inventoryManager.giveItem(player,player,entityManager.create("rails:loco"));
-        //inventoryManager.giveItem(player,player,entityManager.create("rails:wrench"));
+        inventoryManager.giveItem(player,player,entityManager.create("rails:wrench"));
         inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("rails:Rails"), 99));
     }
 
@@ -157,6 +167,75 @@ public class MinecartAction extends BaseComponentSystem {
 
         EntityRef entity = minecartFactory.create(placementPos.toVector3f(), functionalItem.type);
         event.consume();
+    }
+
+    @ReceiveEvent(components = {LocationComponent.class}, priority = EventPriority.PRIORITY_HIGH)
+    public void onCamTargetChanged(CameraTargetChangedEvent event, EntityRef entity) {
+        EntityRef oldTarget = event.getOldTarget();
+        EntityRef newTarget = event.getNewTarget();
+        CharacterComponent characterComponent = entity.getComponent(CharacterComponent.class);
+        EntityRef heldItem = InventoryUtils.getItemAt(entity, characterComponent.selectedItem);
+
+        if (!heldItem.hasComponent(WrenchComponent.class)) {
+            return;
+        }
+
+        if (oldTarget.hasComponent(MinecartComponent.class)) {
+            MinecartComponent minecartComponent = oldTarget.getComponent(MinecartComponent.class);
+            if (minecartComponent.type.equals(MinecartComponent.Types.minecart)) {
+                MeshComponent mesh = oldTarget.getComponent(MeshComponent.class);
+                mesh.material = Assets.getMaterial("rails:minecart");
+                for (EntityRef vehicle : minecartComponent.vehicles) {
+                    MeshComponent meshVehicle = vehicle.getComponent(MeshComponent.class);
+                    meshVehicle.material = Assets.getMaterial("rails:minecart");
+                    vehicle.saveComponent(meshVehicle);
+                }
+                oldTarget.saveComponent(mesh);
+            }
+        }
+
+        if (newTarget.hasComponent(MinecartComponent.class)) {
+            MinecartComponent minecartComponent = newTarget.getComponent(MinecartComponent.class);
+            if (minecartComponent.type.equals(MinecartComponent.Types.minecart)) {
+                MeshComponent mesh = newTarget.getComponent(MeshComponent.class);
+                LocationComponent location = newTarget.getComponent(LocationComponent.class);
+                if (checkMineCartJoin(minecartComponent, location.getWorldPosition())) {
+                    mesh.material = Assets.getMaterial("rails:minecart-join");
+                    for (EntityRef vehicle : minecartComponent.vehicles) {
+                        MeshComponent meshVehicle = vehicle.getComponent(MeshComponent.class);
+                        meshVehicle.material = Assets.getMaterial("rails:minecart-join");
+                        vehicle.saveComponent(meshVehicle);
+                    }
+                    newTarget.saveComponent(mesh);
+                }
+            }
+        }
+    }
+
+    private boolean checkMineCartJoin(MinecartComponent minecartComponent, Vector3f position) {
+        Vector3f pathDirection = new Vector3f(minecartComponent.pathDirection);
+        pathDirection.y = 0;
+
+        Vector3f pathDirectionNegate = new Vector3f(pathDirection);
+        pathDirectionNegate.negate(pathDirection);
+        Vector3f[] directions = {pathDirection, pathDirectionNegate};
+
+        for (Vector3f dir : directions) {
+            HitResult hit = physics.rayTrace(position, dir, 2.5f, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
+            EntityRef entity = hit.getEntity();
+
+            if (entity.hasComponent(MinecartComponent.class)) {
+                MinecartComponent mn = entity.getComponent(MinecartComponent.class);
+                if (mn.type.equals(MinecartComponent.Types.locomotive)) {
+                    return true;
+                } else {
+                    return true;
+                }
+            }
+        }
+
+
+        return false;
     }
 
     @ReceiveEvent(components = {MinecartComponent.class, LocationComponent.class})
@@ -210,7 +289,6 @@ public class MinecartAction extends BaseComponentSystem {
 
         if (entity.hasComponent(CharacterComponent.class)) {
             forceDirection.scale(5f);
-            forceDirection.y = 0;
             minecart.send(new ImpulseEvent(forceDirection));
         } else if (entity.hasComponent(MinecartComponent.class)) {
             float forceScale = 10f;
@@ -223,8 +301,6 @@ public class MinecartAction extends BaseComponentSystem {
             forceDirection.y = 1f;
             minecart.send(new ImpulseEvent(forceDirection));
             entity.send(new ChangeVelocityEvent(rb.velocity));
-            logger.info("bump: " + forceDirection);
-            logger.info("dambump: " + rb.velocity);
         }
         minecart.saveComponent(minecartComponent);
     }

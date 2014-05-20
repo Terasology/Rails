@@ -119,8 +119,6 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
         motionState.angularFactor.set(rigidBody.angularFactor);
 
         if (!minecartComponent.pathDirection.equals(FREE_MOTION) || !minecartComponent.pathDirection.equals(LOCKED_MOTION)) {
-            /*Vector3f downedPos = new Vector3f(position);
-            downedPos.y -= 0.4f;*/
             BlockInfo blockPossibleSlope = getBlockInDirection(position, new Vector3f(minecartComponent.direction.x , -1f, minecartComponent.direction.z), 1.2f);
             if (blockPossibleSlope.isRails() && blockPossibleSlope.isSlope()) {
                 slopeFactor = 1;
