@@ -366,8 +366,8 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                 particleEffectComponent.targetVelocity.y = 0.7f;
                 particleEffectComponent.acceleration.set(minecartComponent.pathDirection);
                 particleEffectComponent.acceleration.y = 0.7f;
-                particleEffectComponent.targetVelocity.scale(3f);
-                particleEffectComponent.acceleration.scale(1.5f);
+                particleEffectComponent.targetVelocity.scale(4f);
+                particleEffectComponent.acceleration.scale(2.5f);
                 minecartComponent.pipe.saveComponent(particleEffectComponent);
             } else {
                 particleEffectComponent.targetVelocity.set(0,0,0);

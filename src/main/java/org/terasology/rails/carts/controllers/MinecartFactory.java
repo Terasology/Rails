@@ -80,7 +80,7 @@ public class MinecartFactory {
 
             //add pipe
             EntityRef pipeEnity = entityManager.create("rails:pipe", position);
-            Location.attachChild(entity, pipeEnity, new Vector3f(0,1,0), new Quat4f());
+            Location.attachChild(entity, pipeEnity, new Vector3f(0.5f,1.5f,0), new Quat4f());
             minecart.pipe = pipeEnity;
             entity.saveComponent(minecart);
         }

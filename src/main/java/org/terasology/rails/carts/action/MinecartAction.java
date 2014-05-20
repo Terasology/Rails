@@ -267,7 +267,7 @@ public class MinecartAction extends BaseComponentSystem {
                 if (minecartComponent.drive > 0) {
                     minecartComponent.drive = 0;
                 } else {
-                    minecartComponent.drive = 5;
+                    minecartComponent.drive = 2;
                 }
                 minecartEntity.saveComponent(minecartComponent);
             }
