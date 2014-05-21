@@ -236,6 +236,13 @@ public class MoveDescriptor {
                 velocity.y =  minecartComponent.direction.y * Math.abs(minecartComponent.direction.x != 0 ? velocity.x : velocity.z);
             }
         }
+
+        if (minecartComponent.needRevertVelocity > 0) {
+            velocity.negate();
+            velocity.scale(0.7f);
+            minecartComponent.needRevertVelocity--;
+        }
+
     }
 
     public void setPitchOnPath(MinecartComponent minecart, Vector3f position, MotionState motionState, BlockInfo blockInfo) {

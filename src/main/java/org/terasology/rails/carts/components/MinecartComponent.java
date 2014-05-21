@@ -42,6 +42,12 @@ public class MinecartComponent implements Component {
     public enum Types { locomotive, minecart };
 
     @Replicate
+    public EntityRef parentNode;
+
+    @Replicate
+    public EntityRef locomotive;
+
+    @Replicate
     public EntityRef characterInsideCart;
 
     @Replicate
@@ -67,4 +73,7 @@ public class MinecartComponent implements Component {
 
     @Replicate
     public Vector3f direction;
+
+    @Replicate
+    public float needRevertVelocity = 0;
 }

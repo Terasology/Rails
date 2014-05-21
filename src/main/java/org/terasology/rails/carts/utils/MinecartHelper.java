@@ -15,8 +15,11 @@
  */
 package org.terasology.rails.carts.utils;
 
+import org.terasology.logic.location.LocationComponent;
+import org.terasology.math.Side;
 import org.terasology.math.TeraMath;
 import org.terasology.math.Vector3i;
+import org.terasology.rails.carts.components.MinecartComponent;
 
 import javax.vecmath.Vector3f;
 
@@ -34,5 +37,24 @@ public class MinecartHelper {
         in.x *= Math.signum(directionX);
         in.y *= Math.signum(directionY);
         in.z *= Math.signum(directionZ);
+    }
+
+    public static Side getSideOfLocomotive(Vector3f point, Vector3f locomotivePosition, float locomotiveYaw) {
+        if (locomotiveYaw == 0 || locomotiveYaw == 90) {
+            if (point.x < locomotivePosition.x || point.z < locomotivePosition.z) {
+                return Side.BACK;
+            }
+            return Side.FRONT;
+        }
+
+        if (locomotiveYaw == 180 ||  locomotiveYaw == 270) {
+            if (point.x > locomotivePosition.x || point.z > locomotivePosition.z) {
+                return Side.BACK;
+            }
+            return Side.FRONT;
+        }
+
+        return Side.FRONT;
+
     }
 }
