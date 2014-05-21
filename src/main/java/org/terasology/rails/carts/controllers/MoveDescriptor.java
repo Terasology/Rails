@@ -229,7 +229,7 @@ public class MoveDescriptor {
                 Vector3f drive = new Vector3f(minecartComponent.drive, minecartComponent.drive, minecartComponent.drive);
                 drive.x *= minecartComponent.direction.x;
                 drive.z *= minecartComponent.direction.z;
-                velocity.interpolate(drive, 0.05f);
+                velocity.interpolate(drive, 0.5f);
             }
 
             if (minecartComponent.direction.y != 0) {
