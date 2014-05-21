@@ -282,16 +282,21 @@ public class MinecartAction extends BaseComponentSystem {
         LocationComponent minecartLocation = minecart.getComponent(LocationComponent.class);
         LocationComponent location = entity.getComponent(LocationComponent.class);
         MinecartComponent minecartComponent = minecart.getComponent(MinecartComponent.class);
-        MinecartComponent entityMinecartComponent = entity.getComponent(MinecartComponent.class);
-        Vector3f diffPosition = new Vector3f(minecartLocation.getWorldPosition());
-        diffPosition.sub(location.getWorldPosition());
-        Vector3f forceDirection = new Vector3f(Math.signum(diffPosition.x), Math.signum(diffPosition.y), Math.signum(diffPosition.z));
 
         if (entity.hasComponent(CharacterComponent.class)) {
-            forceDirection.scale(5f);
-            minecart.send(new ImpulseEvent(forceDirection));
+            Vector3f bumpForce = new Vector3f(minecartLocation.getWorldPosition());
+            bumpForce.sub(location.getWorldPosition());
+            bumpForce.normalize();
+            bumpForce.x *= minecartComponent.pathDirection.x;
+            bumpForce.y *= minecartComponent.pathDirection.y;
+            bumpForce.z *= minecartComponent.pathDirection.z;
+            bumpForce.scale(5f);
+            minecart.send(new ImpulseEvent(bumpForce));
         } else if (entity.hasComponent(MinecartComponent.class)) {
-            float forceScale = 10f;
+            Vector3f diffPosition = new Vector3f(minecartLocation.getWorldPosition());
+            diffPosition.sub(location.getWorldPosition());
+            Vector3f forceDirection = new Vector3f(Math.signum(diffPosition.x), Math.signum(diffPosition.y), Math.signum(diffPosition.z));
+            float forceScale = 5f;
             RigidBodyComponent rb = entity.getComponent(RigidBodyComponent.class);
             minecartComponent.direction.set(minecartComponent.pathDirection);
             MinecartHelper.setVectorToDirection(forceDirection, minecartComponent.pathDirection);
