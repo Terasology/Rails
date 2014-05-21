@@ -146,13 +146,14 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
 
             if (currentBlock.isRails()) {
                 boolean isSameBlock = currentBlock.isSameBlock(motionState.currentBlockPosition);
-                if (isSameBlock && !isLowSpeed(minecartComponent.drive, velocity.length()) && slopeFactor == 0 && !currentBlock.isCorner()) {
+                if (isSameBlock && !isLowSpeed(minecartComponent.drive, velocity.length()) && slopeFactor == 0 && !currentBlock.isCorner() && minecartComponent.parentNode == null) {
                     motionState.setCurrentState(minecartComponent.pathDirection, minecartComponent.direction, motionState.angularFactor, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_PATH);
                 } else {
                     if (!isSameBlock) {
                         motionState.yawSign = 0;
                         minecartComponent.prevYaw = -1;
                     }
+
                     motionState.setCurrentBlockPosition(currentBlock.getBlockPosition().toVector3f());
                     moveDescriptor.calculateDirection(velocity, currentBlock, minecartComponent, motionState, position, slopeFactor);
                     motionState.setCurrentState(minecartComponent.pathDirection, minecartComponent.direction, LOCKED_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_PATH);

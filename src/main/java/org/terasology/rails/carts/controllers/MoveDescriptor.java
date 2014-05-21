@@ -19,8 +19,10 @@ import com.bulletphysics.linearmath.QuaternionUtil;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.Side;
 import org.terasology.math.TeraMath;
+import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.rails.blocks.ConnectsToRailsComponent;
 import org.terasology.rails.carts.components.MinecartComponent;
 import org.terasology.rails.carts.utils.MinecartHelper;
@@ -65,7 +67,7 @@ public class MoveDescriptor {
             minecart.direction.y = 0;
         }
 
-        correctVelocity(minecart, velocity, blockInfo);
+        correctVelocity(minecart, velocity, blockInfo, position);
     }
 
     public Side correctSide(BlockInfo blockInfo) {
@@ -202,7 +204,7 @@ public class MoveDescriptor {
         }
     }
 
-    private void correctVelocity(MinecartComponent minecartComponent, Vector3f velocity, BlockInfo blockInfo) {
+    private void correctVelocity(MinecartComponent minecartComponent, Vector3f velocity, BlockInfo blockInfo, Vector3f position) {
 
         if (blockInfo.isCorner()) {
             if (velocity.x != 0) {
@@ -218,6 +220,31 @@ public class MoveDescriptor {
             minecartComponent.direction.x = minecartComponent.direction.z;
         }
 
+        if (minecartComponent.parentNode != null) {
+            logger.info("Olleee!!!");
+            LocationComponent parentLocation = minecartComponent.parentNode.getComponent(LocationComponent.class);
+            Vector3f parentPos = parentLocation.getWorldPosition();
+            Vector3f dir = new Vector3f(parentPos);
+            dir.sub(position);
+
+            dir.y = 0;
+
+            //logger.info("dir: " + dir.length());
+            if (dir.length() > 1.46f) {
+                logger.info("dir.length: " + dir);
+                RigidBodyComponent rb = minecartComponent.parentNode.getComponent(RigidBodyComponent.class);
+                minecartComponent.direction.set(Math.signum(dir.x), minecartComponent.direction.y, Math.signum(dir.z));
+                velocity.set(1,velocity.y,1);
+                velocity.scale(rb.velocity.length()*(dir.length() - 1.46f) + velocity.length());
+            } else if (dir.length() < 1.46f) {
+                RigidBodyComponent rb = minecartComponent.parentNode.getComponent(RigidBodyComponent.class);
+                minecartComponent.direction.set(Math.signum(dir.x), minecartComponent.direction.y, Math.signum(dir.z));
+                minecartComponent.direction.negate();
+                velocity.set(1,velocity.y,1);
+                velocity.scale(velocity.length()*(dir.length() - 1.46f));
+            }
+        }
+
         MinecartHelper.setVectorToDirection(minecartComponent.direction, minecartComponent.pathDirection);
 
         velocity.absolute();
@@ -231,10 +258,10 @@ public class MoveDescriptor {
                 drive.z *= minecartComponent.direction.z;
                 velocity.interpolate(drive, 0.5f);
             }
+        }
 
-            if (minecartComponent.direction.y != 0) {
-                velocity.y =  minecartComponent.direction.y * Math.abs(minecartComponent.direction.x != 0 ? velocity.x : velocity.z);
-            }
+        if (minecartComponent.direction.y != 0) {
+            velocity.y =  minecartComponent.direction.y * Math.abs(minecartComponent.direction.x != 0 ? velocity.x : velocity.z);
         }
 
         if (minecartComponent.needRevertVelocity > 0) {

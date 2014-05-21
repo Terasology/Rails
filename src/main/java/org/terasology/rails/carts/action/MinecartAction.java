@@ -336,6 +336,10 @@ public class MinecartAction extends BaseComponentSystem {
         LocationComponent location = entity.getComponent(LocationComponent.class);
         MinecartComponent minecartComponent = minecart.getComponent(MinecartComponent.class);
 
+        if ( minecartComponent.parentNode != null && minecartComponent.parentNode.equals(entity) ) {
+            return;
+        }
+
         if (entity.hasComponent(CharacterComponent.class)) {
             Vector3f bumpForce = new Vector3f(minecartLocation.getWorldPosition());
             bumpForce.sub(location.getWorldPosition());
