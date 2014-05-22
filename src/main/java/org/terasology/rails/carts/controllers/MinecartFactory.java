@@ -11,6 +11,7 @@ import org.terasology.math.Rotation;
 import org.terasology.math.TeraMath;
 import org.terasology.math.Yaw;
 import org.terasology.rails.carts.components.MinecartComponent;
+import org.terasology.rails.carts.components.WheelComponent;
 
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
@@ -52,8 +53,8 @@ public class MinecartFactory {
             minecart.drive = 0;
             minecart.pathDirection = new Vector3f();
             minecart.direction = new Vector3f(1f, 1f, 1f);
-            attachVehicle(entity, minecart, new Vector3f(-0.125f, -1.5f, 0.55f), 1f);
-            attachVehicle(entity, minecart, new Vector3f(-0.125f, -1.5f, -0.55f), 1f);
+            attachVehicle(entity, new Vector3f(-0.125f, -1.5f, 0.55f), 1f);
+            attachVehicle(entity, new Vector3f(-0.125f, -1.5f, -0.55f), 1f);
             entity.saveComponent(minecart);
         }
 
@@ -74,9 +75,9 @@ public class MinecartFactory {
             minecart.drive = 0;
             minecart.pathDirection = new Vector3f();
             minecart.direction = new Vector3f(1f, 1f, 1f);
-            attachVehicle(entity, minecart, new Vector3f(-0.125f, -1.2f, 0.55f), 0.75f);
-            attachVehicle(entity, minecart, new Vector3f(-0.125f, -1.2f, 0), 0.75f);
-            attachVehicle(entity, minecart, new Vector3f(-0.125f, -1.2f, -0.55f), 0.75f);
+            attachVehicle(entity, new Vector3f(-0.125f, -1.2f, 0.55f), 0.75f);
+            attachVehicle(entity, new Vector3f(-0.125f, -1.2f, 0), 0.75f);
+            attachVehicle(entity, new Vector3f(-0.125f, -1.2f, -0.55f), 0.75f);
 
             //add pipe
             EntityRef pipeEnity = entityManager.create("rails:pipe", position);
@@ -88,7 +89,8 @@ public class MinecartFactory {
         return entity;
     }
 
-    private void attachVehicle(EntityRef minecartEntity, MinecartComponent minecart, Vector3f position, float scale) {
+    public void attachVehicle(EntityRef minecartEntity, Vector3f position, float scale) {
+        MinecartComponent minecart = minecartEntity.getComponent(MinecartComponent.class);
         EntityRef vehicle = entityManager.create("rails:vehicle");
         Location.attachChild(minecartEntity, vehicle, position, new Quat4f());
         if (scale != 1) {
@@ -96,7 +98,13 @@ public class MinecartFactory {
             locationComponent.setLocalScale(scale);
             vehicle.saveComponent(locationComponent);
         }
+        WheelComponent wheelComponent = vehicle.getComponent(WheelComponent.class);
+        wheelComponent.parent = minecartEntity;
+        wheelComponent.position = position;
+        wheelComponent.scale = scale;
+        vehicle.saveComponent(wheelComponent);
         minecart.vehicles.add(vehicle);
+        minecartEntity.saveComponent(minecart);
     }
 
     public void setEntityManager(EntityManager entityManager) {

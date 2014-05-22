@@ -45,7 +45,9 @@ import org.terasology.physics.StandardCollisionGroup;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.physics.events.ChangeVelocityEvent;
 import org.terasology.rails.blocks.ConnectsToRailsComponent;
+import org.terasology.rails.carts.components.LocomotiveComponent;
 import org.terasology.rails.carts.components.MinecartComponent;
+import org.terasology.rails.carts.components.WheelComponent;
 import org.terasology.rails.carts.utils.MinecartHelper;
 import org.terasology.registry.In;
 import org.terasology.rendering.logic.MeshComponent;
@@ -83,6 +85,8 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
     @Override
     public void initialise() {
         moveDescriptor = new MoveDescriptor();
+        loadVehicles();
+        loadLocomotivesChild();
     }
 
     @Override
@@ -210,6 +214,43 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             //audioManager.
             minecart.send(new PlaySoundEvent(minecart, Assets.getSound("rails:vehicle"), 0.2f));
             soundStack.put(minecart, currentTime);
+        }
+    }
+
+    private void loadVehicles() {
+        MinecartFactory minecartFactory = new MinecartFactory();
+        minecartFactory.setEntityManager(entityManager);
+
+        logger.info("Looking for lost wheels...");
+        for (EntityRef vehicle : entityManager.getEntitiesWith(WheelComponent.class)) {
+            WheelComponent wheelComponent = vehicle.getComponent(WheelComponent.class);
+
+
+            if (wheelComponent.parent != null) {
+                LocationComponent parentLoc = wheelComponent.parent.getComponent(LocationComponent.class);
+                if (!parentLoc.getChildren().contains(vehicle)) {
+                    minecartFactory.attachVehicle(wheelComponent.parent, wheelComponent.position, wheelComponent.scale);
+                }
+            }
+        }
+    }
+
+    private void loadLocomotivesChild() {
+        logger.info("Looking for lost minecarts...");
+        for (EntityRef minecart : entityManager.getEntitiesWith(MinecartComponent.class)) {
+            MinecartComponent minecartComponent = minecart.getComponent(MinecartComponent.class);
+
+            if (minecart.hasComponent(LocomotiveComponent.class)) {
+                continue;
+            }
+
+            if (minecartComponent.parentNode != null && minecartComponent.locomotiveRef != null) {
+                LocomotiveComponent locoComponent = minecartComponent.locomotiveRef.getComponent(LocomotiveComponent.class);
+                if(!locoComponent.childs.contains(minecart)) {
+                    locoComponent.childs.add(minecart);
+                    minecartComponent.locomotiveRef.saveComponent(locoComponent);
+                }
+            }
         }
     }
 

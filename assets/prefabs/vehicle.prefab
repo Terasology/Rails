@@ -1,8 +1,10 @@
 {
     "Location" : {
     },
+    "Wheel" : {
+    },
     "Mesh" : {
-        "mesh" : "Rails:vehicle_aligned",
-        "material" : "Rails:vehicle"
+        "mesh" : "Rails:wheel",
+        "material" : "Rails:wheel"
     }
 }

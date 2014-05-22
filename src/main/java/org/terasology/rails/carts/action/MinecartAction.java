@@ -48,6 +48,7 @@ import org.terasology.physics.events.CollideEvent;
 import org.terasology.physics.events.ForceEvent;
 import org.terasology.physics.events.ImpulseEvent;
 import org.terasology.rails.blocks.ConnectsToRailsComponent;
+import org.terasology.rails.carts.components.LocomotiveComponent;
 import org.terasology.rails.carts.components.WrenchComponent;
 import org.terasology.rails.carts.utils.MinecartHelper;
 import org.terasology.registry.In;
@@ -129,21 +130,45 @@ public class MinecartAction extends BaseComponentSystem {
     @ReceiveEvent(components = {MinecartComponent.class, LocationComponent.class}, priority = EventPriority.PRIORITY_HIGH)
     public void onDestroyMinecart(BeforeDeactivateComponent event, EntityRef entity) {
         logger.info("Destroy minecart");
-        MinecartComponent minecart = entity.getComponent(MinecartComponent.class);
+        MinecartComponent minecartComponent = entity.getComponent(MinecartComponent.class);
 
-        if (minecart.characterInsideCart != null) {
-            Location.removeChild(entity, minecart.characterInsideCart);
-            minecart.characterInsideCart.send(new SetMovementModeEvent(MovementMode.WALKING));
-            minecart.characterInsideCart = null;
+        switch(minecartComponent.type) {
+            case locomotive:
+                LocomotiveComponent locomotiveComponent = entity.getComponent(LocomotiveComponent.class);
+
+                for(EntityRef minecart: locomotiveComponent.childs) {
+                    MinecartComponent childMinecartComponent = minecart.getComponent(MinecartComponent.class);
+                    childMinecartComponent.locomotiveRef = null;
+                    childMinecartComponent.parentNode = null;
+                    childMinecartComponent.childNode = null;
+                    minecart.saveComponent(childMinecartComponent);
+                }
+
+                break;
+            case minecart:
+
+                if (minecartComponent.childNode != null) {
+                    MinecartComponent childMinecartComponent = minecartComponent.childNode.getComponent(MinecartComponent.class);
+                    childMinecartComponent.parentNode = minecartComponent.parentNode;
+                    minecartComponent.childNode.saveComponent(childMinecartComponent);
+                }
+
+                break;
         }
 
-        for (EntityRef vehicle : minecart.vehicles) {
+        if (minecartComponent.characterInsideCart != null) {
+            Location.removeChild(entity, minecartComponent.characterInsideCart);
+            minecartComponent.characterInsideCart.send(new SetMovementModeEvent(MovementMode.WALKING));
+            minecartComponent.characterInsideCart = null;
+        }
+
+        for (EntityRef vehicle : minecartComponent.vehicles) {
             if (vehicle != null && !vehicle.equals(EntityRef.NULL)) {
                 vehicle.destroy();
             }
         }
 
-        entity.saveComponent(minecart);
+        entity.saveComponent(minecartComponent);
     }
 
     @ReceiveEvent(components = {MinecartComponent.class, ItemComponent.class})
@@ -184,15 +209,25 @@ public class MinecartAction extends BaseComponentSystem {
             if (minecartComponent.type.equals(MinecartComponent.Types.minecart)) {
                 LocationComponent location = targetEntity.getComponent(LocationComponent.class);
                 if (minecartComponent.parentNode != null) {
-                    minecartComponent.parentNode = null;
-                    minecartComponent.locomotive = null;
+                    if (minecartComponent.childNode == null) {
+                        LocomotiveComponent loco = minecartComponent.locomotiveRef.getComponent(LocomotiveComponent.class);
+                        loco.childs.remove(targetEntity);
+                        minecartComponent.locomotiveRef.saveComponent(loco);
+                        minecartComponent.parentNode = null;
+                        minecartComponent.locomotiveRef = null;
+                    }
                 }else {
                     EntityRef parent = checkMineCartJoin(minecartComponent, location.getWorldPosition());
                     if (parent != null) {
                         MinecartComponent parentMinecartComponent = parent.getComponent(MinecartComponent.class);
-                        if (parentMinecartComponent.locomotive != null || parentMinecartComponent.type.equals(MinecartComponent.Types.locomotive)) {
+                        if (parentMinecartComponent.locomotiveRef != null || parentMinecartComponent.type.equals(MinecartComponent.Types.locomotive)) {
                             minecartComponent.parentNode = parent;
-                            minecartComponent.locomotive = parentMinecartComponent.type.equals(MinecartComponent.Types.locomotive)?parent:parentMinecartComponent.locomotive;
+                            minecartComponent.locomotiveRef = parentMinecartComponent.type.equals(MinecartComponent.Types.locomotive)?parent:parentMinecartComponent.locomotiveRef;
+                            LocomotiveComponent loco = minecartComponent.locomotiveRef.getComponent(LocomotiveComponent.class);
+                            loco.childs.add(targetEntity);
+                            minecartComponent.locomotiveRef.saveComponent(loco);
+                            parentMinecartComponent.childNode = targetEntity;
+                            parent.saveComponent(parentMinecartComponent);
                         }
                     }
                 }

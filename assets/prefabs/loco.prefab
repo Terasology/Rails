@@ -47,5 +47,6 @@
             "engine:kinematic",
             "engine:default"
         ]
-    }
+    },
+    "LocomotiveComponent": {}
 }

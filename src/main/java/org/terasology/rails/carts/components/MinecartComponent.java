@@ -45,7 +45,10 @@ public class MinecartComponent implements Component {
     public EntityRef parentNode;
 
     @Replicate
-    public EntityRef locomotive;
+    public EntityRef childNode;
+
+    @Replicate
+    public EntityRef locomotiveRef;
 
     @Replicate
     public EntityRef characterInsideCart;
