@@ -1,0 +1,10 @@
+{
+    "Location" : {
+    },
+    "Wheel" : {
+    },
+    "Mesh" : {
+        "mesh" : "Rails:wheel",
+        "material" : "Rails:wheel"
+    }
+}

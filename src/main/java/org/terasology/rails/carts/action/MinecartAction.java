@@ -139,6 +139,12 @@ public class MinecartAction extends BaseComponentSystem {
                     railVehicle.childNode.saveComponent(childRailVehicleComponent);
                 }
 
+                if (railVehicle.locomotiveRef != null) {
+                    LocomotiveComponent locComponent = railVehicle.locomotiveRef.getComponent(LocomotiveComponent.class);
+                    locComponent.childs.remove(entity);
+                    railVehicle.locomotiveRef.saveComponent(locComponent);
+                }
+
                 break;
         }
 
@@ -210,6 +216,10 @@ public class MinecartAction extends BaseComponentSystem {
                             railVehicleComponent.parentNode = parent;
                             railVehicleComponent.locomotiveRef = parentRailVehicleComponent.type.equals(RailVehicleComponent.Types.locomotive)?parent:parentRailVehicleComponent.locomotiveRef;
                             LocomotiveComponent loco = railVehicleComponent.locomotiveRef.getComponent(LocomotiveComponent.class);
+                            if (loco == null) {
+                                logger.info("Ahtung!!!");
+                                return;
+                            }
                             loco.childs.add(targetEntity);
                             railVehicleComponent.locomotiveRef.saveComponent(loco);
                             parentRailVehicleComponent.childNode = targetEntity;

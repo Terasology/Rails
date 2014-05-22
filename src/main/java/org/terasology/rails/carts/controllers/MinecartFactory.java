@@ -6,6 +6,7 @@ import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.location.Location;
 import org.terasology.logic.location.LocationComponent;
+import org.terasology.rails.carts.components.LocomotiveComponent;
 import org.terasology.rails.carts.components.RailVehicleComponent;
 import org.terasology.rails.carts.components.WheelComponent;
 
