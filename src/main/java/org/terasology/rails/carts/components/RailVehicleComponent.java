@@ -26,7 +26,7 @@ import javax.vecmath.Vector3f;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MinecartComponent implements Component {
+public class RailVehicleComponent implements Component {
     @Replicate
     public boolean isCreated;
 

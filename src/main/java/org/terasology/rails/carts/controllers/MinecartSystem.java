@@ -46,7 +46,7 @@ import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.physics.events.ChangeVelocityEvent;
 import org.terasology.rails.blocks.ConnectsToRailsComponent;
 import org.terasology.rails.carts.components.LocomotiveComponent;
-import org.terasology.rails.carts.components.MinecartComponent;
+import org.terasology.rails.carts.components.RailVehicleComponent;
 import org.terasology.rails.carts.components.WheelComponent;
 import org.terasology.rails.carts.utils.MinecartHelper;
 import org.terasology.registry.In;
@@ -91,39 +91,39 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
 
     @Override
     public void update(float delta) {
-        for (EntityRef minecart : entityManager.getEntitiesWith(MinecartComponent.class)) {
-            MinecartComponent minecartComponent = minecart.getComponent(MinecartComponent.class);
-            if (minecartComponent.isCreated) {
-                moveMinecart(minecart);
+        for (EntityRef railVehicle : entityManager.getEntitiesWith(RailVehicleComponent.class)) {
+            RailVehicleComponent railVehicleComponent = railVehicle.getComponent(RailVehicleComponent.class);
+            if (railVehicleComponent.isCreated) {
+                moveRailVehicle(railVehicle);
             }
         }
     }
 
-    private MotionState getCurrentState(EntityRef minecart) {
+    private MotionState getCurrentState(EntityRef railVehicle) {
         MotionState motionState;
-        if (!moveStates.containsKey(minecart)) {
+        if (!moveStates.containsKey(railVehicle)) {
             motionState = new MotionState();
-            motionState.minecartComponent = minecart.getComponent(MinecartComponent.class);
-            moveStates.put(minecart, motionState);
+            motionState.railVehicleComponent = railVehicle.getComponent(RailVehicleComponent.class);
+            moveStates.put(railVehicle, motionState);
         } else {
-            motionState = moveStates.get(minecart);
+            motionState = moveStates.get(railVehicle);
         }
         return motionState;
     }
 
-    private void moveMinecart(EntityRef minecart) {
-        LocationComponent location = minecart.getComponent(LocationComponent.class);
-        RigidBodyComponent rigidBody = minecart.getComponent(RigidBodyComponent.class);
-        MinecartComponent minecartComponent = minecart.getComponent(MinecartComponent.class);
+    private void moveRailVehicle(EntityRef railVehicle) {
+        LocationComponent location = railVehicle.getComponent(LocationComponent.class);
+        RigidBodyComponent rigidBody = railVehicle.getComponent(RigidBodyComponent.class);
+        RailVehicleComponent railVehicleComponent = railVehicle.getComponent(RailVehicleComponent.class);
 
         Vector3f position = location.getWorldPosition();
         Vector3f velocity = new Vector3f(rigidBody.velocity);
         int slopeFactor = 0;
-        MotionState motionState = getCurrentState(minecart);
+        MotionState motionState = getCurrentState(railVehicle);
         motionState.angularFactor.set(rigidBody.angularFactor);
 
-        if (!minecartComponent.pathDirection.equals(FREE_MOTION) || !minecartComponent.pathDirection.equals(LOCKED_MOTION)) {
-            BlockInfo blockPossibleSlope = getBlockInDirection(position, new Vector3f(minecartComponent.direction.x , -1f, minecartComponent.direction.z), 1.2f);
+        if (!railVehicleComponent.pathDirection.equals(FREE_MOTION) || !railVehicleComponent.pathDirection.equals(LOCKED_MOTION)) {
+            BlockInfo blockPossibleSlope = getBlockInDirection(position, new Vector3f(railVehicleComponent.direction.x , -1f, railVehicleComponent.direction.z), 1.2f);
             if (blockPossibleSlope.isRails() && blockPossibleSlope.isSlope()) {
                 slopeFactor = 1;
                 motionState.nextBlockIsSlope = true;
@@ -150,17 +150,17 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
 
             if (currentBlock.isRails()) {
                 boolean isSameBlock = currentBlock.isSameBlock(motionState.currentBlockPosition);
-                if (isSameBlock && !isLowSpeed(minecartComponent.drive, velocity.length()) && slopeFactor == 0 && !currentBlock.isCorner() && minecartComponent.parentNode == null) {
-                    motionState.setCurrentState(minecartComponent.pathDirection, minecartComponent.direction, motionState.angularFactor, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_PATH);
+                if (isSameBlock && !isLowSpeed(railVehicleComponent.drive, velocity.length()) && slopeFactor == 0 && !currentBlock.isCorner() && railVehicleComponent.parentNode == null) {
+                    motionState.setCurrentState(railVehicleComponent.pathDirection, railVehicleComponent.direction, motionState.angularFactor, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_PATH);
                 } else {
                     if (!isSameBlock) {
                         motionState.yawSign = 0;
-                        minecartComponent.prevYaw = -1;
+                        railVehicleComponent.prevYaw = -1;
                     }
 
                     motionState.setCurrentBlockPosition(currentBlock.getBlockPosition().toVector3f());
-                    moveDescriptor.calculateDirection(velocity, currentBlock, minecartComponent, motionState, position, slopeFactor);
-                    motionState.setCurrentState(minecartComponent.pathDirection, minecartComponent.direction, LOCKED_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_PATH);
+                    moveDescriptor.calculateDirection(velocity, currentBlock, railVehicleComponent, motionState, position, slopeFactor);
+                    motionState.setCurrentState(railVehicleComponent.pathDirection, railVehicleComponent.direction, LOCKED_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_PATH);
                     if (motionState.prevBlockPosition.length() > 0) {
                         Vector3i prevBlockPostion = new Vector3i(motionState.prevBlockPosition);
 
@@ -175,34 +175,34 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                         }
                     }
                     if (!isSameBlock) {
-                        playSound(minecart, velocity, minecartComponent.drive);
-                        showSmoke(minecartComponent);
+                        playSound(railVehicle, velocity, railVehicleComponent.drive);
+                        showSmoke(railVehicleComponent);
                     }
                 }
 
-                correctPositionAndRotation(minecart, currentBlock);
-                minecart.send(new ChangeVelocityEvent(velocity));
+                correctPositionAndRotation(railVehicle, currentBlock);
+                railVehicle.send(new ChangeVelocityEvent(velocity));
             } else {
-                minecartComponent.direction.y=0;
-                motionState.setCurrentState(FREE_MOTION, minecartComponent.direction, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_GROUND);
+                railVehicleComponent.direction.y=0;
+                motionState.setCurrentState(FREE_MOTION, railVehicleComponent.direction, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_GROUND);
             }
         } else {
-            minecartComponent.direction.y=0;
-            motionState.setCurrentState(FREE_MOTION, minecartComponent.direction, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_AIR);
+            railVehicleComponent.direction.y=0;
+            motionState.setCurrentState(FREE_MOTION, railVehicleComponent.direction, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_AIR);
         }
 
-        setAngularAndLinearFactors(minecart, rigidBody, minecartComponent.pathDirection, motionState.angularFactor);
-        minecart.saveComponent(minecartComponent);
+        setAngularAndLinearFactors(railVehicle, rigidBody, railVehicleComponent.pathDirection, motionState.angularFactor);
+        railVehicle.saveComponent(railVehicleComponent);
     }
 
-    private void playSound(EntityRef minecart, Vector3f velocity, float drive) {
+    private void playSound(EntityRef railVehicle, Vector3f velocity, float drive) {
 
         long currentTime = time.getGameTimeInMs();
-        if(!soundStack.containsKey(minecart)) {
-            soundStack.put(minecart, currentTime);
+        if(!soundStack.containsKey(railVehicle)) {
+            soundStack.put(railVehicle, currentTime);
         }
 
-        long soundProgress = currentTime - soundStack.get(minecart);
+        long soundProgress = currentTime - soundStack.get(railVehicle);
 
         if ((velocity.z > 0.1 || velocity.x > 0.1) && (soundProgress == 0f||soundProgress>1000)) {
             Vector3f tv = new Vector3f(velocity);
@@ -212,14 +212,14 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
            // logger.info("timr: " + soundProgress);
            // logger.info("volume: " + volume);
             //audioManager.
-            minecart.send(new PlaySoundEvent(minecart, Assets.getSound("rails:vehicle"), 0.2f));
-            soundStack.put(minecart, currentTime);
+            railVehicle.send(new PlaySoundEvent(railVehicle, Assets.getSound("rails:vehicle"), 0.2f));
+            soundStack.put(railVehicle, currentTime);
         }
     }
 
     private void loadVehicles() {
-        MinecartFactory minecartFactory = new MinecartFactory();
-        minecartFactory.setEntityManager(entityManager);
+        MinecartFactory railVehicleFactory = new MinecartFactory();
+        railVehicleFactory.setEntityManager(entityManager);
 
         logger.info("Looking for lost wheels...");
         for (EntityRef vehicle : entityManager.getEntitiesWith(WheelComponent.class)) {
@@ -229,7 +229,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             if (wheelComponent.parent != null) {
                 LocationComponent parentLoc = wheelComponent.parent.getComponent(LocationComponent.class);
                 if (!parentLoc.getChildren().contains(vehicle)) {
-                    minecartFactory.attachVehicle(wheelComponent.parent, wheelComponent.position, wheelComponent.scale);
+                    railVehicleFactory.attachVehicle(wheelComponent.parent, wheelComponent.position, wheelComponent.scale);
                 }
             }
         }
@@ -237,18 +237,18 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
 
     private void loadLocomotivesChild() {
         logger.info("Looking for lost minecarts...");
-        for (EntityRef minecart : entityManager.getEntitiesWith(MinecartComponent.class)) {
-            MinecartComponent minecartComponent = minecart.getComponent(MinecartComponent.class);
+        for (EntityRef railVehicle : entityManager.getEntitiesWith(RailVehicleComponent.class)) {
+            RailVehicleComponent railVehicleComponent = railVehicle.getComponent(RailVehicleComponent.class);
 
-            if (minecart.hasComponent(LocomotiveComponent.class)) {
+            if (railVehicle.hasComponent(LocomotiveComponent.class)) {
                 continue;
             }
 
-            if (minecartComponent.parentNode != null && minecartComponent.locomotiveRef != null) {
-                LocomotiveComponent locoComponent = minecartComponent.locomotiveRef.getComponent(LocomotiveComponent.class);
-                if(!locoComponent.childs.contains(minecart)) {
-                    locoComponent.childs.add(minecart);
-                    minecartComponent.locomotiveRef.saveComponent(locoComponent);
+            if (railVehicleComponent.parentNode != null && railVehicleComponent.locomotiveRef != null) {
+                LocomotiveComponent locoComponent = railVehicleComponent.locomotiveRef.getComponent(LocomotiveComponent.class);
+                if(!locoComponent.childs.contains(railVehicle)) {
+                    locoComponent.childs.add(railVehicle);
+                    railVehicleComponent.locomotiveRef.saveComponent(locoComponent);
                 }
             }
         }
@@ -256,7 +256,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
 
 
     private void correctPositionAndRotation(EntityRef entity, BlockInfo blockInfo) {
-        MinecartComponent minecartComponent = entity.getComponent(MinecartComponent.class);
+        RailVehicleComponent railVehicleComponent = entity.getComponent(RailVehicleComponent.class);
         MeshComponent mesh = entity.getComponent(MeshComponent.class);
         LocationComponent location = entity.getComponent(LocationComponent.class);
         MotionState motionState = getCurrentState(entity);
@@ -267,39 +267,39 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             return;
         }
 
-        if (minecartComponent.isCreated && motionState.currentPositionStatus == MotionState.PositionStatus.ON_THE_PATH) {
+        if (railVehicleComponent.isCreated && motionState.currentPositionStatus == MotionState.PositionStatus.ON_THE_PATH) {
             if (blockInfo.isIntersection()) {
-                blockInfo.getBlock().setDirection(minecartComponent.pathDirection.x != 0 ? Side.LEFT : Side.FRONT);
+                blockInfo.getBlock().setDirection(railVehicleComponent.pathDirection.x != 0 ? Side.LEFT : Side.FRONT);
             }
 
-            position = setPositionOnTheRail(minecartComponent.pathDirection, blockInfo, position, mesh.mesh.getAABB().getMax(), motionState);
+            position = setPositionOnTheRail(railVehicleComponent.pathDirection, blockInfo, position, mesh.mesh.getAABB().getMax(), motionState);
 
             Vector3f distance = new Vector3f(position);
             distance.sub(motionState.prevPosition);
             Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
-            moveDescriptor.setYawOnPath(minecartComponent, motionState, blockInfo, distance);
-            moveDescriptor.setPitchOnPath(minecartComponent, position, motionState, blockInfo);
+            moveDescriptor.setYawOnPath(railVehicleComponent, motionState, blockInfo, distance);
+            moveDescriptor.setPitchOnPath(railVehicleComponent, position, motionState, blockInfo);
 
-            QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * minecartComponent.yaw, TeraMath.DEG_TO_RAD * minecartComponent.pitch, 0);
+            QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * railVehicleComponent.yaw, TeraMath.DEG_TO_RAD * railVehicleComponent.pitch, 0);
 
             motionState.prevPosition.set(position);
 
             location.setWorldPosition(position);
             location.setWorldRotation(yawPitch);
 
-            entity.saveComponent(minecartComponent);
+            entity.saveComponent(railVehicleComponent);
             entity.saveComponent(location);
         }
-        rotateVehicles(rb.velocity, minecartComponent);
+        rotateVehicles(rb.velocity, railVehicleComponent);
      }
 
     @ReceiveEvent(components = {ClientComponent.class}, priority = EventPriority.PRIORITY_HIGH)
     public void updateVerticalMovement(VerticalMovementAxis event, EntityRef entity) {
         ClientComponent clientComponent = entity.getComponent(ClientComponent.class);
         LocationComponent location = clientComponent.character.getComponent(LocationComponent.class);
-        if (!location.getParent().equals(EntityRef.NULL)&&location.getParent().hasComponent(MinecartComponent.class)) {
-            EntityRef minecart = location.getParent();
-            minecart.send(new ActivateEvent(minecart,clientComponent.character));
+        if (!location.getParent().equals(EntityRef.NULL)&&location.getParent().hasComponent(RailVehicleComponent.class)) {
+            EntityRef railVehicle = location.getParent();
+            railVehicle.send(new ActivateEvent(railVehicle,clientComponent.character));
             event.consume();
         }
     }
@@ -308,12 +308,12 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
     public void updateForwardsMovement(ForwardsMovementAxis event, EntityRef entity) {
         ClientComponent clientComponent = entity.getComponent(ClientComponent.class);
         LocationComponent location = clientComponent.character.getComponent(LocationComponent.class);
-        if (!location.getParent().equals(EntityRef.NULL)&&location.getParent().hasComponent(MinecartComponent.class)) {
+        if (!location.getParent().equals(EntityRef.NULL)&&location.getParent().hasComponent(RailVehicleComponent.class)) {
 
-            EntityRef minecart = location.getParent();
-            MinecartComponent minecartComponent = minecart.getComponent(MinecartComponent.class);
+            EntityRef railVehicle = location.getParent();
+            RailVehicleComponent railVehicleComponent = railVehicle.getComponent(RailVehicleComponent.class);
 
-            MotionState motionState = moveStates.get(minecart);
+            MotionState motionState = moveStates.get(railVehicle);
 
             if (motionState == null || motionState.currentBlockPosition.lengthSquared() == 0) {
                 return;
@@ -341,23 +341,23 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             } else {
                 viewDirection.x = 0;
             }
-            minecartComponent.drive += value * minecartComponent.changeDriveByStep;
+            railVehicleComponent.drive += value * railVehicleComponent.changeDriveByStep;
 
-            if (minecartComponent.drive > minecartComponent.maxDrive)  {
-                minecartComponent.drive = minecartComponent.maxDrive;
-            } else if(minecartComponent.drive < 0) {
-                minecartComponent.drive = 0;
+            if (railVehicleComponent.drive > railVehicleComponent.maxDrive)  {
+                railVehicleComponent.drive = railVehicleComponent.maxDrive;
+            } else if(railVehicleComponent.drive < 0) {
+                railVehicleComponent.drive = 0;
             }
 
-            if (minecartComponent.drive > 0) {
-                Vector3f velocity = new Vector3f(minecartComponent.drive, 0, minecartComponent.drive);
-                velocity.x *= minecartComponent.direction.x;
-                velocity.z *= minecartComponent.direction.z;
+            if (railVehicleComponent.drive > 0) {
+                Vector3f velocity = new Vector3f(railVehicleComponent.drive, 0, railVehicleComponent.drive);
+                velocity.x *= railVehicleComponent.direction.x;
+                velocity.z *= railVehicleComponent.direction.z;
                 if ( velocity.length() > 0 ) {
-                    minecart.send(new ChangeVelocityEvent(velocity));
+                    railVehicle.send(new ChangeVelocityEvent(velocity));
                 }
             }
-            minecart.saveComponent(minecartComponent);
+            railVehicle.saveComponent(railVehicleComponent);
             event.consume();
         }
     }
@@ -398,38 +398,38 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
         }
     }
 
-    private void showSmoke(MinecartComponent minecartComponent) {
-        if (minecartComponent.pipe != null) {
-            BlockParticleEffectComponent particleEffectComponent = minecartComponent.pipe.getComponent(BlockParticleEffectComponent.class);
-            if (minecartComponent.drive != 0) {
+    private void showSmoke(RailVehicleComponent railVehicleComponent) {
+        if (railVehicleComponent.pipe != null) {
+            BlockParticleEffectComponent particleEffectComponent = railVehicleComponent.pipe.getComponent(BlockParticleEffectComponent.class);
+            if (railVehicleComponent.drive != 0) {
                 particleEffectComponent.spawnCount = 20;
-                particleEffectComponent.targetVelocity.set(minecartComponent.direction);
+                particleEffectComponent.targetVelocity.set(railVehicleComponent.direction);
                 particleEffectComponent.targetVelocity.negate();
                 particleEffectComponent.targetVelocity.y = 0.7f;
-                particleEffectComponent.acceleration.set(minecartComponent.pathDirection);
+                particleEffectComponent.acceleration.set(railVehicleComponent.pathDirection);
                 particleEffectComponent.acceleration.y = 0.7f;
                 particleEffectComponent.targetVelocity.scale(4f);
                 particleEffectComponent.acceleration.scale(2.5f);
-                minecartComponent.pipe.saveComponent(particleEffectComponent);
+                railVehicleComponent.pipe.saveComponent(particleEffectComponent);
             } else {
                 particleEffectComponent.targetVelocity.set(0,0,0);
             }
         }
     }
 
-    private void rotateVehicles(Vector3f velocity, MinecartComponent minecartComponent) {
+    private void rotateVehicles(Vector3f velocity, RailVehicleComponent railVehicleComponent) {
         velocity.y = 0;
         if (velocity.length() == 0) {
             return;
         }
-        for (EntityRef vehicle : minecartComponent.vehicles) {
+        for (EntityRef vehicle : railVehicleComponent.vehicles) {
             LocationComponent locationComponent = vehicle.getComponent(LocationComponent.class);
             if (locationComponent == null) {
                 continue;
             }
             Quat4f rotate = new Quat4f(0, 0, 0, 1);
 
-            float yawSide = Math.round(minecartComponent.yaw/90f);
+            float yawSide = Math.round(railVehicleComponent.yaw/90f);
             float reverseSign = 1;
             if (yawSide > 1) {
                 reverseSign = -1;
@@ -449,7 +449,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
         }
     }
 
-    private Vector3f setPositionOnTheRail(Vector3f direction, BlockInfo block, Vector3f position, Vector3f minecartMaxExtends, MotionState motionState) {
+    private Vector3f setPositionOnTheRail(Vector3f direction, BlockInfo block, Vector3f position, Vector3f railVehicleMaxExtends, MotionState motionState) {
         Vector3f fixedPosition = new Vector3f(position);
         if (direction.x == 0 || direction.z == 0) {
             if (direction.z != 0) {
@@ -459,7 +459,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             }
         }
 
-        fixedPosition.y = block.hitPoint().y + minecartMaxExtends.y/2 + 0.05f;
+        fixedPosition.y = block.hitPoint().y + railVehicleMaxExtends.y/2 + 0.05f;
 
        // }
         /*if (!block.isSlope() && !motionState.nextBlockIsSlope) {

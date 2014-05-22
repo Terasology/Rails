@@ -24,28 +24,18 @@ import org.terasology.entitySystem.entity.lifecycleEvents.BeforeDeactivateCompon
 import org.terasology.entitySystem.event.EventPriority;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
-import org.terasology.input.binds.movement.ForwardsMovementAxis;
-import org.terasology.input.binds.movement.VerticalMovementAxis;
 import org.terasology.input.cameraTarget.CameraTargetChangedEvent;
 import org.terasology.logic.characters.CharacterComponent;
 import org.terasology.logic.characters.MovementMode;
-import org.terasology.logic.characters.events.AttackRequest;
 import org.terasology.logic.characters.events.SetMovementModeEvent;
-import org.terasology.logic.health.DoDamageEvent;
 import org.terasology.logic.inventory.InventoryUtils;
-import org.terasology.logic.inventory.action.GiveItemAction;
 import org.terasology.logic.location.Location;
-import org.terasology.logic.players.event.SelectedItemChangedEvent;
 import org.terasology.math.Side;
-import org.terasology.network.ClientComponent;
 import org.terasology.physics.HitResult;
 import org.terasology.physics.Physics;
 import org.terasology.physics.StandardCollisionGroup;
 import org.terasology.physics.components.RigidBodyComponent;
-import org.terasology.physics.engine.RigidBody;
-import org.terasology.physics.events.ChangeVelocityEvent;
 import org.terasology.physics.events.CollideEvent;
-import org.terasology.physics.events.ForceEvent;
 import org.terasology.physics.events.ImpulseEvent;
 import org.terasology.rails.blocks.ConnectsToRailsComponent;
 import org.terasology.rails.carts.components.LocomotiveComponent;
@@ -59,19 +49,15 @@ import org.terasology.logic.inventory.InventoryComponent;
 import org.terasology.logic.inventory.InventoryManager;
 import org.terasology.logic.inventory.ItemComponent;
 import org.terasology.logic.location.LocationComponent;
-import org.terasology.logic.players.LocalPlayer;
 import org.terasology.logic.players.event.OnPlayerSpawnedEvent;
 import org.terasology.math.Vector3i;
-import org.terasology.rails.carts.components.MinecartComponent;
+import org.terasology.rails.carts.components.RailVehicleComponent;
 import org.terasology.rails.carts.controllers.MinecartFactory;
 import org.terasology.rendering.logic.MeshComponent;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.BlockComponent;
 import org.terasology.world.block.BlockManager;
 import org.terasology.world.block.items.BlockItemFactory;
-import org.terasology.world.selection.BlockSelectionComponent;
-import org.terasology.world.selection.event.SetBlockSelectionEndingPointEvent;
-
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
@@ -88,27 +74,27 @@ public class MinecartAction extends BaseComponentSystem {
     @In
     private Physics physics;
 
-    private MinecartFactory minecartFactory;
+    private MinecartFactory railVehicleFactory;
     private final Logger logger = LoggerFactory.getLogger(MinecartAction.class);
 
     @Override
     public void initialise() {
-        minecartFactory = new MinecartFactory();
-        minecartFactory.setEntityManager(entityManager);
+        railVehicleFactory = new MinecartFactory();
+        railVehicleFactory.setEntityManager(entityManager);
     }
 
-    @ReceiveEvent(components = {MinecartComponent.class, LocationComponent.class}, priority = EventPriority.PRIORITY_HIGH)
+    @ReceiveEvent(components = {RailVehicleComponent.class, LocationComponent.class}, priority = EventPriority.PRIORITY_HIGH)
     public void onBump(CollideEvent event, EntityRef entity) {
-        MinecartComponent minecart = entity.getComponent(MinecartComponent.class);
-        if (minecart == null || !minecart.isCreated) {
+        RailVehicleComponent railVehicle = entity.getComponent(RailVehicleComponent.class);
+        if (railVehicle == null || !railVehicle.isCreated) {
             return;
         }
 
-        if (minecart == null || (minecart.characterInsideCart != null && minecart.characterInsideCart.equals(event.getOtherEntity()))) {
+        if (railVehicle == null || (railVehicle.characterInsideCart != null && railVehicle.characterInsideCart.equals(event.getOtherEntity()))) {
             return;
         }
 
-        switch (minecart.type) {
+        switch (railVehicle.type) {
             case minecart:
                 onBumpMinecart(entity, event.getOtherEntity());
                 break;
@@ -127,58 +113,58 @@ public class MinecartAction extends BaseComponentSystem {
         inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("rails:Rails"), 99));
     }
 
-    @ReceiveEvent(components = {MinecartComponent.class, LocationComponent.class}, priority = EventPriority.PRIORITY_HIGH)
-    public void onDestroyMinecart(BeforeDeactivateComponent event, EntityRef entity) {
-        logger.info("Destroy minecart");
-        MinecartComponent minecartComponent = entity.getComponent(MinecartComponent.class);
+    @ReceiveEvent(components = {RailVehicleComponent.class, LocationComponent.class}, priority = EventPriority.PRIORITY_HIGH)
+    public void onDestroyRailVehicle(BeforeDeactivateComponent event, EntityRef entity) {
+        logger.info("Destroy vehicle");
+        RailVehicleComponent railVehicle = entity.getComponent(RailVehicleComponent.class);
 
-        switch(minecartComponent.type) {
+        switch(railVehicle.type) {
             case locomotive:
                 LocomotiveComponent locomotiveComponent = entity.getComponent(LocomotiveComponent.class);
 
                 for(EntityRef minecart: locomotiveComponent.childs) {
-                    MinecartComponent childMinecartComponent = minecart.getComponent(MinecartComponent.class);
-                    childMinecartComponent.locomotiveRef = null;
-                    childMinecartComponent.parentNode = null;
-                    childMinecartComponent.childNode = null;
-                    minecart.saveComponent(childMinecartComponent);
+                    RailVehicleComponent childRailVehicleComponent = minecart.getComponent(RailVehicleComponent.class);
+                    childRailVehicleComponent.locomotiveRef = null;
+                    childRailVehicleComponent.parentNode = null;
+                    childRailVehicleComponent.childNode = null;
+                    minecart.saveComponent(childRailVehicleComponent);
                 }
 
                 break;
             case minecart:
 
-                if (minecartComponent.childNode != null) {
-                    MinecartComponent childMinecartComponent = minecartComponent.childNode.getComponent(MinecartComponent.class);
-                    childMinecartComponent.parentNode = minecartComponent.parentNode;
-                    minecartComponent.childNode.saveComponent(childMinecartComponent);
+                if (railVehicle.childNode != null) {
+                    RailVehicleComponent childRailVehicleComponent = railVehicle.childNode.getComponent(RailVehicleComponent.class);
+                    childRailVehicleComponent.parentNode = railVehicle.parentNode;
+                    railVehicle.childNode.saveComponent(childRailVehicleComponent);
                 }
 
                 break;
         }
 
-        if (minecartComponent.characterInsideCart != null) {
-            Location.removeChild(entity, minecartComponent.characterInsideCart);
-            minecartComponent.characterInsideCart.send(new SetMovementModeEvent(MovementMode.WALKING));
-            minecartComponent.characterInsideCart = null;
+        if (railVehicle.characterInsideCart != null) {
+            Location.removeChild(entity, railVehicle.characterInsideCart);
+            railVehicle.characterInsideCart.send(new SetMovementModeEvent(MovementMode.WALKING));
+            railVehicle.characterInsideCart = null;
         }
 
-        for (EntityRef vehicle : minecartComponent.vehicles) {
+        for (EntityRef vehicle : railVehicle.vehicles) {
             if (vehicle != null && !vehicle.equals(EntityRef.NULL)) {
                 vehicle.destroy();
             }
         }
 
-        entity.saveComponent(minecartComponent);
+        entity.saveComponent(railVehicle);
     }
 
-    @ReceiveEvent(components = {MinecartComponent.class, ItemComponent.class})
+    @ReceiveEvent(components = {RailVehicleComponent.class, ItemComponent.class})
     public void onPlaceFunctional(ActivateEvent event, EntityRef item) {
 
         if (item.hasComponent(WrenchComponent.class)) {
             return;
         }
 
-        MinecartComponent functionalItem = item.getComponent(MinecartComponent.class);
+        RailVehicleComponent functionalItem = item.getComponent(RailVehicleComponent.class);
 
         if (functionalItem.isCreated) {
             return;
@@ -195,43 +181,43 @@ public class MinecartAction extends BaseComponentSystem {
         Vector3i placementPos = new Vector3i(event.getTarget().getComponent(BlockComponent.class).getPosition());
         placementPos.y += 0.2f;
 
-        logger.info("Created minecart at {}", placementPos);
+        logger.info("Created vehicle at {}", placementPos);
 
-        EntityRef entity = minecartFactory.create(placementPos.toVector3f(), functionalItem.type);
+        EntityRef entity = railVehicleFactory.create(placementPos.toVector3f(), functionalItem.type);
         event.consume();
     }
 
     @ReceiveEvent(components = {WrenchComponent.class, ItemComponent.class})
     public void joinMinecart(ActivateEvent event, EntityRef item) {
         EntityRef targetEntity = event.getTarget();
-        if (targetEntity.hasComponent(MinecartComponent.class)) {
-            MinecartComponent minecartComponent = targetEntity.getComponent(MinecartComponent.class);
-            if (minecartComponent.type.equals(MinecartComponent.Types.minecart)) {
+        if (targetEntity.hasComponent(RailVehicleComponent.class)) {
+            RailVehicleComponent railVehicleComponent = targetEntity.getComponent(RailVehicleComponent.class);
+            if (railVehicleComponent.type.equals(RailVehicleComponent.Types.minecart)) {
                 LocationComponent location = targetEntity.getComponent(LocationComponent.class);
-                if (minecartComponent.parentNode != null) {
-                    if (minecartComponent.childNode == null) {
-                        LocomotiveComponent loco = minecartComponent.locomotiveRef.getComponent(LocomotiveComponent.class);
+                if (railVehicleComponent.parentNode != null) {
+                    if (railVehicleComponent.childNode == null) {
+                        LocomotiveComponent loco = railVehicleComponent.locomotiveRef.getComponent(LocomotiveComponent.class);
                         loco.childs.remove(targetEntity);
-                        minecartComponent.locomotiveRef.saveComponent(loco);
-                        minecartComponent.parentNode = null;
-                        minecartComponent.locomotiveRef = null;
+                        railVehicleComponent.locomotiveRef.saveComponent(loco);
+                        railVehicleComponent.parentNode = null;
+                        railVehicleComponent.locomotiveRef = null;
                     }
                 }else {
-                    EntityRef parent = checkMineCartJoin(minecartComponent, location.getWorldPosition());
+                    EntityRef parent = checkMineCartJoin(railVehicleComponent, location.getWorldPosition());
                     if (parent != null) {
-                        MinecartComponent parentMinecartComponent = parent.getComponent(MinecartComponent.class);
-                        if (parentMinecartComponent.locomotiveRef != null || parentMinecartComponent.type.equals(MinecartComponent.Types.locomotive)) {
-                            minecartComponent.parentNode = parent;
-                            minecartComponent.locomotiveRef = parentMinecartComponent.type.equals(MinecartComponent.Types.locomotive)?parent:parentMinecartComponent.locomotiveRef;
-                            LocomotiveComponent loco = minecartComponent.locomotiveRef.getComponent(LocomotiveComponent.class);
+                        RailVehicleComponent parentRailVehicleComponent = parent.getComponent(RailVehicleComponent.class);
+                        if (parentRailVehicleComponent.locomotiveRef != null || parentRailVehicleComponent.type.equals(RailVehicleComponent.Types.locomotive)) {
+                            railVehicleComponent.parentNode = parent;
+                            railVehicleComponent.locomotiveRef = parentRailVehicleComponent.type.equals(RailVehicleComponent.Types.locomotive)?parent:parentRailVehicleComponent.locomotiveRef;
+                            LocomotiveComponent loco = railVehicleComponent.locomotiveRef.getComponent(LocomotiveComponent.class);
                             loco.childs.add(targetEntity);
-                            minecartComponent.locomotiveRef.saveComponent(loco);
-                            parentMinecartComponent.childNode = targetEntity;
-                            parent.saveComponent(parentMinecartComponent);
+                            railVehicleComponent.locomotiveRef.saveComponent(loco);
+                            parentRailVehicleComponent.childNode = targetEntity;
+                            parent.saveComponent(parentRailVehicleComponent);
                         }
                     }
                 }
-                targetEntity.saveComponent(minecartComponent);
+                targetEntity.saveComponent(railVehicleComponent);
             }
         }
     }
@@ -247,40 +233,40 @@ public class MinecartAction extends BaseComponentSystem {
             return;
         }
 
-        if (oldTarget.hasComponent(MinecartComponent.class)) {
-            MinecartComponent minecartComponent = oldTarget.getComponent(MinecartComponent.class);
-            if (minecartComponent.type.equals(MinecartComponent.Types.minecart)) {
+        if (oldTarget.hasComponent(RailVehicleComponent.class)) {
+            RailVehicleComponent railVehicleComponent = oldTarget.getComponent(RailVehicleComponent.class);
+            if (railVehicleComponent.type.equals(RailVehicleComponent.Types.minecart)) {
                 setSelectMaterial(oldTarget, "rails:minecart");
             }
         }
 
-        if (newTarget.hasComponent(MinecartComponent.class)) {
-            MinecartComponent minecartComponent = newTarget.getComponent(MinecartComponent.class);
-            if (minecartComponent.type.equals(MinecartComponent.Types.minecart)) {
+        if (newTarget.hasComponent(RailVehicleComponent.class)) {
+            RailVehicleComponent railVehicleComponent = newTarget.getComponent(RailVehicleComponent.class);
+            if (railVehicleComponent.type.equals(RailVehicleComponent.Types.minecart)) {
                 LocationComponent location = newTarget.getComponent(LocationComponent.class);
-                if (minecartComponent.parentNode != null) {
+                if (railVehicleComponent.parentNode != null) {
                     setSelectMaterial(newTarget, "rails:minecart-unjoin");
-                }else if (checkMineCartJoin(minecartComponent, location.getWorldPosition()) != null) {
+                }else if (checkMineCartJoin(railVehicleComponent, location.getWorldPosition()) != null) {
                     setSelectMaterial(newTarget, "rails:minecart-join");
                 }
             }
         }
     }
 
-    private void setSelectMaterial(EntityRef minecart, String urlMaterial) {
-        MinecartComponent minecartComponent = minecart.getComponent(MinecartComponent.class);
-        MeshComponent mesh = minecart.getComponent(MeshComponent.class);
+    private void setSelectMaterial(EntityRef railVehicle, String urlMaterial) {
+        RailVehicleComponent railVehicleComponent = railVehicle.getComponent(RailVehicleComponent.class);
+        MeshComponent mesh = railVehicle.getComponent(MeshComponent.class);
         mesh.material = Assets.getMaterial(urlMaterial);
-        for (EntityRef vehicle : minecartComponent.vehicles) {
+        for (EntityRef vehicle : railVehicleComponent.vehicles) {
             MeshComponent meshVehicle = vehicle.getComponent(MeshComponent.class);
             meshVehicle.material = Assets.getMaterial(urlMaterial);
             vehicle.saveComponent(meshVehicle);
         }
-        minecart.saveComponent(mesh);
+        railVehicle.saveComponent(mesh);
     }
 
-    private EntityRef checkMineCartJoin(MinecartComponent minecartComponent, Vector3f position) {
-        Vector3f pathDirection = new Vector3f(minecartComponent.pathDirection);
+    private EntityRef checkMineCartJoin(RailVehicleComponent railVehicleComponent, Vector3f position) {
+        Vector3f pathDirection = new Vector3f(railVehicleComponent.pathDirection);
         pathDirection.y = 0;
 
         Vector3f pathDirectionNegate = new Vector3f(pathDirection);
@@ -291,10 +277,10 @@ public class MinecartAction extends BaseComponentSystem {
             HitResult hit = physics.rayTrace(position, dir, 2.5f, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
             EntityRef entity = hit.getEntity();
 
-            if (entity.hasComponent(MinecartComponent.class)) {
-                MinecartComponent mn = entity.getComponent(MinecartComponent.class);
+            if (entity.hasComponent(RailVehicleComponent.class)) {
+                RailVehicleComponent mn = entity.getComponent(RailVehicleComponent.class);
                 LocationComponent lc = entity.getComponent(LocationComponent.class);
-                if (mn.type.equals(MinecartComponent.Types.locomotive)) {
+                if (mn.type.equals(RailVehicleComponent.Types.locomotive)) {
                     if (MinecartHelper.getSideOfLocomotive(position, lc.getWorldPosition(), mn.yaw).equals(Side.BACK)) {
                         return entity;
                     } else {
@@ -312,38 +298,38 @@ public class MinecartAction extends BaseComponentSystem {
         return null;
     }
 
-    @ReceiveEvent(components = {MinecartComponent.class, LocationComponent.class})
-    public void onUseFunctional(ActivateEvent event, EntityRef minecartEntity) {
-        MinecartComponent minecartComponent = minecartEntity.getComponent(MinecartComponent.class);
-        RigidBodyComponent minecartRigidBody = minecartEntity.getComponent(RigidBodyComponent.class);
-        if (minecartComponent.type.equals(MinecartComponent.Types.minecart)) {
-            if (minecartComponent.isCreated) {
-                if (minecartComponent.characterInsideCart == null && (minecartComponent.pathDirection.x == 0 || minecartComponent.pathDirection.z == 0)) {
+    @ReceiveEvent(components = {RailVehicleComponent.class, LocationComponent.class})
+    public void onUseFunctional(ActivateEvent event, EntityRef railVehicleEntity) {
+        RailVehicleComponent railVehicleComponent = railVehicleEntity.getComponent(RailVehicleComponent.class);
+        RigidBodyComponent railVehicleRigidBody = railVehicleEntity.getComponent(RigidBodyComponent.class);
+        if (railVehicleComponent.type.equals(RailVehicleComponent.Types.minecart)) {
+            if (railVehicleComponent.isCreated) {
+                if (railVehicleComponent.characterInsideCart == null && (railVehicleComponent.pathDirection.x == 0 || railVehicleComponent.pathDirection.z == 0)) {
                    event.getInstigator().send(new SetMovementModeEvent(MovementMode.NONE));
-                    minecartComponent.characterInsideCart = event.getInstigator();
-                    Location.attachChild(minecartEntity, minecartComponent.characterInsideCart, new Vector3f(0,1.5f,0), new Quat4f());
-                    minecartRigidBody.collidesWith.remove(StandardCollisionGroup.CHARACTER);
-                    minecartRigidBody.collidesWith.remove(StandardCollisionGroup.DEFAULT);
-                    minecartComponent.drive = 0;
+                    railVehicleComponent.characterInsideCart = event.getInstigator();
+                    Location.attachChild(railVehicleEntity, railVehicleComponent.characterInsideCart, new Vector3f(0,1.5f,0), new Quat4f());
+                    railVehicleRigidBody.collidesWith.remove(StandardCollisionGroup.CHARACTER);
+                    railVehicleRigidBody.collidesWith.remove(StandardCollisionGroup.DEFAULT);
+                    railVehicleComponent.drive = 0;
                 } else {
                     event.getInstigator().send(new SetMovementModeEvent(MovementMode.WALKING));
-                    Location.removeChild(minecartEntity, minecartComponent.characterInsideCart);
-                    minecartComponent.characterInsideCart = null;
-                    minecartRigidBody.collidesWith.add(StandardCollisionGroup.CHARACTER);
-                    minecartRigidBody.collidesWith.add(StandardCollisionGroup.DEFAULT);
-                    minecartComponent.drive = 0;
+                    Location.removeChild(railVehicleEntity, railVehicleComponent.characterInsideCart);
+                    railVehicleComponent.characterInsideCart = null;
+                    railVehicleRigidBody.collidesWith.add(StandardCollisionGroup.CHARACTER);
+                    railVehicleRigidBody.collidesWith.add(StandardCollisionGroup.DEFAULT);
+                    railVehicleComponent.drive = 0;
                 }
-                minecartEntity.saveComponent(minecartComponent);
-                minecartEntity.saveComponent(minecartRigidBody);
+                railVehicleEntity.saveComponent(railVehicleComponent);
+                railVehicleEntity.saveComponent(railVehicleRigidBody);
             }
         } else {
-            if (minecartComponent.isCreated) {
-                if (minecartComponent.drive > 0) {
-                    minecartComponent.drive = 0;
+            if (railVehicleComponent.isCreated) {
+                if (railVehicleComponent.drive > 0) {
+                    railVehicleComponent.drive = 0;
                 } else {
-                    minecartComponent.drive = 5;
+                    railVehicleComponent.drive = 5;
                 }
-                minecartEntity.saveComponent(minecartComponent);
+                railVehicleEntity.saveComponent(railVehicleComponent);
             }
         }
     }
@@ -352,7 +338,7 @@ public class MinecartAction extends BaseComponentSystem {
         if (entity.hasComponent(CharacterComponent.class)) {
             LocationComponent locPos = locomotive.getComponent(LocationComponent.class);
             LocationComponent playerPos = entity.getComponent(LocationComponent.class);
-            MinecartComponent mn = locomotive.getComponent(MinecartComponent.class);
+            RailVehicleComponent mn = locomotive.getComponent(RailVehicleComponent.class);
             if (MinecartHelper.getSideOfLocomotive(playerPos.getWorldPosition(), locPos.getWorldPosition(), mn.yaw).equals(Side.BACK)) {
                 Vector3f bumpForce = new Vector3f(locPos.getWorldPosition());
                 bumpForce.sub(playerPos.getWorldPosition());
@@ -366,47 +352,47 @@ public class MinecartAction extends BaseComponentSystem {
         }
     }
 
-    private void onBumpMinecart(EntityRef minecart, EntityRef entity) {
-        LocationComponent minecartLocation = minecart.getComponent(LocationComponent.class);
+    private void onBumpMinecart(EntityRef railVehicle, EntityRef entity) {
+        LocationComponent railVehicleLocation = railVehicle.getComponent(LocationComponent.class);
         LocationComponent location = entity.getComponent(LocationComponent.class);
-        MinecartComponent minecartComponent = minecart.getComponent(MinecartComponent.class);
+        RailVehicleComponent railVehicleComponent = railVehicle.getComponent(RailVehicleComponent.class);
 
-        if ( minecartComponent.parentNode != null && minecartComponent.parentNode.equals(entity) ) {
+        if ( railVehicleComponent.parentNode != null && railVehicleComponent.parentNode.equals(entity) ) {
             return;
         }
 
         if (entity.hasComponent(CharacterComponent.class)) {
-            Vector3f bumpForce = new Vector3f(minecartLocation.getWorldPosition());
+            Vector3f bumpForce = new Vector3f(railVehicleLocation.getWorldPosition());
             bumpForce.sub(location.getWorldPosition());
             bumpForce.normalize();
-            bumpForce.x *= minecartComponent.pathDirection.x;
-            bumpForce.y *= minecartComponent.pathDirection.y;
-            bumpForce.z *= minecartComponent.pathDirection.z;
+            bumpForce.x *= railVehicleComponent.pathDirection.x;
+            bumpForce.y *= railVehicleComponent.pathDirection.y;
+            bumpForce.z *= railVehicleComponent.pathDirection.z;
             bumpForce.scale(5f);
-            minecart.send(new ImpulseEvent(bumpForce));
-        } else if (entity.hasComponent(MinecartComponent.class)) {
+            railVehicle.send(new ImpulseEvent(bumpForce));
+        } else if (entity.hasComponent(RailVehicleComponent.class)) {
             RigidBodyComponent rb = entity.getComponent(RigidBodyComponent.class);
             rb.velocity.y = 0;
             if (rb.velocity.length() <= 0.2f) {
                 return;
             }
-            Vector3f diffPosition = new Vector3f(minecartLocation.getWorldPosition());
-            MinecartComponent otherMinecartComponent = entity.getComponent(MinecartComponent.class);
+            Vector3f diffPosition = new Vector3f(railVehicleLocation.getWorldPosition());
+            RailVehicleComponent otherRailVehicleComponent = entity.getComponent(RailVehicleComponent.class);
             diffPosition.sub(location.getWorldPosition());
             Vector3f forceDirection = new Vector3f(Math.signum(diffPosition.x), Math.signum(diffPosition.y), Math.signum(diffPosition.z));
             float forceScale = 5f;
-            minecartComponent.direction.set(minecartComponent.pathDirection);
-            MinecartHelper.setVectorToDirection(forceDirection, minecartComponent.pathDirection);
-            MinecartHelper.setVectorToDirection(minecartComponent.direction, forceDirection);
+            railVehicleComponent.direction.set(railVehicleComponent.pathDirection);
+            MinecartHelper.setVectorToDirection(forceDirection, railVehicleComponent.pathDirection);
+            MinecartHelper.setVectorToDirection(railVehicleComponent.direction, forceDirection);
             forceDirection.y = 1f;
             forceDirection.scale(forceScale);
-            minecart.send(new ImpulseEvent(forceDirection));
+            railVehicle.send(new ImpulseEvent(forceDirection));
 
-            if (otherMinecartComponent.drive > 0) {
-                otherMinecartComponent.needRevertVelocity = 3;
-                entity.saveComponent(otherMinecartComponent);
+            if (otherRailVehicleComponent.drive > 0) {
+                otherRailVehicleComponent.needRevertVelocity = 3;
+                entity.saveComponent(otherRailVehicleComponent);
             }
         }
-        minecart.saveComponent(minecartComponent);
+        railVehicle.saveComponent(railVehicleComponent);
     }
 }

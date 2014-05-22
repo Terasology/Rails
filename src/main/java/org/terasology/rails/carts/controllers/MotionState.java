@@ -16,7 +16,7 @@
 package org.terasology.rails.carts.controllers;
 
 import org.terasology.math.Vector3i;
-import org.terasology.rails.carts.components.MinecartComponent;
+import org.terasology.rails.carts.components.RailVehicleComponent;
 
 import javax.vecmath.Vector3f;
 
@@ -25,7 +25,7 @@ public class MotionState {
     public Vector3f currentBlockPosition = new Vector3f();
     public Vector3f prevBlockPosition = new Vector3f();
     public Vector3f angularFactor = new Vector3f();
-    public MinecartComponent minecartComponent = null;
+    public RailVehicleComponent railVehicleComponent = null;
     public int yawSign = 1;
     public int pitchSign = 1;
     public boolean nextBlockIsSlope = false;
@@ -34,8 +34,8 @@ public class MotionState {
 
     public void setCurrentState(Vector3f pathDirection, Vector3f minecartDirection,  Vector3f angularFactor, Vector3i newBlockPosition, PositionStatus currentPositionStatus) {
         this.angularFactor = angularFactor;
-        this.minecartComponent.pathDirection.set(pathDirection);
-        this.minecartComponent.direction.set(minecartDirection);
+        this.railVehicleComponent.pathDirection.set(pathDirection);
+        this.railVehicleComponent.direction.set(minecartDirection);
         this.currentPositionStatus = currentPositionStatus;
         if (newBlockPosition != null) {
             setCurrentBlockPosition(newBlockPosition.toVector3f());

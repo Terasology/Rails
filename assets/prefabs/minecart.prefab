@@ -8,7 +8,7 @@
         "scale": 0.32
     },
     "Mesh": {
-        "mesh": "Rails:minecart_aligned",
+        "mesh": "Rails:minecart",
         "material": "Rails:minecart"
     },
     "RigidBody": {
@@ -24,7 +24,7 @@
     },
 
     "HullShape": {
-         "sourceMesh" : "Rails:minecart_bounds_aligned"
+         "sourceMesh" : "Rails:minecart_bounds"
     },
 
     "Health": {
@@ -36,7 +36,7 @@
 
     },
 
-    "Minecart": {},
+    "RailVehicle": {},
     "Trigger": {
         "detectGroups": [
             "engine:world",

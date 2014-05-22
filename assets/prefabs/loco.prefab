@@ -36,7 +36,7 @@
 
     },
 
-    "Minecart": {
+    "RailVehicle": {
         "type": "locomotive"
     },
     "Trigger": {
