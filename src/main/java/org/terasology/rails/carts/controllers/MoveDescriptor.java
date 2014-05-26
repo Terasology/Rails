@@ -28,14 +28,15 @@ public class MoveDescriptor {
 
     private final Logger logger = LoggerFactory.getLogger(MoveDescriptor.class);
 
-    public void calculateDirection(Vector3f velocity, BlockInfo blockInfo, RailVehicleComponent railVehicle, MotionState motionState, Vector3f position, int slopeFactor) {
+    public void calculateDirection(Vector3f velocity, BlockInfo blockInfo, RailVehicleComponent railVehicleComponent, MotionState motionState, Vector3f position, int slopeFactor) {
         Side side = correctSide(blockInfo);
+
         switch (blockInfo.getType()) {
             case SLOPE:
-                railVehicle.pathDirection = getDirectPath(side);
+                railVehicleComponent.pathDirection = getDirectPath(side);
                 break;
             case PLANE:
-                railVehicle.pathDirection = getDirectPath(side);
+                railVehicleComponent.pathDirection = getDirectPath(side);
                 break;
             case INTERSECTION:
                 Vector3f currentBlock = new Vector3f(motionState.currentBlockPosition);
@@ -46,18 +47,18 @@ public class MoveDescriptor {
             case TEE_INVERSED:
             case TEE:
             case CURVE:
-                setCornerDirection(side, railVehicle, motionState, position);
+                setCornerDirection(side, railVehicleComponent, motionState, position);
                 break;
         }
 
-        railVehicle.pathDirection.y = 1;
+        railVehicleComponent.pathDirection.y = 1;
         if (slopeFactor != 0) {
-            railVehicle.direction.y = slopeFactor;
+            railVehicleComponent.direction.y = slopeFactor;
         } else {
-            railVehicle.direction.y = 0;
+            railVehicleComponent.direction.y = 0;
         }
 
-        correctVelocity(railVehicle, velocity, blockInfo, position);
+        correctVelocity(railVehicleComponent, velocity, blockInfo, position);
     }
 
     public Side correctSide(BlockInfo blockInfo) {
@@ -75,6 +76,7 @@ public class MoveDescriptor {
 
     public void setYawOnPath(RailVehicleComponent railVehicle, MotionState motionState, BlockInfo blockInfo, Vector3f distanceMoved) {
         Side side = correctSide(blockInfo);
+
         if (blockInfo.isCorner() && distanceMoved != null) {
             if (railVehicle.prevYaw == -1) {
                 railVehicle.prevYaw = railVehicle.yaw;
@@ -211,34 +213,41 @@ public class MoveDescriptor {
         }
 
         if (railVehicleComponent.parentNode != null) {
-            logger.info("Olleee!!!");
             LocationComponent parentLocation = railVehicleComponent.parentNode.getComponent(LocationComponent.class);
             Vector3f parentPos = parentLocation.getWorldPosition();
             Vector3f dir = new Vector3f(parentPos);
             dir.sub(position);
-
             dir.y = 0;
-
-            //logger.info("dir: " + dir.length());
+            float dirLength = dir.length();
             if (dir.length() > 1.46f) {
-                logger.info("dir.length: " + dir);
                 RigidBodyComponent rb = railVehicleComponent.parentNode.getComponent(RigidBodyComponent.class);
                 railVehicleComponent.direction.set(Math.signum(dir.x), railVehicleComponent.direction.y, Math.signum(dir.z));
                 velocity.set(1,velocity.y,1);
-                velocity.scale(rb.velocity.length()*(dir.length() - 1.46f) + velocity.length());
-            } else if (dir.length() < 1.46f) {
+                velocity.scale(rb.velocity.length()*(dir.length() - 0.8f) + velocity.length());
+            } else if (dir.length() < 1.2f) {
                 RigidBodyComponent rb = railVehicleComponent.parentNode.getComponent(RigidBodyComponent.class);
                 railVehicleComponent.direction.set(Math.signum(dir.x), railVehicleComponent.direction.y, Math.signum(dir.z));
                 railVehicleComponent.direction.negate();
                 velocity.set(1,velocity.y,1);
-                velocity.scale(velocity.length()*(dir.length() - 1.46f));
+                velocity.scale(velocity.length()*(dir.length() - 0.8f));
             }
         }
 
         MinecartHelper.setVectorToDirection(railVehicleComponent.direction, railVehicleComponent.pathDirection);
 
         velocity.absolute();
-        MinecartHelper.setVectorToDirection(velocity, railVehicleComponent.direction);
+        float restoreLength = 0;
+        if (railVehicleComponent.parentNode != null) {
+            velocity.y = 0;
+            restoreLength = Math.abs(velocity.x) > Math.abs(velocity.z)?Math.abs(velocity.x):Math.abs(velocity.z);
+        }
+
+        if (restoreLength == 0) {
+            MinecartHelper.setVectorToDirection(velocity, railVehicleComponent.direction);
+        } else {
+            velocity.set( railVehicleComponent.direction);
+            velocity.scale(restoreLength);
+        }
 
         if (railVehicleComponent.drive > 0) {
             float speed = velocity.length();

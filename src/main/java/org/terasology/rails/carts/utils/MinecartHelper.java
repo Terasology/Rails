@@ -15,11 +15,8 @@
  */
 package org.terasology.rails.carts.utils;
 
-import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.Side;
 import org.terasology.math.TeraMath;
-import org.terasology.math.Vector3i;
-import org.terasology.rails.carts.components.MinecartComponent;
 
 import javax.vecmath.Vector3f;
 
