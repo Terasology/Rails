@@ -85,8 +85,6 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
     @Override
     public void initialise() {
         moveDescriptor = new MoveDescriptor();
-        loadVehicles();
-        loadLocomotivesChild();
     }
 
     @Override
@@ -216,44 +214,6 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             soundStack.put(railVehicle, currentTime);
         }
     }
-
-    private void loadVehicles() {
-        MinecartFactory railVehicleFactory = new MinecartFactory();
-        railVehicleFactory.setEntityManager(entityManager);
-
-        logger.info("Looking for lost wheels...");
-        for (EntityRef vehicle : entityManager.getEntitiesWith(WheelComponent.class)) {
-            WheelComponent wheelComponent = vehicle.getComponent(WheelComponent.class);
-
-
-            if (wheelComponent.parent != null) {
-                LocationComponent parentLoc = wheelComponent.parent.getComponent(LocationComponent.class);
-                if (!parentLoc.getChildren().contains(vehicle)) {
-                    railVehicleFactory.attachVehicle(wheelComponent.parent, wheelComponent.position, wheelComponent.scale);
-                }
-            }
-        }
-    }
-
-    private void loadLocomotivesChild() {
-        logger.info("Looking for lost minecarts...");
-        for (EntityRef railVehicle : entityManager.getEntitiesWith(RailVehicleComponent.class)) {
-            RailVehicleComponent railVehicleComponent = railVehicle.getComponent(RailVehicleComponent.class);
-
-            if (railVehicle.hasComponent(LocomotiveComponent.class)) {
-                continue;
-            }
-
-            if (railVehicleComponent.parentNode != null && railVehicleComponent.locomotiveRef != null) {
-                LocomotiveComponent locoComponent = railVehicleComponent.locomotiveRef.getComponent(LocomotiveComponent.class);
-                if(!locoComponent.childs.contains(railVehicle)) {
-                    locoComponent.childs.add(railVehicle);
-                    railVehicleComponent.locomotiveRef.saveComponent(locoComponent);
-                }
-            }
-        }
-    }
-
 
     private void correctPositionAndRotation(EntityRef entity, BlockInfo blockInfo) {
         RailVehicleComponent railVehicleComponent = entity.getComponent(RailVehicleComponent.class);

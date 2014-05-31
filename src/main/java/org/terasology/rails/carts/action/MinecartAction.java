@@ -28,6 +28,7 @@ import org.terasology.input.cameraTarget.CameraTargetChangedEvent;
 import org.terasology.logic.characters.CharacterComponent;
 import org.terasology.logic.characters.MovementMode;
 import org.terasology.logic.characters.events.SetMovementModeEvent;
+import org.terasology.logic.health.DestroyEvent;
 import org.terasology.logic.inventory.InventoryUtils;
 import org.terasology.logic.location.Location;
 import org.terasology.math.Side;
@@ -114,7 +115,7 @@ public class MinecartAction extends BaseComponentSystem {
     }
 
     @ReceiveEvent(components = {RailVehicleComponent.class, LocationComponent.class}, priority = EventPriority.PRIORITY_HIGH)
-    public void onDestroyRailVehicle(BeforeDeactivateComponent event, EntityRef entity) {
+    public void onDestroyRailVehicle(DestroyEvent event, EntityRef entity) {
         logger.info("Destroy vehicle");
         RailVehicleComponent railVehicle = entity.getComponent(RailVehicleComponent.class);
 
@@ -367,7 +368,7 @@ public class MinecartAction extends BaseComponentSystem {
         LocationComponent location = entity.getComponent(LocationComponent.class);
         RailVehicleComponent railVehicleComponent = railVehicle.getComponent(RailVehicleComponent.class);
 
-        if ( railVehicleComponent.parentNode != null && railVehicleComponent.parentNode.equals(entity) ) {
+        if ( railVehicleComponent.parentNode != null ) {
             return;
         }
 
@@ -379,6 +380,9 @@ public class MinecartAction extends BaseComponentSystem {
             bumpForce.y *= railVehicleComponent.pathDirection.y;
             bumpForce.z *= railVehicleComponent.pathDirection.z;
             bumpForce.scale(5f);
+            railVehicleComponent.direction.set(railVehicleComponent.pathDirection);
+            MinecartHelper.setVectorToDirection(bumpForce, railVehicleComponent.pathDirection);
+            MinecartHelper.setVectorToDirection(railVehicleComponent.direction, bumpForce);
             railVehicle.send(new ImpulseEvent(bumpForce));
         } else if (entity.hasComponent(RailVehicleComponent.class)) {
             RigidBodyComponent rb = entity.getComponent(RigidBodyComponent.class);
