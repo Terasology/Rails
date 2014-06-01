@@ -173,7 +173,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                         }
                     }
                     if (!isSameBlock) {
-                        playSound(railVehicle, velocity, railVehicleComponent.drive);
+                        //playSound(railVehicle, velocity, railVehicleComponent.drive);
                         showSmoke(railVehicleComponent);
                     }
                 }
