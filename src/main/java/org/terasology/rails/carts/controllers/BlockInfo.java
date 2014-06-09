@@ -78,6 +78,10 @@ public class BlockInfo {
         return isRails() && rails.type == ConnectsToRailsComponent.RAILS.SLOPE;
     }
 
+    public boolean isPowered() {
+        return isRails() && rails.type == ConnectsToRailsComponent.RAILS.POWERED;
+    }
+
     public boolean isIntersection() {
         return isRails() && rails.type == ConnectsToRailsComponent.RAILS.INTERSECTION;
     }

@@ -20,14 +20,14 @@
     "rotation" : "horizontal",
     "penetrable" : false,
 
-    "tile" : "Rails:TrainTrackTeeInversed",
+    "tile" : "Rails:TrainTrack",
     "shape" : "engine:horizontalOffsetPlane",
     "tiles" : {
       "sides" : "Rails:TrainTrackEmpty",
-      "top" : "Rails:TrainTrackTeeInversed",
+      "top" : "Rails:TrainTrack",
       "bottom" : "Rails:TrainTrackEmpty"
     },
     "entity": {
-      "prefab": "Rails:railTeeInversed"
+      "prefab": "Rails:railPoweredPlain"
     }
 }

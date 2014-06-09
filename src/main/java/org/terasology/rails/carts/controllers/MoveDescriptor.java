@@ -224,13 +224,13 @@ public class MoveDescriptor {
                 railVehicleComponent.direction.set(Math.signum(dir.x), railVehicleComponent.direction.y, Math.signum(dir.z));
                 velocity.set(1,velocity.y,1);
                 velocity.scale(rb.velocity.length()*(dir.length() - 0.8f) + velocity.length());
-            } else if (dir.length() < 1.2f) {
+            }/* else if (dir.length() < 1.2f) {
                 RigidBodyComponent rb = railVehicleComponent.parentNode.getComponent(RigidBodyComponent.class);
                 railVehicleComponent.direction.set(Math.signum(dir.x), railVehicleComponent.direction.y, Math.signum(dir.z));
                 railVehicleComponent.direction.negate();
                 velocity.set(1,velocity.y,1);
                 velocity.scale(velocity.length()*(dir.length() - 0.8f));
-            }
+            }  */
         }
 
         MinecartHelper.setVectorToDirection(railVehicleComponent.direction, railVehicleComponent.pathDirection);
