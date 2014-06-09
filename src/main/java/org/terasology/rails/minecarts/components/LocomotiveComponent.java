@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.mineCarts.components;
+package org.terasology.rails.minecarts.components;
 
 import com.google.common.collect.Lists;
 import org.terasology.entitySystem.Component;

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.mineCarts.controllers;
+package org.terasology.rails.minecarts.controllers;
 
 import org.terasology.math.Vector3i;
-import org.terasology.rails.mineCarts.components.RailVehicleComponent;
+import org.terasology.rails.minecarts.components.RailVehicleComponent;
 
 import javax.vecmath.Vector3f;
 

@@ -9,8 +9,7 @@
     },
     "Mesh": {
         "mesh": "Rails:minecart",
-        "material": "Rails:minecart",
-        "translucent": true
+        "material": "Rails:minecart"
     },
     "RigidBody": {
         "mass": 250f,

@@ -16,6 +16,8 @@
 package org.terasology.rails.trains.blocks.system;
 
 import com.google.common.base.Predicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.world.block.BlockComponent;
 
@@ -23,9 +25,11 @@ import org.terasology.world.block.BlockComponent;
  * Created by adeon on 09.06.14.
  */
 public class BlockEntityFilter implements Predicate<EntityRef> {
+    private final Logger logger = LoggerFactory.getLogger(RailsSystem.class);
     @Override
     public boolean apply(EntityRef entity) {
         BlockComponent component = entity.getComponent(BlockComponent.class);
-        return !component.getBlock().isPenetrable() && !component.getBlock().isLiquid();
+        logger.info("test " + component.getBlock());
+        return false;
     }
 }

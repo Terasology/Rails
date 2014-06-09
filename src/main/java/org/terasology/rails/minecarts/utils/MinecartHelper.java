@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.mineCarts.utils;
+package org.terasology.rails.minecarts.utils;
 
 import org.terasology.math.Side;
 import org.terasology.math.TeraMath;

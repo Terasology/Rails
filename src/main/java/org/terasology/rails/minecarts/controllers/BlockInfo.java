@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.mineCarts.controllers;
+package org.terasology.rails.minecarts.controllers;
 
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.math.Vector3i;
-import org.terasology.rails.mineCarts.blocks.ConnectsToRailsComponent;
+import org.terasology.rails.minecarts.blocks.ConnectsToRailsComponent;
 import org.terasology.world.block.Block;
 
 import javax.vecmath.Vector3f;

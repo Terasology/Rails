@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.mineCarts.blocks;
+package org.terasology.rails.minecarts.blocks;
 
 import com.google.common.collect.Sets;
 import org.slf4j.Logger;

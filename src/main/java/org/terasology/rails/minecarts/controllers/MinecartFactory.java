@@ -1,4 +1,4 @@
-package org.terasology.rails.mineCarts.controllers;
+package org.terasology.rails.minecarts.controllers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -6,8 +6,8 @@ import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.location.Location;
 import org.terasology.logic.location.LocationComponent;
-import org.terasology.rails.mineCarts.components.RailVehicleComponent;
-import org.terasology.rails.mineCarts.components.WheelComponent;
+import org.terasology.rails.minecarts.components.RailVehicleComponent;
+import org.terasology.rails.minecarts.components.WheelComponent;
 
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;

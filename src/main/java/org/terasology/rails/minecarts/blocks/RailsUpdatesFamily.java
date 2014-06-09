@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.mineCarts.blocks;
+package org.terasology.rails.minecarts.blocks;
 
 import gnu.trove.map.TByteObjectMap;
 import org.slf4j.Logger;

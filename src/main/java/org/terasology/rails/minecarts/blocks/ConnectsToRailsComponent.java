@@ -13,9 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.mineCarts.components;
+package org.terasology.rails.minecarts.blocks;
 
 
 import org.terasology.entitySystem.Component;
+import org.terasology.network.Replicate;
+import org.terasology.world.block.ForceBlockActive;
 
-public class WrenchComponent implements Component {}
+@ForceBlockActive
+public class ConnectsToRailsComponent implements Component {
+    public enum RAILS {
+        PLANE, CURVE, TEE, TEE_INVERSED, SLOPE, INTERSECTION, POWERED
+    }
+
+    @Replicate
+    public RAILS type = RAILS.PLANE;
+}

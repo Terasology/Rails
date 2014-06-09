@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.mineCarts.controllers;
+package org.terasology.rails.minecarts.controllers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.Side;
 import org.terasology.physics.components.RigidBodyComponent;
-import org.terasology.rails.mineCarts.components.RailVehicleComponent;
-import org.terasology.rails.mineCarts.utils.MinecartHelper;
+import org.terasology.rails.minecarts.components.RailVehicleComponent;
+import org.terasology.rails.minecarts.utils.MinecartHelper;
 import javax.vecmath.Vector3f;
 
 public class MoveDescriptor {

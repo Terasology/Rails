@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.mineCarts.controllers;
+package org.terasology.rails.minecarts.controllers;
 
 import com.bulletphysics.linearmath.QuaternionUtil;
 import com.google.common.collect.Maps;
@@ -42,9 +42,9 @@ import org.terasology.physics.Physics;
 import org.terasology.physics.StandardCollisionGroup;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.physics.events.ChangeVelocityEvent;
-import org.terasology.rails.mineCarts.blocks.ConnectsToRailsComponent;
-import org.terasology.rails.mineCarts.components.RailVehicleComponent;
-import org.terasology.rails.mineCarts.utils.MinecartHelper;
+import org.terasology.rails.minecarts.blocks.ConnectsToRailsComponent;
+import org.terasology.rails.minecarts.components.RailVehicleComponent;
+import org.terasology.rails.minecarts.utils.MinecartHelper;
 import org.terasology.registry.In;
 import org.terasology.rendering.logic.MeshComponent;
 import org.terasology.world.WorldProvider;

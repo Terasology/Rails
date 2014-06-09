@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.mineCarts.action;
+package org.terasology.rails.minecarts.action;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,10 +37,10 @@ import org.terasology.physics.StandardCollisionGroup;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.physics.events.CollideEvent;
 import org.terasology.physics.events.ImpulseEvent;
-import org.terasology.rails.mineCarts.blocks.ConnectsToRailsComponent;
-import org.terasology.rails.mineCarts.components.LocomotiveComponent;
-import org.terasology.rails.mineCarts.components.WrenchComponent;
-import org.terasology.rails.mineCarts.utils.MinecartHelper;
+import org.terasology.rails.minecarts.blocks.ConnectsToRailsComponent;
+import org.terasology.rails.minecarts.components.LocomotiveComponent;
+import org.terasology.rails.minecarts.components.WrenchComponent;
+import org.terasology.rails.minecarts.utils.MinecartHelper;
 import org.terasology.registry.In;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
@@ -51,8 +51,8 @@ import org.terasology.logic.inventory.ItemComponent;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.logic.players.event.OnPlayerSpawnedEvent;
 import org.terasology.math.Vector3i;
-import org.terasology.rails.mineCarts.components.RailVehicleComponent;
-import org.terasology.rails.mineCarts.controllers.MinecartFactory;
+import org.terasology.rails.minecarts.components.RailVehicleComponent;
+import org.terasology.rails.minecarts.controllers.MinecartFactory;
 import org.terasology.rendering.logic.MeshComponent;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.BlockComponent;
@@ -217,7 +217,6 @@ public class MinecartAction extends BaseComponentSystem {
                             railVehicleComponent.locomotiveRef = parentRailVehicleComponent.type.equals(RailVehicleComponent.Types.locomotive)?parent:parentRailVehicleComponent.locomotiveRef;
                             LocomotiveComponent loco = railVehicleComponent.locomotiveRef.getComponent(LocomotiveComponent.class);
                             if (loco == null) {
-                                logger.info("Ahtung!!!");
                                 return;
                             }
                             loco.childs.add(targetEntity);
