@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Benjamin Glatzel <benjamin.glatzel@me.com>
+ * Copyright 2014 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.terasology.rails.mineCarts.components;
 
-{
-    "shadowCasting": "false",
-    "translucent" : true,
-    "rotation" : "horizontal",
-    "penetrable" : false,
 
-    "tile" : "Rails:TrainTrackTeeInversed",
-    "shape" : "engine:horizontalOffsetPlane",
-    "tiles" : {
-      "sides" : "Rails:TrainTrackEmpty",
-      "top" : "Rails:TrainTrackTeeInversed",
-      "bottom" : "Rails:TrainTrackEmpty"
-    },
-    "entity": {
-      "prefab": "Rails:railBlock"
-    }
+import org.terasology.entitySystem.Component;
+import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.network.Replicate;
+
+import javax.vecmath.Vector3f;
+
+public class WheelComponent implements Component {
+    @Replicate
+    public EntityRef parent;
+    @Replicate
+    public Vector3f position;
+    @Replicate
+    public float scale;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Benjamin Glatzel <benjamin.glatzel@me.com>
+ * Copyright 2014 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.terasology.rails.trains.blocks.system;
 
-{
-    "shadowCasting": "false",
-    "translucent" : true,
-    "rotation" : "horizontal",
-    "penetrable" : false,
+import com.google.common.base.Predicate;
+import org.terasology.logic.common.ActivateEvent;
+import org.terasology.math.Side;
 
-    "tile" : "Rails:TrainTrackTeeInversed",
-    "shape" : "engine:horizontalOffsetPlane",
-    "tiles" : {
-      "sides" : "Rails:TrainTrackEmpty",
-      "top" : "Rails:TrainTrackTeeInversed",
-      "bottom" : "Rails:TrainTrackEmpty"
-    },
-    "entity": {
-      "prefab": "Rails:railBlock"
+public class UseOnTopFilter implements Predicate<ActivateEvent> {
+    @Override
+    public boolean apply(ActivateEvent event) {
+        Side side = Side.inDirection(event.getHitNormal());
+        return side == Side.TOP;
     }
 }
