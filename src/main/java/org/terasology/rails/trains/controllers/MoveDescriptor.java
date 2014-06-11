@@ -13,16 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.trains.blocks.system;
+package org.terasology.rails.trains.controllers;
 
-import com.google.common.base.Predicate;
-import org.terasology.logic.common.ActivateEvent;
-import org.terasology.math.Side;
 
-public class UseOnTopFilter implements Predicate<ActivateEvent> {
-    @Override
-    public boolean apply(ActivateEvent event) {
-        Side side = Side.inDirection(event.getHitNormal());
-        return side == Side.TOP;
-    }
+public class MoveDescriptor {
+
 }

@@ -13,24 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.trains.blocks.turn;
+package org.terasology.rails.trains.controllers;
 
-import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.math.Region3i;
-import org.terasology.math.Vector3i;
-import org.terasology.multiBlock.MultiBlockCallback;
-import org.terasology.world.block.Block;
+import org.terasology.entitySystem.systems.BaseComponentSystem;
+import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
 
-import java.util.Map;
 
-public class MultiBlockTurn implements MultiBlockCallback {
+public class VehicleSystem extends BaseComponentSystem implements UpdateSubscriberSystem {
+    float velocity = 10f;
     @Override
-    public Map<Vector3i, Block> getReplacementMap(Region3i region, Object designDetails) {
-        return null;
-    }
-
-    @Override
-    public void multiBlockFormed(Region3i region, EntityRef entity, Object designDetails) {
+    public void update(float delta) {
 
     }
 }

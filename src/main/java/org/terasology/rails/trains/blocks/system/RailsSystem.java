@@ -28,22 +28,9 @@ import org.terasology.world.block.BlockManager;
 @RegisterSystem
 public class RailsSystem extends BaseComponentSystem {
     @In
-    private MultiBlockFormRecipeRegistry multiBlockRecipeRegistry;
-    @In
     private BlockManager blockManager;
     private final Logger logger = LoggerFactory.getLogger(RailsSystem.class);
 
     public void initialise() {
-        addMultiblockRails();
-    }
-
-    private void addMultiblockRails() {
-        logger.info("loading multiblocks");
-        multiBlockRecipeRegistry.addMultiBlockFormItemRecipe(
-                new UniformMultiBlockFormItemRecipe(
-                        new ToolTypeEntityFilter("engine:axe"), new UseOnTopFilter(),
-                        new BlockEntityFilter(), new Basic3DSizeFilter(10, 10, 1, 1),
-                        "rails:railBlock",
-                        new UniformBlockReplacementCallback<Void>(blockManager.getBlock("core:Stone"))));
     }
 }

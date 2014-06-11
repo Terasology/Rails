@@ -13,21 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.trains.blocks.system;
+package org.terasology.rails.trains.components;
 
-import com.google.common.base.Predicate;
-import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.entitySystem.Component;
 
-public class ToolTypeEntityFilter implements Predicate<EntityRef> {
-    private String toolType;
 
-    public ToolTypeEntityFilter(String toolType) {
-        this.toolType = toolType;
-    }
-
-    @Override
-    public boolean apply(EntityRef item) {
-        return true;
-    }
+public class DebugTrainComponent implements Component {
 }
-

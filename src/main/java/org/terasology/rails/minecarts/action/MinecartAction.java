@@ -107,9 +107,9 @@ public class MinecartAction extends BaseComponentSystem {
     @ReceiveEvent
     public void onPlayerSpawn(OnPlayerSpawnedEvent event, EntityRef player, InventoryComponent inventory) {
         BlockItemFactory blockFactory = new BlockItemFactory(entityManager);
-        inventoryManager.giveItem(player,player,entityManager.create("rails:minecart"));
-        inventoryManager.giveItem(player,player,entityManager.create("rails:loco"));
-        inventoryManager.giveItem(player,player,entityManager.create("rails:wrench"));
+        //inventoryManager.giveItem(player,player,entityManager.create("rails:minecart"));
+        //inventoryManager.giveItem(player,player,entityManager.create("rails:loco"));
+        //inventoryManager.giveItem(player,player,entityManager.create("rails:wrench"));
         inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("rails:Rails"), 99));
     }
 
