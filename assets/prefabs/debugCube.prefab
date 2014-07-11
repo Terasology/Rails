@@ -2,15 +2,8 @@
     "Location": {
     },
     "Mesh": {
-        "mesh": "engine:cube",
+        "mesh": "Rails:curve_rail",
         "material": "Rails:debug"
-    },
-    "BoxShape": {
-         "extents" : [1, 1, 1]
-    },
-    "RigidBody": {
-        "kinematic": true,
-        "collisionGroup": "engine:kinematic"
     },
     "DebugTrain": {},
     "parent" : "engine:iconItem",
