@@ -72,7 +72,7 @@ public class RailsUpdatesFamily extends AbstractBlockFamily {
     public Block getBlockFor(BlockUri blockUri) {
         if (getURI().equals(blockUri.getFamilyUri())) {
             try {
-                byte connections = Byte.parseByte(blockUri.getIdentifier());
+                byte connections = Byte.parseByte(blockUri.getIdentifier().toString());
                 return blocks.get(connections);
             } catch (IllegalArgumentException e) {
                 return null;

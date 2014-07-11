@@ -1,0 +1,11 @@
+{
+    "id": "Rails",
+     "version" : "0.1.0",
+    "displayName": {
+        "en": "Rails"
+    },
+    "description": {
+        "en": "Module adds rails and carts"
+    },
+    "dependencies": []
+}
