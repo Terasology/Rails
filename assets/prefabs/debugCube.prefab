@@ -1,15 +1,19 @@
 {
     "Location": {
-        "scale": 0.2
     },
     "Mesh": {
-        "mesh": "engine:cube",
+        "mesh": "Rails:curve_rail",
         "material": "Rails:debug"
     },
-    "BoxShape": {
-         "extents" : [1, 1, 1]
+    "DebugTrain": {},
+    "parent" : "engine:iconItem",
+    "DisplayName" : {
+        "name" : "Debug cube"
     },
-    "RigidBody": {
-        "collisionGroup": "engine:static"
+    "Item" : {
+        "icon": "Rails:minecart.wrench",
+        "usage": "IN_DIRECTION",
+        "renderWithIcon" : true,
+        "baseDamage" : 0
     }
 }
