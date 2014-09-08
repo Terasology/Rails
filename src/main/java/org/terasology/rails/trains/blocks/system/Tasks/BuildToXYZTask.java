@@ -20,9 +20,9 @@ import org.terasology.rails.trains.blocks.system.Track;
 import javax.vecmath.Vector3f;
 import java.util.List;
 
-/**
- * Created by adeon on 08.09.14.
- */
-public interface Task {
-    public boolean run(List<Track> tracks, List<Integer> chunks, Vector3f position, float yaw, float pitch);
+public class BuildToXYZTask implements Task{
+    @Override
+    public boolean run(List<Track> tracks, List<Integer> chunks, Vector3f position, float yaw, float pitch) {
+        return false;
+    }
 }

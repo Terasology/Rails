@@ -13,14 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.trains.blocks.system.Tasks;
+package org.terasology.rails.trains.blocks.system.Misc;
 
 /**
- * Created by adeon on 08.09.14.
+ * Created by adeon on 09.09.14.
  */
-public class BuildToXY implements Task {
-    @Override
-    public boolean run() {
-        return false;
+public class Orientation {
+    public float yaw = 0;
+    public float pitch = 0;
+    public float roll = 0;
+
+    public Orientation (float yaw, float pitch, float roll) {
+        this.yaw = yaw;
+        this.pitch = pitch;
+        this.roll = roll;
     }
 }

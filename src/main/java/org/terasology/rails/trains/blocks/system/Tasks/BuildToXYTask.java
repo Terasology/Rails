@@ -15,12 +15,25 @@
  */
 package org.terasology.rails.trains.blocks.system.Tasks;
 
+import org.terasology.rails.trains.blocks.system.Track;
+
+import javax.vecmath.Vector3f;
+import java.util.List;
+
 /**
  * Created by adeon on 08.09.14.
  */
-public class BuildToXYZ implements Task{
+public class BuildToXYTask implements Task {
+
     @Override
-    public boolean run() {
-        return false;
+    public boolean run(List<Track> tracks, List<Integer> chunks, Vector3f position, float yaw, float pitch) {
+        boolean buildPass = true;
+        boolean firstStrightTrack = true;
+
+        float last = 0;
+        float lastDiffernce = 0;
+        float yawGoal = 0;
+
+        return true;
     }
 }

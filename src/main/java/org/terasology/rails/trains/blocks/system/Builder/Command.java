@@ -13,16 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.trains.blocks.system.Tasks;
+package org.terasology.rails.trains.blocks.system.Builder;
 
+import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.blocks.system.Track;
 
 import javax.vecmath.Vector3f;
-import java.util.List;
 
 /**
- * Created by adeon on 08.09.14.
+ * Created by adeon on 09.09.14.
  */
-public interface Task {
-    public boolean run(List<Track> tracks, List<Integer> chunks, Vector3f position, float yaw, float pitch);
+public class Command {
+    public boolean build;
+    public Track.TrackType type;
+    public Orientation orientation;
+    public Vector3f checkedPosition;
+
+
+    public Command(boolean build, Track.TrackType type, Vector3f checkedPosition, Orientation orientation) {
+        this.build = build;
+        this.type  = type;
+        this.orientation = orientation;
+        this.checkedPosition = checkedPosition;
+    }
+
+    public Command(boolean build, Track.TrackType type) {
+        this.build = build;
+        this.type  = type;
+    }
 }

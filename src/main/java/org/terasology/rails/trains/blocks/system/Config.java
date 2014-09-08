@@ -19,5 +19,6 @@ package org.terasology.rails.trains.blocks.system;
  * Created by adeon on 08.09.14.
  */
 public class Config {
-    public static float TRACK_LENGTH = (float) 7.7;
+    public static final float TRACK_LENGTH = 7.7f;
+    public static final float STANDARD_ANGLE_CHANGE = 7.5f;
 }
