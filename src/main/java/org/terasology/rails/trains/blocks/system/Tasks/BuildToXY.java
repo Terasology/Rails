@@ -13,22 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.trains.blocks.system;
+package org.terasology.rails.trains.blocks.system.Tasks;
 
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.terasology.entitySystem.systems.BaseComponentSystem;
-import org.terasology.entitySystem.systems.RegisterSystem;
-import org.terasology.registry.In;
-import org.terasology.world.block.BlockManager;
-
-@RegisterSystem
-public class RailsSystem extends BaseComponentSystem {
-    @In
-    private BlockManager blockManager;
-    private final Logger logger = LoggerFactory.getLogger(RailsSystem.class);
-
-    public void initialise() {
+/**
+ * Created by adeon on 08.09.14.
+ */
+public class BuildToXY implements Task {
+    @Override
+    public boolean run() {
+        return false;
     }
 }
