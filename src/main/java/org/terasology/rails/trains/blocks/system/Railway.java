@@ -13,16 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.trains.blocks.system.Tasks;
+package org.terasology.rails.trains.blocks.system;
 
-import org.terasology.rails.trains.blocks.system.Track;
+import java.util.ArrayList;
 
-import javax.vecmath.Vector3f;
-import java.util.List;
+/**
+ * Created by adeon on 09.09.14.
+ */
+public class Railway {
+    private ArrayList<Track> tracks = new ArrayList<>();
+    private ArrayList<Integer> chunks = new ArrayList<>();
 
-public class BuildToXYZTask implements Task{
-    @Override
-    public boolean run(List<Track> tracks, List<Integer> chunks, Vector3f position, float yaw, float pitch) {
-        return false;
+    public ArrayList<Track> getTracks() {
+        return tracks;
+    }
+
+    public ArrayList<Integer> getChunks() {
+        return chunks;
     }
 }

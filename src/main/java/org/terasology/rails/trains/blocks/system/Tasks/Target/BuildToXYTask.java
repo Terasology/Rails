@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.trains.blocks.system.Tasks;
+package org.terasology.rails.trains.blocks.system.Tasks.Target;
 
+import org.terasology.rails.trains.blocks.system.Misc.Orientation;
+import org.terasology.rails.trains.blocks.system.Tasks.Task;
 import org.terasology.rails.trains.blocks.system.Track;
 
 import javax.vecmath.Vector3f;
@@ -26,7 +28,7 @@ import java.util.List;
 public class BuildToXYTask implements Task {
 
     @Override
-    public boolean run(List<Track> tracks, List<Integer> chunks, Vector3f position, float yaw, float pitch) {
+    public boolean run(List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation) {
         boolean buildPass = true;
         boolean firstStrightTrack = true;
 

@@ -13,17 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.trains.blocks.system.Tasks;
+package org.terasology.rails.trains.blocks.system.Builder;
 
-import org.terasology.rails.trains.blocks.system.Misc.Orientation;
-import org.terasology.rails.trains.blocks.system.Track;
+import org.terasology.rails.trains.blocks.system.Railway;
+import org.terasology.rails.trains.blocks.system.Tasks.Standart.BuildStraightTask;
 
 import javax.vecmath.Vector3f;
-import java.util.List;
 
 /**
- * Created by adeon on 08.09.14.
+ * Created by adeon on 09.09.14.
  */
-public interface Task {
-    public boolean run(List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation);
+public class Builder {
+    TaskHandler taskHandler;
+    Railway railway;
+
+    public Builder() {
+        railway = new Railway();
+        taskHandler = new TaskHandler(railway);
+    }
+
+    public boolean buildStraight(Vector3f checkedPosition) {
+        return taskHandler.start(new BuildStraightTask(), checkedPosition);
+    }
 }

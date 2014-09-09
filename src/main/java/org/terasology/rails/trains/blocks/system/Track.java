@@ -15,6 +15,7 @@
  */
 package org.terasology.rails.trains.blocks.system;
 
+import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.math.TeraMath;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 
@@ -32,6 +33,7 @@ public class Track {
     private Vector3f endPosition;
     private Vector3f blockPosition;
     private Orientation orientation;
+    private EntityRef entity;
     private Track prevTrack;
     private Track nextTrack;
 
@@ -62,6 +64,30 @@ public class Track {
                 position.y + (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.yaw) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * Config.TRACK_LENGTH / 2),
                 position.z + (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.pitch ) * Config.TRACK_LENGTH / 2)
         );
+    }
+
+    public void setEntity(EntityRef entity) {
+        this.entity = entity;
+    }
+
+    public EntityRef getEntity() {
+        return entity;
+    }
+
+    public void setPrevTrack(Track track) {
+        this.prevTrack = track;
+    }
+
+    public Track getPrevTrack() {
+        return prevTrack;
+    }
+
+    public void setNextTrack(Track track) {
+        this.nextTrack = track;
+    }
+
+    public Track getNextTrack() {
+        return  nextTrack;
     }
 
     public Vector3f getPosition() {

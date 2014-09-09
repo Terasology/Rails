@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.trains.blocks.system.Tasks;
+package org.terasology.rails.trains.blocks.system.Tasks.Target;
 
+import org.terasology.rails.trains.blocks.system.Misc.Orientation;
+import org.terasology.rails.trains.blocks.system.Tasks.Task;
 import org.terasology.rails.trains.blocks.system.Track;
 
 import javax.vecmath.Vector3f;
@@ -25,7 +27,7 @@ import java.util.List;
  */
 public class BuildToPitchTask implements Task {
     @Override
-    public boolean run(List<Track> tracks, List<Integer> chunks, Vector3f position, float yaw, float pitch) {
+    public boolean run(List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation) {
 
         boolean hasTracks = tracks.size() > 0;
         boolean up = false;
@@ -33,14 +35,14 @@ public class BuildToPitchTask implements Task {
         if (hasTracks) {
             Track lastTrack = tracks.get(tracks.size() - 1);
 
-            if (lastTrack.getPitch() > pitch) {
-                if (lastTrack.getPitch() - pitch < 180) {
+            if (lastTrack.getPitch() > orientation.pitch) {
+                if (lastTrack.getPitch() - orientation.pitch < 180) {
                     up = false;
                 } else {
                     up = true;
                 }
             } else {
-                if (pitch - lastTrack.getPitch() < 180) {
+                if (orientation.pitch - lastTrack.getPitch() < 180) {
                     up = true;
                 } else {
                     up = false;
