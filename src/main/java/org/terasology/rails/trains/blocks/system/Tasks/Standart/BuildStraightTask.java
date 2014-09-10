@@ -15,6 +15,7 @@
  */
 package org.terasology.rails.trains.blocks.system.Tasks.Standart;
 
+import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.rails.trains.blocks.system.Builder.Command;
 import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
@@ -29,10 +30,8 @@ import java.util.List;
  * Created by adeon on 09.09.14.
  */
 public class BuildStraightTask implements Task {
-
-    @Override
-    public boolean run(List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation) {
-        CommandHandler commandHandler = new CommandHandler();
+        @Override
+    public boolean run(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation) {
 
         ArrayList<Command> commands = new ArrayList<>();
         commands.add(new Command(true, Track.TrackType.STRAIGHT, position, new Orientation(0,0,0)));

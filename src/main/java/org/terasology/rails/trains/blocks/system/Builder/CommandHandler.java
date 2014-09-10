@@ -15,10 +15,14 @@
  */
 package org.terasology.rails.trains.blocks.system.Builder;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.math.TeraMath;
 import org.terasology.rails.trains.blocks.system.Config;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.blocks.system.Track;
+import org.terasology.registry.In;
 
 import javax.vecmath.Vector3f;
 import java.util.List;
@@ -27,6 +31,13 @@ import java.util.List;
  * Created by adeon on 09.09.14.
  */
 public class CommandHandler {
+    private EntityManager entityManager;
+    private final Logger logger = LoggerFactory.getLogger(CommandHandler.class);
+
+    public CommandHandler(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
+
     public boolean run(List<Command> commands, List<Track> tracks, List<Integer> chunks) {
         for( Command command : commands ) {
             if (command.build) {
@@ -52,7 +63,7 @@ public class CommandHandler {
         float startYaw = 0;
         float startPitch = 0;
 
-        if (tracks.isEmpty()) {
+        if (!tracks.isEmpty()) {
             Track lastTrack;
             lastTrack = tracks.get(tracks.size() - 1);
             startYaw = lastTrack.getYaw();
@@ -92,6 +103,10 @@ public class CommandHandler {
 
         tracks.add(newTrack);
 
+        logger.info("Try to add rail on the " + newPosition);
+
+        addTrackToWorld(newTrack);
+
         return true;
     }
 
@@ -105,5 +120,20 @@ public class CommandHandler {
         }
 
         return true;
+    }
+
+    private void addTrackToWorld(Track track) {
+        if (entityManager == null) {
+            logger.info("Entity manager is null!!!");
+            return;
+        }
+
+        if (track == null) {
+            logger.info("track is null!!!");
+            return;
+        }
+
+        entityManager.create("rails:railBlock", track.getPosition());
+        logger.info("Rails added to " + track.getPosition());
     }
 }

@@ -15,6 +15,7 @@
  */
 package org.terasology.rails.trains.blocks.system.Builder;
 
+import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.blocks.system.Railway;
 import org.terasology.rails.trains.blocks.system.Tasks.Task;
@@ -28,23 +29,24 @@ import javax.vecmath.Vector3f;
 public class TaskHandler {
     private float lastTrackPitch = 0;
     private Railway railway;
+    private CommandHandler commandHandler;
 
-    public TaskHandler(Railway railway) {
+    public TaskHandler(Railway railway, EntityManager entityManager) {
         this.railway = railway;
+        this.commandHandler = new CommandHandler(entityManager);
     }
 
 
-    public boolean start(Task task, Vector3f position) {
+    public boolean start(Task task, Vector3f position, Orientation orientation) {
         Track track = null;
-        Orientation orientation = new Orientation(0,0,0);
         return runTask(task, track, position, orientation);
     }
 
     private boolean runTask(Task task, Track track, Vector3f position, Orientation orientation) {
         if (railway.getTracks().size() > 0) {
-            lastTrackPitch = track.getPitch();
+            lastTrackPitch = railway.getTracks().get(railway.getTracks().size()-1).getPitch();
         }
 
-        return task.run(railway.getTracks(), railway.getChunks(), position, orientation);
+        return task.run(commandHandler, railway.getTracks(), railway.getChunks(), position, orientation);
     }
 }

@@ -68,26 +68,4 @@ public class VehicleAction extends BaseComponentSystem {
         //inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("rails:Rails"), 99));
     }
 
-    @ReceiveEvent(components = {DebugTrainComponent.class, ItemComponent.class})
-    public void onPlaceFunctional(ActivateEvent event, EntityRef item) {
-
-        if (item.hasComponent(WrenchComponent.class)) {
-            return;
-        }
-
-        EntityRef targetEntity = event.getTarget();
-        BlockComponent blockComponent = targetEntity.getComponent(BlockComponent.class);
-        ConnectsToRailsComponent connectsToRailsComponent = targetEntity.getComponent(ConnectsToRailsComponent.class);
-
-        if (blockComponent == null) {
-            return;
-        }
-
-        Vector3f placementPos = new Vector3i(event.getTarget().getComponent(BlockComponent.class).getPosition()).toVector3f();
-        placementPos.y += 1.2f;
-        logger.info("Created debug block at {}", placementPos);
-        entityManager.create("rails:debugCube", placementPos);
-        event.consume();
-    }
-
 }

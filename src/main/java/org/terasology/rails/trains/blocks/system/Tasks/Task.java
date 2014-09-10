@@ -15,6 +15,7 @@
  */
 package org.terasology.rails.trains.blocks.system.Tasks;
 
+import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.blocks.system.Track;
 
@@ -25,5 +26,5 @@ import java.util.List;
  * Created by adeon on 08.09.14.
  */
 public interface Task {
-    public boolean run(List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation);
+    public boolean run(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation);
 }

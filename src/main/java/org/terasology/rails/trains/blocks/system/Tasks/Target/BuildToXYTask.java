@@ -15,6 +15,7 @@
  */
 package org.terasology.rails.trains.blocks.system.Tasks.Target;
 
+import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.blocks.system.Tasks.Task;
 import org.terasology.rails.trains.blocks.system.Track;
@@ -28,7 +29,7 @@ import java.util.List;
 public class BuildToXYTask implements Task {
 
     @Override
-    public boolean run(List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation) {
+    public boolean run(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation) {
         boolean buildPass = true;
         boolean firstStrightTrack = true;
 

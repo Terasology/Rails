@@ -13,12 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.trains.blocks.system;
+package org.terasology.rails.trains.blocks.system.Builder;
+
+import org.terasology.rails.trains.blocks.system.Track;
 
 /**
- * Created by adeon on 08.09.14.
+ * Created by adeon on 10.09.14.
  */
-public class Config {
-    public static final float TRACK_LENGTH = 1f;
-    public static final float STANDARD_ANGLE_CHANGE = 7.5f;
+public class TaskResult {
+    public Track track;
+    public boolean success;
+
+    public TaskResult(Track track, boolean success) {
+        this.track = track;
+        this.success = success;
+    }
 }

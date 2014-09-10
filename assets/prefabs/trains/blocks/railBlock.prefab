@@ -1,3 +1,19 @@
 {
-    "TrainRail": {}
+    "Location": {
+    },
+    "Mesh": {
+        "mesh": "Rails:single",
+        "material": "Rails:debug"
+    },
+    "DebugTrain": {},
+    "parent" : "engine:iconItem",
+    "DisplayName" : {
+        "name" : "Build rail"
+    },
+    "Item" : {
+        "icon": "Rails:minecart.wrench",
+        "usage": "IN_DIRECTION",
+        "renderWithIcon" : true,
+        "baseDamage" : 0
+    }
 }

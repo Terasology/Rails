@@ -15,6 +15,8 @@
  */
 package org.terasology.rails.trains.blocks.system.Builder;
 
+import org.terasology.entitySystem.entity.EntityManager;
+import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.blocks.system.Railway;
 import org.terasology.rails.trains.blocks.system.Tasks.Standart.BuildStraightTask;
 
@@ -24,15 +26,17 @@ import javax.vecmath.Vector3f;
  * Created by adeon on 09.09.14.
  */
 public class Builder {
-    TaskHandler taskHandler;
-    Railway railway;
+    private TaskHandler taskHandler;
+    private Railway railway;
+    private CommandHandler entityManager;
 
-    public Builder() {
+    public Builder(EntityManager entityManager) {
         railway = new Railway();
-        taskHandler = new TaskHandler(railway);
+        taskHandler = new TaskHandler(railway, entityManager);
     }
 
     public boolean buildStraight(Vector3f checkedPosition) {
-        return taskHandler.start(new BuildStraightTask(), checkedPosition);
+        Orientation orientation = new Orientation(0,0,0);
+        return taskHandler.start(new BuildStraightTask(), checkedPosition, orientation);
     }
 }

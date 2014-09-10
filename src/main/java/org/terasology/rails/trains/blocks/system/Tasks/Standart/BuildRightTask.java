@@ -13,58 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.trains.blocks.system.Tasks.Target;
+package org.terasology.rails.trains.blocks.system.Tasks.Standart;
 
+import org.terasology.rails.trains.blocks.system.Builder.Command;
 import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.blocks.system.Tasks.Task;
 import org.terasology.rails.trains.blocks.system.Track;
 
 import javax.vecmath.Vector3f;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by adeon on 09.09.14.
+ * Created by adeon on 10.09.14.
  */
-public class BuildToPitchTask implements Task {
+public class BuildRightTask implements Task {
     @Override
     public boolean run(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation) {
 
-        boolean hasTracks = tracks.size() > 0;
-        boolean up = false;
+        ArrayList<Command> commands = new ArrayList<>();
+        commands.add(new Command(true, Track.TrackType.RIGHT, position, new Orientation(0,0,0)));
+        commands.add(new Command(true, Track.TrackType.RIGHT, position, new Orientation(0,0,0)));
+        commands.add(new Command(true, Track.TrackType.RIGHT, position, new Orientation(0,0,0)));
 
-        if (hasTracks) {
-            Track lastTrack = tracks.get(tracks.size() - 1);
-
-            if (lastTrack.getPitch() > orientation.pitch) {
-                if (lastTrack.getPitch() - orientation.pitch < 180) {
-                    up = false;
-                } else {
-                    up = true;
-                }
-            } else {
-                if (orientation.pitch - lastTrack.getPitch() < 180) {
-                    up = true;
-                } else {
-                    up = false;
-                }
-            }
-
-        } else {
-            up = false;
-        }
-
-        if (up) {
-
-        } else {
-
-        }
-
-        return true;
-    }
-
-    private boolean tryTrackType(List<Track> tracks, List<Integer> chunks, Track.TrackType type) {
-
-        return true;
+        return commandHandler.run(commands, tracks, chunks);
     }
 }
+
