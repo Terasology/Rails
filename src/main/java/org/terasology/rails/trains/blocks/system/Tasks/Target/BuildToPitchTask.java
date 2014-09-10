@@ -15,12 +15,15 @@
  */
 package org.terasology.rails.trains.blocks.system.Tasks.Target;
 
+import org.terasology.rails.trains.blocks.system.Builder.Command;
 import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
+import org.terasology.rails.trains.blocks.system.Builder.TaskResult;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.blocks.system.Tasks.Task;
 import org.terasology.rails.trains.blocks.system.Track;
 
 import javax.vecmath.Vector3f;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,16 +37,16 @@ public class BuildToPitchTask implements Task {
         boolean up = false;
 
         if (hasTracks) {
-            Track lastTrack = tracks.get(tracks.size() - 1);
+            Track tTrack = tracks.get(tracks.size() - 1);
 
-            if (lastTrack.getPitch() > orientation.pitch) {
-                if (lastTrack.getPitch() - orientation.pitch < 180) {
+            if (tTrack.getPitch() > orientation.pitch) {
+                if (tTrack.getPitch() - orientation.pitch < 180) {
                     up = false;
                 } else {
                     up = true;
                 }
             } else {
-                if (orientation.pitch - lastTrack.getPitch() < 180) {
+                if (orientation.pitch - tTrack.getPitch() < 180) {
                     up = true;
                 } else {
                     up = false;
@@ -51,20 +54,32 @@ public class BuildToPitchTask implements Task {
             }
 
         } else {
-            up = false;
+            return false;
         }
 
         if (up) {
-
+            TaskResult result = tryTrackType(commandHandler, tracks, chunks, position, orientation, Track.TrackType.UP);
         } else {
-
+            TaskResult result = tryTrackType(commandHandler, tracks, chunks, position, orientation, Track.TrackType.DOWN);
         }
 
         return true;
     }
 
-    private boolean tryTrackType(List<Track> tracks, List<Integer> chunks, Track.TrackType type) {
+    private TaskResult tryTrackType(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation, Track.TrackType type) {
+        ArrayList<Command> commands = new ArrayList<>();
+        TaskResult taskResult = null;
+        Track lastTrack = tracks.get(tracks.size()-1);
+        commands.add(new Command(true, type, position, orientation));
 
-        return true;
+        while( lastTrack.getPitch()!= orientation.pitch) {
+            taskResult = commandHandler.run(commands, tracks, chunks);
+            lastTrack = taskResult.track;
+            if (!taskResult.success) {
+                break;
+            }
+        }
+
+        return taskResult;
     }
 }

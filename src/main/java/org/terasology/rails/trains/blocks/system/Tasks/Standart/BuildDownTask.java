@@ -15,7 +15,6 @@
  */
 package org.terasology.rails.trains.blocks.system.Tasks.Standart;
 
-import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.rails.trains.blocks.system.Builder.Command;
 import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
 import org.terasology.rails.trains.blocks.system.Builder.TaskResult;
@@ -28,18 +27,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by adeon on 09.09.14.
+ * Created by adeon on 10.09.14.
  */
-public class BuildStraightTask implements Task {
-        @Override
+public class BuildDownTask implements Task {
+    @Override
     public boolean run(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation) {
 
         ArrayList<Command> commands = new ArrayList<>();
-        commands.add(new Command(true, Track.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
-        commands.add(new Command(true, Track.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
-        commands.add(new Command(true, Track.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
-
+        commands.add(new Command(true, Track.TrackType.DOWN, position, new Orientation(0,0,0)));
+        commands.add(new Command(true, Track.TrackType.DOWN, position, new Orientation(0,0,0)));
+        commands.add(new Command(true, Track.TrackType.DOWN, position, new Orientation(0,0,0)));
         TaskResult taskResult = commandHandler.run(commands, tracks, chunks);
         return taskResult.success;
     }
 }
+

@@ -69,7 +69,7 @@ public class RailsSystem extends BaseComponentSystem {
         placementPos.y += 0.6f;
         logger.info("Created debug rail at {}", placementPos);
         //entityManager.create("rails:railBlock", placementPos);
-        railBuilder.buildStraight(placementPos);
+        railBuilder.buildLeft(placementPos);
         event.consume();
     }
 }

@@ -54,15 +54,15 @@ public class Track {
 
     private void calculatePositions() {
         startPosition =  new Vector3f(
-                (float)(Math.cos(TeraMath.DEG_TO_RAD * orientation.yaw ) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * Config.TRACK_LENGTH / 2),
                 (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.yaw) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * Config.TRACK_LENGTH / 2),
-                (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.pitch ) * Config.TRACK_LENGTH / 2)
+                (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.pitch ) * Config.TRACK_LENGTH / 2),
+                (float)(Math.cos(TeraMath.DEG_TO_RAD * orientation.yaw ) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * Config.TRACK_LENGTH / 2)
         );
 
         endPosition = new Vector3f(
-                position.x + (float)(Math.cos(TeraMath.DEG_TO_RAD * orientation.yaw ) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * Config.TRACK_LENGTH / 2),
-                position.y + (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.yaw) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * Config.TRACK_LENGTH / 2),
-                position.z + (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.pitch ) * Config.TRACK_LENGTH / 2)
+                position.x + (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.yaw) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * Config.TRACK_LENGTH / 2),
+                position.y + (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.pitch ) * Config.TRACK_LENGTH / 2),
+                position.z + (float)(Math.cos(TeraMath.DEG_TO_RAD * orientation.yaw ) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * Config.TRACK_LENGTH / 2)
         );
     }
 
@@ -103,7 +103,7 @@ public class Track {
     }
 
     public float getPitch() {
-        return  orientation.yaw;
+        return  orientation.pitch;
     }
 
     public boolean equals(Object obj) {

@@ -15,15 +15,20 @@
  */
 package org.terasology.rails.trains.blocks.system.Builder;
 
+import com.bulletphysics.linearmath.QuaternionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityManager;
+import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.TeraMath;
 import org.terasology.rails.trains.blocks.system.Config;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
+import org.terasology.rails.trains.blocks.system.Tasks.Task;
 import org.terasology.rails.trains.blocks.system.Track;
 import org.terasology.registry.In;
 
+import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 import java.util.List;
 
@@ -38,24 +43,26 @@ public class CommandHandler {
         this.entityManager = entityManager;
     }
 
-    public boolean run(List<Command> commands, List<Track> tracks, List<Integer> chunks) {
+    public TaskResult run(List<Command> commands, List<Track> tracks, List<Integer> chunks) {
+        Track track = null;
         for( Command command : commands ) {
             if (command.build) {
-                boolean buildResult = buildTrack(tracks, command.type, command.checkedPosition, command.orientation);
-                if (!buildResult) {
-                    return false;
+                Track tTrack = buildTrack(tracks, command.type, command.checkedPosition, command.orientation);
+                if (tTrack == null) {
+                    return new TaskResult(track, false);
                 }
+                track = tTrack;
             } else {
                 boolean removeResult = removeTrack(tracks, chunks);
                 if (!removeResult) {
-                    return false;
+                    return new TaskResult(null, false);
                 }
             }
         }
-        return true;
+        return new TaskResult(track, true);
     }
 
-    private boolean buildTrack(List<Track> tracks, Track.TrackType type, Vector3f checkedPosition, Orientation orientation) {
+    private Track buildTrack(List<Track> tracks, Track.TrackType type, Vector3f checkedPosition, Orientation orientation) {
 
         Orientation newOrientation = null;
         Vector3f newPosition;
@@ -83,10 +90,10 @@ public class CommandHandler {
                 newOrientation = new Orientation(startYaw, startPitch - Config.STANDARD_ANGLE_CHANGE, 0);
                 break;
             case LEFT:
-                newOrientation = new Orientation(startYaw - Config.STANDARD_ANGLE_CHANGE, startPitch, 0);
+                newOrientation = new Orientation(startYaw + Config.STANDARD_ANGLE_CHANGE, startPitch, 0);
                 break;
             case RIGHT:
-                newOrientation = new Orientation(startYaw + Config.STANDARD_ANGLE_CHANGE, startPitch, 0);
+                newOrientation = new Orientation(startYaw - Config.STANDARD_ANGLE_CHANGE, startPitch, 0);
                 break;
             case CUSTOM:
                 newOrientation = new Orientation(orientation.yaw, orientation.pitch, orientation.roll);
@@ -94,20 +101,18 @@ public class CommandHandler {
         }
 
         newPosition = new Vector3f(
-                prevPosition.x + (float)(Math.cos(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float)Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * Config.TRACK_LENGTH / 2),
-                prevPosition.y + (float)(Math.sin(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float) Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * Config.TRACK_LENGTH / 2),
-                prevPosition.z + (float)(Math.sin(TeraMath.DEG_TO_RAD * newOrientation.pitch) * Config.TRACK_LENGTH / 2)
+                prevPosition.x + (float)(Math.sin(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float) Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * Config.TRACK_LENGTH / 2),
+                prevPosition.y + (float)(Math.sin(TeraMath.DEG_TO_RAD * newOrientation.pitch) * Config.TRACK_LENGTH / 2),
+                prevPosition.z + (float)(Math.cos(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float)Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * Config.TRACK_LENGTH / 2)
         );
 
         Track newTrack = new Track(type, newPosition, newOrientation);
 
         tracks.add(newTrack);
 
-        logger.info("Try to add rail on the " + newPosition);
-
         addTrackToWorld(newTrack);
 
-        return true;
+        return newTrack;
     }
 
     private boolean removeTrack(List<Track> tracks, List<Integer> chunks) {
@@ -123,17 +128,11 @@ public class CommandHandler {
     }
 
     private void addTrackToWorld(Track track) {
-        if (entityManager == null) {
-            logger.info("Entity manager is null!!!");
-            return;
-        }
-
-        if (track == null) {
-            logger.info("track is null!!!");
-            return;
-        }
-
-        entityManager.create("rails:railBlock", track.getPosition());
-        logger.info("Rails added to " + track.getPosition());
+        Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
+        QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * (track.getYaw() + 90), 0, 0);
+        EntityRef railBlock = entityManager.create("rails:railBlock-left", track.getPosition());
+        LocationComponent locationComponent = railBlock.getComponent(LocationComponent.class);
+        locationComponent.setWorldRotation(yawPitch);
+        railBlock.saveComponent(locationComponent);
     }
 }

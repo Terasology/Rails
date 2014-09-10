@@ -15,17 +15,137 @@
  */
 package org.terasology.rails.trains.blocks.system.Tasks.Target;
 
+import org.terasology.rails.trains.blocks.system.Builder.Command;
 import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
+import org.terasology.rails.trains.blocks.system.Builder.TaskResult;
+import org.terasology.rails.trains.blocks.system.Config;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.blocks.system.Tasks.Task;
 import org.terasology.rails.trains.blocks.system.Track;
 
 import javax.vecmath.Vector3f;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BuildToXYZTask implements Task {
     @Override
     public boolean run(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation) {
-        return false;
+        float zone = 5f;
+        boolean firstStraightTrack = true;
+        boolean buildPass = true;
+        float last = 0;
+        float lastDif = 0;
+        float toYaw = 0;
+        float toPitch = 0;
+        float withInY = 20;
+        float withIn = 5;
+        ArrayList<Command> commands = new ArrayList<>();
+
+        if (tracks.isEmpty()) {
+            return false;
+        }
+
+        Track lastTrack = tracks.get(tracks.size()-1);
+
+        while (!((lastTrack.getPosition().x < position.x + (withIn / 2) && lastTrack.getPosition().x > position.x - (withIn / 2)) &&
+                 (lastTrack.getPosition().z < position.z + (withIn / 2) && lastTrack.getPosition().z > position.z - (withIn / 2)) &&
+                 (lastTrack.getPosition().y <= (position.y + (withInY / 2)) && lastTrack.getPosition().y >= (position.y - (withInY / 2)))) && buildPass) {
+            Vector3f dir = new Vector3f(position);
+            dir.sub(lastTrack.getPosition());
+            toYaw = (float)(Math.atan2(dir.z, dir.x) * 180 / Math.PI);
+
+            if(toYaw < 0) {
+                toYaw += 360;
+            }
+
+            int totalAdjustments = (int)(toYaw / Config.STANDARD_ANGLE_CHANGE);
+
+            if((toYaw % 15) > Config.STANDARD_ANGLE_CHANGE / 2) {
+                totalAdjustments++;
+            }
+
+            toYaw = totalAdjustments * Config.STANDARD_ANGLE_CHANGE;
+
+            if (lastTrack.getPosition().y <= (position.y + (withInY / 2)) && lastTrack.getPosition().y >= (position.y - (withInY / 2))) {
+                toPitch = 0;
+            } else if(position.y > 0) {
+                toPitch = 90 + Config.MAX_PITCH;
+            } else {
+                toPitch = 270 + Config.MAX_PITCH;
+            }
+
+            if (lastTrack.getYaw() == toYaw && lastTrack.getPitch() == toPitch) {
+                commands.clear();
+                commands.add(new Command(true, Track.TrackType.STRAIGHT, position, new Orientation(0, 0, 0)));
+                TaskResult result = commandHandler.run(commands, tracks, chunks);
+                buildPass = result.success;
+                float distanceX = lastTrack.getPosition().x - position.x;
+                float distanceZ = lastTrack.getPosition().z - position.z;
+
+                float differnce = Math.abs(distanceX + distanceZ);
+
+                if (!firstStraightTrack) {
+                    if (differnce > lastDif) {
+                        return false;
+                    }
+                }
+
+                last = lastTrack.getPosition().x + lastTrack.getPosition().z;
+                lastDif = differnce;
+
+            } else {
+                int yawDirection = 0;
+                int pitchDirection = 0;
+                if (lastTrack.getYaw() != toYaw) {
+                    if (lastTrack.getYaw() - toYaw > 0) {
+                        if (Math.abs(lastTrack.getYaw() - toYaw) < 180) {
+                            yawDirection = -1; //Right
+                        } else {
+                            yawDirection = 1; //Left
+                        }
+                    } else {
+                        if (Math.abs(toYaw - lastTrack.getYaw()) < 180) {
+                            yawDirection = 1; //Left
+                        } else {
+                            yawDirection = -1; //Right
+                        }
+
+                    }
+                }
+
+                if (lastTrack.getPitch() != toPitch) {
+                    if (lastTrack.getPitch() - toPitch > 0) {
+                        if ((lastTrack.getPitch() - toPitch > 360 - lastTrack.getPitch())) {
+                            pitchDirection = 1; //Up
+                        } else {
+                            pitchDirection = -1; //Down
+                        }
+
+                    } else {
+                        if ((toPitch - lastTrack.getPitch() > 360 - toPitch)) {
+                            pitchDirection = -1; //Down
+                        } else {
+                            pitchDirection = 1; //Up
+                        }
+                    }
+                }
+                commands.clear();
+                commands.add(new Command(true, Track.TrackType.CUSTOM, position, new Orientation(Config.STANDARD_ANGLE_CHANGE * yawDirection, Config.STANDARD_ANGLE_CHANGE * pitchDirection, 0)));
+                TaskResult result = commandHandler.run(commands, tracks, chunks);
+                buildPass = result.success;
+            }
+            lastTrack = tracks.get(tracks.size() - 1);
+
+        }
+
+
+        if ((lastTrack.getPosition().x < position.x + (withIn / 2) && lastTrack.getPosition().x > position.x - (withIn / 2)) &&
+            (lastTrack.getPosition().z < position.z + (withIn / 2) && lastTrack.getPosition().z > position.z - (withIn / 2)) &&
+            (lastTrack.getPosition().y <= (position.y + (withIn / 2)) && lastTrack.getPosition().y >= (position.y - (withInY / 2)))) {
+            return true;
+        } else {
+            return false;
+        }
+
     }
 }

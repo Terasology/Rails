@@ -21,4 +21,5 @@ package org.terasology.rails.trains.blocks.system;
 public class Config {
     public static final float TRACK_LENGTH = 1f;
     public static final float STANDARD_ANGLE_CHANGE = 7.5f;
+    public static final float MAX_PITCH = 22.5f;
 }

@@ -17,6 +17,7 @@ package org.terasology.rails.trains.blocks.system.Tasks.Standart;
 
 import org.terasology.rails.trains.blocks.system.Builder.Command;
 import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
+import org.terasology.rails.trains.blocks.system.Builder.TaskResult;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.blocks.system.Tasks.Task;
 import org.terasology.rails.trains.blocks.system.Track;
@@ -37,7 +38,8 @@ public class BuildLeftTask implements Task {
         commands.add(new Command(true, Track.TrackType.LEFT, position, new Orientation(0,0,0)));
         commands.add(new Command(true, Track.TrackType.LEFT, position, new Orientation(0,0,0)));
 
-        return commandHandler.run(commands, tracks, chunks);
+        TaskResult taskResult = commandHandler.run(commands, tracks, chunks);
+        return taskResult.success;
     }
 }
 

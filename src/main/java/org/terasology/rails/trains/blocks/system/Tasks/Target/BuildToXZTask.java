@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * Created by adeon on 08.09.14.
  */
-public class BuildToXYTask implements Task {
+public class BuildToXZTask implements Task {
 
     @Override
     public boolean run(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation) {
