@@ -78,6 +78,7 @@ public class CommandHandler {
             prevPosition = lastTrack.getEndPosition();
         }
 
+        String prefab = "rails:railBlock";
 
         switch(type) {
             case STRAIGHT:
@@ -85,15 +86,19 @@ public class CommandHandler {
                 break;
             case UP:
                 newOrientation = new Orientation(startYaw, startPitch + Config.STANDARD_ANGLE_CHANGE, 0);
+                prefab = "rails:railBlock-up";
                 break;
             case DOWN:
                 newOrientation = new Orientation(startYaw, startPitch - Config.STANDARD_ANGLE_CHANGE, 0);
+                prefab = "rails:railBlock-down";
                 break;
             case LEFT:
                 newOrientation = new Orientation(startYaw + Config.STANDARD_ANGLE_CHANGE, startPitch, 0);
+                prefab = "rails:railBlock-left";
                 break;
             case RIGHT:
                 newOrientation = new Orientation(startYaw - Config.STANDARD_ANGLE_CHANGE, startPitch, 0);
+                prefab = "rails:railBlock-right";
                 break;
             case CUSTOM:
                 newOrientation = new Orientation(orientation.yaw, orientation.pitch, orientation.roll);
@@ -110,27 +115,27 @@ public class CommandHandler {
 
         tracks.add(newTrack);
 
-        addTrackToWorld(newTrack);
+        addTrackToWorld(newTrack, prefab);
 
         return newTrack;
     }
 
     private boolean removeTrack(List<Track> tracks, List<Integer> chunks) {
         tracks.remove(tracks.size() - 1);
-        int countTracks = ( (Integer) chunks.get( chunks.size() -1 ) ).intValue();
+        int countTracks = chunks.get(chunks.size() - 1);
         if (countTracks == 0) {
             chunks.remove(chunks.size() - 1);
         } else {
-            chunks.set(chunks.size() - 1, countTracks - 1 );
+            chunks.set(chunks.size() - 1, countTracks - 1);
         }
 
         return true;
     }
 
-    private void addTrackToWorld(Track track) {
+    private void addTrackToWorld(Track track, String prefab) {
         Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
-        QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * (track.getYaw() + 90), 0, 0);
-        EntityRef railBlock = entityManager.create("rails:railBlock-left", track.getPosition());
+        QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * (track.getYaw() + 90), 0, track.getPitch()>0 ? (TeraMath.DEG_TO_RAD * track.getPitch() + 180):0);
+        EntityRef railBlock = entityManager.create(prefab, track.getPosition());
         LocationComponent locationComponent = railBlock.getComponent(LocationComponent.class);
         locationComponent.setWorldRotation(yawPitch);
         railBlock.saveComponent(locationComponent);

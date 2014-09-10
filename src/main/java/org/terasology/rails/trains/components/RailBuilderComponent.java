@@ -18,5 +18,7 @@ package org.terasology.rails.trains.components;
 import org.terasology.entitySystem.Component;
 
 
-public class DebugTrainComponent implements Component {
+public class RailBuilderComponent implements Component {
+    public static enum RailType {LEFT, RIGHT, UP, DONW, STRAIGHT};
+    public RailType type = RailType.STRAIGHT;
 }

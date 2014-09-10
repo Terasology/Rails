@@ -29,7 +29,7 @@ import org.terasology.math.Vector3i;
 import org.terasology.rails.minecarts.blocks.ConnectsToRailsComponent;
 import org.terasology.rails.minecarts.components.WrenchComponent;
 import org.terasology.rails.trains.blocks.system.Builder.Builder;
-import org.terasology.rails.trains.components.DebugTrainComponent;
+import org.terasology.rails.trains.components.RailBuilderComponent;
 import org.terasology.registry.In;
 import org.terasology.world.block.BlockComponent;
 import org.terasology.world.block.BlockManager;
@@ -50,8 +50,14 @@ public class RailsSystem extends BaseComponentSystem {
         railBuilder = new Builder(entityManager);
     }
 
-    @ReceiveEvent(components = {DebugTrainComponent.class, ItemComponent.class})
+    @ReceiveEvent(components = {RailBuilderComponent.class, ItemComponent.class})
     public void onPlaceFunctional(ActivateEvent event, EntityRef item) {
+
+        if (railBuilder == null) {
+            railBuilder = new Builder(entityManager);
+            logger.info("is nuuuuuuuuuuuuuuuuuuulo");
+            return;
+        }
 
         if (item.hasComponent(WrenchComponent.class)) {
             return;
@@ -69,7 +75,27 @@ public class RailsSystem extends BaseComponentSystem {
         placementPos.y += 0.6f;
         logger.info("Created debug rail at {}", placementPos);
         //entityManager.create("rails:railBlock", placementPos);
-        railBuilder.buildLeft(placementPos);
+
+        RailBuilderComponent railBuilderComponent = item.getComponent(RailBuilderComponent.class);
+
+        switch (railBuilderComponent.type) {
+            case LEFT:
+                railBuilder.buildLeft(placementPos);
+                break;
+            case RIGHT:
+                railBuilder.buildRight(placementPos);
+                break;
+            case UP:
+                railBuilder.buildUp(placementPos);
+                break;
+            case DONW:
+                railBuilder.buildDown(placementPos);
+                break;
+            case STRAIGHT:
+                railBuilder.buildStraight(placementPos);
+                break;
+        }
+
         event.consume();
     }
 }

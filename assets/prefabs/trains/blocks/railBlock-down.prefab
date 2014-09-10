@@ -2,7 +2,7 @@
     "Location": {
     },
     "Mesh": {
-        "mesh": "Rails:single-right",
+        "mesh": "Rails:single",
         "material": "Rails:debug"
     },
     "RigidBody": {
@@ -15,8 +15,7 @@
                 "engine:default"
             ]
     },
-
     "BoxShape": {
-        "extents": [1, 0.2, 1]
+            "extents": [1, 0.2, 1]
     }
 }

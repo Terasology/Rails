@@ -1,0 +1,15 @@
+{
+    "parent" : "engine:iconItem",
+    "DisplayName" : {
+        "name" : "Build rail up"
+    },
+    "RailBuilder": {
+        "type": "UP"
+    },
+    "Item" : {
+        "icon": "Rails:minecart.railUp",
+        "usage": "IN_DIRECTION",
+        "renderWithIcon" : true,
+        "baseDamage" : 0
+    }
+}
