@@ -88,7 +88,7 @@ public class RailsSystem extends BaseComponentSystem {
             case UP:
                 railBuilder.buildUp(placementPos);
                 break;
-            case DONW:
+            case DOWN:
                 railBuilder.buildDown(placementPos);
                 break;
             case STRAIGHT:

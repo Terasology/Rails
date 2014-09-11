@@ -19,6 +19,6 @@ import org.terasology.entitySystem.Component;
 
 
 public class RailBuilderComponent implements Component {
-    public static enum RailType {LEFT, RIGHT, UP, DONW, STRAIGHT};
+    public static enum RailType {LEFT, RIGHT, UP, DOWN, STRAIGHT};
     public RailType type = RailType.STRAIGHT;
 }

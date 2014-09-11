@@ -106,6 +106,10 @@ public class Track {
         return  orientation.pitch;
     }
 
+    public float getRoll() {
+        return  orientation.roll;
+    }
+
     public boolean equals(Object obj) {
         try {
             Track track = (Track) obj;

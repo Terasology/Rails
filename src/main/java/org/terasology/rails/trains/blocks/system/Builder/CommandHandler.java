@@ -65,6 +65,7 @@ public class CommandHandler {
     private Track buildTrack(List<Track> tracks, Track.TrackType type, Vector3f checkedPosition, Orientation orientation) {
 
         Orientation newOrientation = null;
+        Orientation fixOrientation = null;
         Vector3f newPosition;
         Vector3f prevPosition = checkedPosition;
         float startYaw = 0;
@@ -83,25 +84,48 @@ public class CommandHandler {
         switch(type) {
             case STRAIGHT:
                 newOrientation = new Orientation(startYaw, startPitch, 0);
+                if (startPitch > 0) {
+                    fixOrientation = new Orientation(270f, 0, 0);
+                } else {
+                    fixOrientation = new Orientation(90f, 0, 0);
+                }
+                logger.info("Try to add straight");
                 break;
             case UP:
-                newOrientation = new Orientation(startYaw, startPitch + Config.STANDARD_ANGLE_CHANGE, 0);
+                float pitch = startPitch + Config.STANDARD_PITCH_ANGLE_CHANGE;
+
+                if (pitch > Config.MAX_PITCH) {
+                    newOrientation = new Orientation(startYaw, Config.MAX_PITCH, 0);
+                } else {
+                    newOrientation = new Orientation(startYaw, startPitch + Config.STANDARD_PITCH_ANGLE_CHANGE, 0);
+                }
+
+                fixOrientation = new Orientation(270f, 0, 0);
                 prefab = "rails:railBlock-up";
+                logger.info("Try to add up");
                 break;
             case DOWN:
-                newOrientation = new Orientation(startYaw, startPitch - Config.STANDARD_ANGLE_CHANGE, 0);
+                newOrientation = new Orientation(startYaw, startPitch - Config.STANDARD_PITCH_ANGLE_CHANGE, 0);
+                fixOrientation = new Orientation(270f, 0, 0);
                 prefab = "rails:railBlock-down";
+                logger.info("Try to add down");
                 break;
             case LEFT:
                 newOrientation = new Orientation(startYaw + Config.STANDARD_ANGLE_CHANGE, startPitch, 0);
+                fixOrientation = new Orientation(90f, 0, 0);
                 prefab = "rails:railBlock-left";
+                logger.info("Try to add left");
                 break;
             case RIGHT:
                 newOrientation = new Orientation(startYaw - Config.STANDARD_ANGLE_CHANGE, startPitch, 0);
-                prefab = "rails:railBlock-right";
+                fixOrientation = new Orientation(90f, 0, 0);
+                prefab = "rails:railBlock-left";
+                logger.info("Try to add right");
                 break;
             case CUSTOM:
                 newOrientation = new Orientation(orientation.yaw, orientation.pitch, orientation.roll);
+                fixOrientation = new Orientation(90f, 0, 0);
+                logger.info("Try to add custom");
                 break;
         }
 
@@ -115,7 +139,7 @@ public class CommandHandler {
 
         tracks.add(newTrack);
 
-        addTrackToWorld(newTrack, prefab);
+        addTrackToWorld(newTrack, prefab, fixOrientation);
 
         return newTrack;
     }
@@ -132,9 +156,9 @@ public class CommandHandler {
         return true;
     }
 
-    private void addTrackToWorld(Track track, String prefab) {
+    private void addTrackToWorld(Track track, String prefab, Orientation fixOrientation) {
         Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
-        QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * (track.getYaw() + 90), 0, track.getPitch()>0 ? (TeraMath.DEG_TO_RAD * track.getPitch() + 180):0);
+        QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * (track.getYaw() + fixOrientation.yaw), TeraMath.DEG_TO_RAD * (track.getRoll() + fixOrientation.roll), TeraMath.DEG_TO_RAD * (track.getPitch() + fixOrientation.pitch));
         EntityRef railBlock = entityManager.create(prefab, track.getPosition());
         LocationComponent locationComponent = railBlock.getComponent(LocationComponent.class);
         locationComponent.setWorldRotation(yawPitch);
