@@ -110,7 +110,7 @@ public class MinecartAction extends BaseComponentSystem {
         //inventoryManager.giveItem(player,player,entityManager.create("rails:minecart"));
         //inventoryManager.giveItem(player,player,entityManager.create("rails:loco"));
         //inventoryManager.giveItem(player,player,entityManager.create("rails:wrench"));
-        inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("rails:Rails"), 99));
+        //inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("rails:Rails"), 99));
     }
 
     @ReceiveEvent(components = {RailVehicleComponent.class, LocationComponent.class}, priority = EventPriority.PRIORITY_HIGH)

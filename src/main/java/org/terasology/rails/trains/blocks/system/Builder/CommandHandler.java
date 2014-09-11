@@ -22,6 +22,7 @@ import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.TeraMath;
+import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Config;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.blocks.system.Tasks.Task;
@@ -62,7 +63,7 @@ public class CommandHandler {
         return new TaskResult(track, true);
     }
 
-    private Track buildTrack(List<Track> tracks, Track.TrackType type, Vector3f checkedPosition, Orientation orientation, boolean newTrack) {
+    private Track buildTrack(List<Track> tracks, TrainRailComponent.TrackType type, Vector3f checkedPosition, Orientation orientation, boolean newTrack) {
 
         Orientation newOrientation = null;
         Orientation fixOrientation = null;
@@ -140,12 +141,9 @@ public class CommandHandler {
                 prevPosition.z + (float)(Math.cos(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float)Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * Config.TRACK_LENGTH / 2)
         );
 
-        Track track = new Track(type, newPosition, newOrientation);
-
+        EntityRef entity = addTrackToWorld(prefab, newPosition, newOrientation, fixOrientation);
+        Track track = new Track(entity, true);
         tracks.add(track);
-
-        addTrackToWorld(track, prefab, fixOrientation);
-
         return track;
     }
 
@@ -161,12 +159,13 @@ public class CommandHandler {
         return true;
     }
 
-    private void addTrackToWorld(Track track, String prefab, Orientation fixOrientation) {
+    private EntityRef addTrackToWorld(String prefab, Vector3f position, Orientation newOrientation, Orientation fixOrientation) {
         Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
-        QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * (track.getYaw() + fixOrientation.yaw), TeraMath.DEG_TO_RAD * (track.getRoll() + fixOrientation.roll), TeraMath.DEG_TO_RAD * (track.getPitch() + fixOrientation.pitch));
-        EntityRef railBlock = entityManager.create(prefab, track.getPosition());
+        QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * (newOrientation.yaw + fixOrientation.yaw), TeraMath.DEG_TO_RAD * (newOrientation.roll + fixOrientation.roll), TeraMath.DEG_TO_RAD * (newOrientation.pitch + fixOrientation.pitch));
+        EntityRef railBlock = entityManager.create(prefab, position);
         LocationComponent locationComponent = railBlock.getComponent(LocationComponent.class);
         locationComponent.setWorldRotation(yawPitch);
         railBlock.saveComponent(locationComponent);
+        return railBlock;
     }
 }

@@ -16,6 +16,7 @@
 package org.terasology.rails.trains.blocks.system.Tasks.Standart;
 
 import org.terasology.entitySystem.entity.EntityManager;
+import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Builder.Command;
 import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
 import org.terasology.rails.trains.blocks.system.Builder.TaskResult;
@@ -35,9 +36,9 @@ public class BuildStraightTask implements Task {
     public boolean run(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation, boolean newTrack) {
 
         ArrayList<Command> commands = new ArrayList<>();
-        commands.add(new Command(true, Track.TrackType.STRAIGHT, position, new Orientation(0,0,0), newTrack));
-        commands.add(new Command(true, Track.TrackType.STRAIGHT, position, new Orientation(0,0,0), newTrack));
-        commands.add(new Command(true, Track.TrackType.STRAIGHT, position, new Orientation(0,0,0), newTrack));
+        commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0), newTrack));
+        commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0), newTrack));
+        commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0), newTrack));
 
         TaskResult taskResult = commandHandler.run(commands, tracks, chunks);
         return taskResult.success;

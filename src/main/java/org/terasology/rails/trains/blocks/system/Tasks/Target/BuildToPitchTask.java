@@ -15,6 +15,7 @@
  */
 package org.terasology.rails.trains.blocks.system.Tasks.Target;
 
+import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Builder.Command;
 import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
 import org.terasology.rails.trains.blocks.system.Builder.TaskResult;
@@ -58,15 +59,15 @@ public class BuildToPitchTask implements Task {
         }
 
         if (up) {
-            TaskResult result = tryTrackType(commandHandler, tracks, chunks, position, orientation, Track.TrackType.UP);
+            TaskResult result = tryTrackType(commandHandler, tracks, chunks, position, orientation, TrainRailComponent.TrackType.UP);
         } else {
-            TaskResult result = tryTrackType(commandHandler, tracks, chunks, position, orientation, Track.TrackType.DOWN);
+            TaskResult result = tryTrackType(commandHandler, tracks, chunks, position, orientation, TrainRailComponent.TrackType.DOWN);
         }
 
         return true;
     }
 
-    private TaskResult tryTrackType(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation, Track.TrackType type) {
+    private TaskResult tryTrackType(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation, TrainRailComponent.TrackType type) {
         ArrayList<Command> commands = new ArrayList<>();
         TaskResult taskResult = null;
         Track lastTrack = tracks.get(tracks.size()-1);

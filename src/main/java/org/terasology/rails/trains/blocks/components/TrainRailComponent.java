@@ -19,11 +19,21 @@ import com.google.common.collect.Lists;
 import org.terasology.entitySystem.Component;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.network.Replicate;
+import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 
 import javax.vecmath.Vector3f;
 import java.util.List;
 
 public class TrainRailComponent implements Component {
     @Replicate
-    public List<Vector3f> wayPoints = Lists.newArrayList();
+    public static enum TrackType {STRAIGHT, UP, DOWN, LEFT, RIGHT, CUSTOM};
+    public TrackType type;
+    public Vector3f startPosition;
+    public Vector3f endPosition;
+    public Vector3f blockPosition;
+    public float yaw;
+    public float pitch;
+    public float roll;
+    public EntityRef prevTrack;
+    public EntityRef nextTrack;
 }

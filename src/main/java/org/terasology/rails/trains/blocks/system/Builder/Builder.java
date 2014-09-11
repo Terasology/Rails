@@ -19,8 +19,10 @@ import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.blocks.system.Railway;
 import org.terasology.rails.trains.blocks.system.Tasks.Standart.*;
+import org.terasology.rails.trains.blocks.system.Track;
 
 import javax.vecmath.Vector3f;
+import java.util.ArrayList;
 
 /**
  * Created by adeon on 09.09.14.
@@ -53,5 +55,9 @@ public class Builder {
 
     public boolean buildDown(Vector3f checkedPosition, Orientation orientation) {
         return taskHandler.start(new BuildDownTask(), checkedPosition, orientation);
+    }
+
+    public ArrayList<Track> getTracks() {
+        return railway.getTracks();
     }
 }

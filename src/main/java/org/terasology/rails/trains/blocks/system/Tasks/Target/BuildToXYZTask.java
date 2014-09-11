@@ -15,6 +15,7 @@
  */
 package org.terasology.rails.trains.blocks.system.Tasks.Target;
 
+import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Builder.Command;
 import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
 import org.terasology.rails.trains.blocks.system.Builder.TaskResult;
@@ -76,7 +77,7 @@ public class BuildToXYZTask implements Task {
 
             if (lastTrack.getYaw() == toYaw && lastTrack.getPitch() == toPitch) {
                 commands.clear();
-                commands.add(new Command(true, Track.TrackType.STRAIGHT, position, new Orientation(0, 0, 0)));
+                commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0, 0, 0)));
                 TaskResult result = commandHandler.run(commands, tracks, chunks);
                 buildPass = result.success;
                 float distanceX = lastTrack.getPosition().x - position.x;
@@ -130,7 +131,7 @@ public class BuildToXYZTask implements Task {
                     }
                 }
                 commands.clear();
-                commands.add(new Command(true, Track.TrackType.CUSTOM, position, new Orientation(Config.STANDARD_ANGLE_CHANGE * yawDirection, Config.STANDARD_ANGLE_CHANGE * pitchDirection, 0)));
+                commands.add(new Command(true, TrainRailComponent.TrackType.CUSTOM, position, new Orientation(Config.STANDARD_ANGLE_CHANGE * yawDirection, Config.STANDARD_ANGLE_CHANGE * pitchDirection, 0)));
                 TaskResult result = commandHandler.run(commands, tracks, chunks);
                 buildPass = result.success;
             }

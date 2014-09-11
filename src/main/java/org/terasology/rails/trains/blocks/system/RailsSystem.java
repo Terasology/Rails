@@ -29,7 +29,9 @@ import org.terasology.math.Direction;
 import org.terasology.math.Side;
 import org.terasology.math.Vector3i;
 import org.terasology.rails.minecarts.blocks.ConnectsToRailsComponent;
+import org.terasology.rails.minecarts.components.RailVehicleComponent;
 import org.terasology.rails.minecarts.components.WrenchComponent;
+import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Builder.Builder;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.components.RailBuilderComponent;
@@ -38,6 +40,7 @@ import org.terasology.world.block.BlockComponent;
 import org.terasology.world.block.BlockManager;
 
 import javax.vecmath.Vector3f;
+import java.util.ArrayList;
 
 @RegisterSystem
 public class RailsSystem extends BaseComponentSystem {
@@ -50,7 +53,16 @@ public class RailsSystem extends BaseComponentSystem {
     private Builder railBuilder;
 
     public void initialise() {
+        logger.info("Loading railway...");
         railBuilder = new Builder(entityManager);
+        ArrayList<Track> tracks = railBuilder.getTracks();
+
+        int countBlocks = 0;
+        for (EntityRef railBlock : entityManager.getEntitiesWith(TrainRailComponent.class)) {
+            tracks.add(new Track(railBlock));
+            countBlocks++;
+        }
+        logger.info("Loaded " + countBlocks + " railway blocks");
     }
 
     @ReceiveEvent(components = {RailBuilderComponent.class, ItemComponent.class})
@@ -69,6 +81,7 @@ public class RailsSystem extends BaseComponentSystem {
         BlockComponent blockComponent = targetEntity.getComponent(BlockComponent.class);
 
         if (blockComponent == null) {
+            onSelectRail(event, item);
             return;
         }
 
@@ -120,5 +133,15 @@ public class RailsSystem extends BaseComponentSystem {
         }
 
         event.consume();
+    }
+
+    private void onSelectRail(ActivateEvent event, EntityRef item) {
+        EntityRef target = event.getTarget();
+        EntityRef player = event.getInstigator();
+
+        if (!target.hasComponent(RailBuilderComponent.class)) {
+            return;
+        }
+
     }
 }

@@ -16,7 +16,9 @@
 package org.terasology.rails.trains.blocks.system;
 
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.TeraMath;
+import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 
 import javax.vecmath.Quat4f;
@@ -26,22 +28,36 @@ import javax.vecmath.Vector3f;
  * Created by adeon on 08.09.14.
  */
 public class Track {
-    public static enum TrackType {STRAIGHT, UP, DOWN, LEFT, RIGHT, CUSTOM};
-    private TrackType type;
+    private TrainRailComponent.TrackType type;
     private Vector3f position;
     private Vector3f startPosition;
     private Vector3f endPosition;
-    private Vector3f blockPosition;
     private Orientation orientation;
     private EntityRef entity;
-    private Track prevTrack;
-    private Track nextTrack;
+    private EntityRef prevTrack;
+    private EntityRef nextTrack;
 
-    public Track(TrackType type, Vector3f position, Orientation orientation) {
-        this.type = type;
-        this.position = new Vector3f(position);
-        this.orientation = orientation;
-        calculatePositions();
+    public Track(EntityRef entity) {
+        this(entity, false);
+    }
+
+    public Track(EntityRef entity, boolean calculateStartAndEndPositions) {
+        TrainRailComponent trainRailComponent = entity.getComponent(TrainRailComponent.class);
+        LocationComponent locationComponent = entity.getComponent(LocationComponent.class);
+        this.type = trainRailComponent.type;
+        this.position = locationComponent.getWorldPosition();
+        this.orientation = new Orientation(trainRailComponent.yaw, trainRailComponent.pitch, trainRailComponent.roll);
+        this.entity = entity;
+        this.prevTrack = trainRailComponent.prevTrack;
+        this.nextTrack = trainRailComponent.nextTrack;
+
+        if (calculateStartAndEndPositions) {
+            calculatePositions();
+        } else {
+            this.startPosition = trainRailComponent.startPosition;
+            this.endPosition = trainRailComponent.endPosition;
+        }
+
     }
 
     public Vector3f getStartPosition() {
@@ -74,19 +90,19 @@ public class Track {
         return entity;
     }
 
-    public void setPrevTrack(Track track) {
+    public void setPrevTrack(EntityRef track) {
         this.prevTrack = track;
     }
 
-    public Track getPrevTrack() {
+    public EntityRef getPrevTrack() {
         return prevTrack;
     }
 
-    public void setNextTrack(Track track) {
+    public void setNextTrack(EntityRef track) {
         this.nextTrack = track;
     }
 
-    public Track getNextTrack() {
+    public EntityRef getNextTrack() {
         return  nextTrack;
     }
 
@@ -94,7 +110,7 @@ public class Track {
         return position;
     }
 
-    public TrackType getType() {
+    public TrainRailComponent.TrackType getType() {
         return type;
     }
 
