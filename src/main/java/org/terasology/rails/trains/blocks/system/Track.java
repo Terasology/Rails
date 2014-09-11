@@ -95,6 +95,9 @@ public class Track {
     }
 
     public void setPrevTrack(EntityRef track) {
+        TrainRailComponent trainRailComponent = entity.getComponent(TrainRailComponent.class);
+        trainRailComponent.prevTrack = track;
+        entity.saveComponent(trainRailComponent);
         this.prevTrack = track;
     }
 
@@ -103,6 +106,9 @@ public class Track {
     }
 
     public void setNextTrack(EntityRef track) {
+        TrainRailComponent trainRailComponent = entity.getComponent(TrainRailComponent.class);
+        trainRailComponent.nextTrack = track;
+        entity.saveComponent(trainRailComponent);
         this.nextTrack = track;
     }
 

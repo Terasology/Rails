@@ -139,8 +139,9 @@ public class CommandHandler {
                 prevPosition.z + (float)(Math.cos(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float)Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * Config.TRACK_LENGTH / 2)
         );
 
-        EntityRef entity = createEntityInTheWorld(prefab, type, newPosition, newOrientation, fixOrientation);
+        EntityRef entity = createEntityInTheWorld(prefab, type, selectedTrack, newPosition, newOrientation, fixOrientation);
         Track track = new Track(entity, true);
+
         return track;
     }
 
@@ -156,7 +157,7 @@ public class CommandHandler {
         return true;
     }
 
-    private EntityRef createEntityInTheWorld(String prefab, TrainRailComponent.TrackType type,  Vector3f position, Orientation newOrientation, Orientation fixOrientation) {
+    private EntityRef createEntityInTheWorld(String prefab, TrainRailComponent.TrackType type, Track prevTrack,  Vector3f position, Orientation newOrientation, Orientation fixOrientation) {
         Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
         QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * (newOrientation.yaw + fixOrientation.yaw), TeraMath.DEG_TO_RAD * (newOrientation.roll + fixOrientation.roll), TeraMath.DEG_TO_RAD * (newOrientation.pitch + fixOrientation.pitch));
         EntityRef railBlock = entityManager.create(prefab, position);
@@ -169,6 +170,10 @@ public class CommandHandler {
         trainRailComponent.roll = newOrientation.roll;
         trainRailComponent.type = type;
 
+        if (prevTrack != null) {
+            trainRailComponent.prevTrack = prevTrack.getEntity();
+            prevTrack.setNextTrack(railBlock);
+        }
 
         railBlock.saveComponent(locationComponent);
         railBlock.saveComponent(trainRailComponent);
