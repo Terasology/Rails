@@ -62,7 +62,7 @@ public class RailsSystem extends BaseComponentSystem {
             tracks.add(new Track(railBlock));
             countBlocks++;
         }
-        logger.info("Loaded " + countBlocks + " railway blocks");
+        logger.info("Loaded " + countBlocks + " railway blocks.");
     }
 
     @ReceiveEvent(components = {RailBuilderComponent.class, ItemComponent.class})

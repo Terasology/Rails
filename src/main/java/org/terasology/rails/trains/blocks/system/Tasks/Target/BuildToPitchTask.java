@@ -32,7 +32,7 @@ import java.util.List;
  */
 public class BuildToPitchTask implements Task {
     @Override
-    public boolean run(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation, boolean newTrack) {
+    public boolean run(CommandHandler commandHandler, List<Track> tracks, Track selectedTrack, List<Integer> chunks, Vector3f position, Orientation orientation) {
 
         boolean hasTracks = tracks.size() > 0;
         boolean up = false;
@@ -59,22 +59,22 @@ public class BuildToPitchTask implements Task {
         }
 
         if (up) {
-            TaskResult result = tryTrackType(commandHandler, tracks, chunks, position, orientation, TrainRailComponent.TrackType.UP);
+            TaskResult result = tryTrackType(commandHandler, tracks, selectedTrack, chunks, position, orientation, TrainRailComponent.TrackType.UP);
         } else {
-            TaskResult result = tryTrackType(commandHandler, tracks, chunks, position, orientation, TrainRailComponent.TrackType.DOWN);
+            TaskResult result = tryTrackType(commandHandler, tracks, selectedTrack, chunks, position, orientation, TrainRailComponent.TrackType.DOWN);
         }
 
         return true;
     }
 
-    private TaskResult tryTrackType(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation, TrainRailComponent.TrackType type) {
+    private TaskResult tryTrackType(CommandHandler commandHandler, List<Track> tracks, Track selectedTrack, List<Integer> chunks, Vector3f position, Orientation orientation, TrainRailComponent.TrackType type) {
         ArrayList<Command> commands = new ArrayList<>();
         TaskResult taskResult = null;
         Track lastTrack = tracks.get(tracks.size()-1);
         commands.add(new Command(true, type, position, orientation));
 
         while( lastTrack.getPitch()!= orientation.pitch) {
-            taskResult = commandHandler.run(commands, tracks, chunks);
+            taskResult = commandHandler.run(commands, tracks, chunks, selectedTrack);
             lastTrack = taskResult.track;
             if (!taskResult.success) {
                 break;

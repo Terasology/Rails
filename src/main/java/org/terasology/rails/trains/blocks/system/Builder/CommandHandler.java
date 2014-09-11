@@ -44,15 +44,15 @@ public class CommandHandler {
         this.entityManager = entityManager;
     }
 
-    public TaskResult run(List<Command> commands, List<Track> tracks, List<Integer> chunks) {
+    public TaskResult run(List<Command> commands, List<Track> tracks, List<Integer> chunks, Track selectedTrack) {
         Track track = null;
         for( Command command : commands ) {
             if (command.build) {
-                Track tTrack = buildTrack(tracks, command.type, command.checkedPosition, command.orientation,  command.newTrack);
-                if (tTrack == null) {
+                selectedTrack = buildTrack(selectedTrack, command.type, command.checkedPosition, command.orientation,  command.newTrack);
+                if (selectedTrack == null) {
                     return new TaskResult(track, false);
                 }
-                track = tTrack;
+                track = selectedTrack;
             } else {
                 boolean removeResult = removeTrack(tracks, chunks);
                 if (!removeResult) {
@@ -63,7 +63,7 @@ public class CommandHandler {
         return new TaskResult(track, true);
     }
 
-    private Track buildTrack(List<Track> tracks, TrainRailComponent.TrackType type, Vector3f checkedPosition, Orientation orientation, boolean newTrack) {
+    private Track buildTrack(Track selectedTrack, TrainRailComponent.TrackType type, Vector3f checkedPosition, Orientation orientation, boolean newTrack) {
 
         Orientation newOrientation = null;
         Orientation fixOrientation = null;
@@ -72,12 +72,10 @@ public class CommandHandler {
         float startYaw = 0;
         float startPitch = 0;
 
-        if (!tracks.isEmpty()) {
-            Track lastTrack;
-            lastTrack = tracks.get(tracks.size() - 1);
-            startYaw = lastTrack.getYaw();
-            startPitch = lastTrack.getPitch();
-            prevPosition = lastTrack.getEndPosition();
+        if (selectedTrack != null) {
+            startYaw = selectedTrack.getYaw();
+            startPitch = selectedTrack.getPitch();
+            prevPosition = selectedTrack.getEndPosition();
         }
 
         String prefab = "rails:railBlock";
@@ -141,9 +139,8 @@ public class CommandHandler {
                 prevPosition.z + (float)(Math.cos(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float)Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * Config.TRACK_LENGTH / 2)
         );
 
-        EntityRef entity = addTrackToWorld(prefab, newPosition, newOrientation, fixOrientation);
+        EntityRef entity = createEntityInTheWorld(prefab, type, newPosition, newOrientation, fixOrientation);
         Track track = new Track(entity, true);
-        tracks.add(track);
         return track;
     }
 
@@ -159,13 +156,22 @@ public class CommandHandler {
         return true;
     }
 
-    private EntityRef addTrackToWorld(String prefab, Vector3f position, Orientation newOrientation, Orientation fixOrientation) {
+    private EntityRef createEntityInTheWorld(String prefab, TrainRailComponent.TrackType type,  Vector3f position, Orientation newOrientation, Orientation fixOrientation) {
         Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
         QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * (newOrientation.yaw + fixOrientation.yaw), TeraMath.DEG_TO_RAD * (newOrientation.roll + fixOrientation.roll), TeraMath.DEG_TO_RAD * (newOrientation.pitch + fixOrientation.pitch));
         EntityRef railBlock = entityManager.create(prefab, position);
         LocationComponent locationComponent = railBlock.getComponent(LocationComponent.class);
         locationComponent.setWorldRotation(yawPitch);
+
+        TrainRailComponent trainRailComponent = new TrainRailComponent();
+        trainRailComponent.pitch = newOrientation.pitch;
+        trainRailComponent.yaw = newOrientation.yaw;
+        trainRailComponent.roll = newOrientation.roll;
+        trainRailComponent.type = type;
+
+
         railBlock.saveComponent(locationComponent);
+        railBlock.saveComponent(trainRailComponent);
         return railBlock;
     }
 }

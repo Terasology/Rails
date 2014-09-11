@@ -53,6 +53,9 @@ public class Track {
 
         if (calculateStartAndEndPositions) {
             calculatePositions();
+            trainRailComponent.startPosition = this.startPosition;
+            trainRailComponent.endPosition = this.endPosition;
+            entity.saveComponent(trainRailComponent);
         } else {
             this.startPosition = trainRailComponent.startPosition;
             this.endPosition = trainRailComponent.endPosition;

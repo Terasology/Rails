@@ -30,7 +30,7 @@ import java.util.List;
 
 public class BuildToXYZTask implements Task {
     @Override
-    public boolean run(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation, boolean newTrack) {
+    public boolean run(CommandHandler commandHandler, List<Track> tracks, Track selectedTrack, List<Integer> chunks, Vector3f position, Orientation orientation) {
         float zone = 5f;
         boolean firstStraightTrack = true;
         boolean buildPass = true;
@@ -78,8 +78,13 @@ public class BuildToXYZTask implements Task {
             if (lastTrack.getYaw() == toYaw && lastTrack.getPitch() == toPitch) {
                 commands.clear();
                 commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0, 0, 0)));
-                TaskResult result = commandHandler.run(commands, tracks, chunks);
+                TaskResult result = commandHandler.run(commands, tracks, chunks, selectedTrack);
                 buildPass = result.success;
+
+                if (buildPass) {
+                    selectedTrack = result.track;
+                }
+
                 float distanceX = lastTrack.getPosition().x - position.x;
                 float distanceZ = lastTrack.getPosition().z - position.z;
 
@@ -132,8 +137,13 @@ public class BuildToXYZTask implements Task {
                 }
                 commands.clear();
                 commands.add(new Command(true, TrainRailComponent.TrackType.CUSTOM, position, new Orientation(Config.STANDARD_ANGLE_CHANGE * yawDirection, Config.STANDARD_ANGLE_CHANGE * pitchDirection, 0)));
-                TaskResult result = commandHandler.run(commands, tracks, chunks);
+                TaskResult result = commandHandler.run(commands, tracks, chunks, selectedTrack);
                 buildPass = result.success;
+
+                if (buildPass) {
+                    selectedTrack = result.track;
+                }
+
             }
             lastTrack = tracks.get(tracks.size() - 1);
 

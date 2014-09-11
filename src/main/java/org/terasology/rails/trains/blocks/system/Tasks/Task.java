@@ -26,5 +26,5 @@ import java.util.List;
  * Created by adeon on 08.09.14.
  */
 public interface Task {
-    public boolean run(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation, boolean newTrack);
+    public boolean run(CommandHandler commandHandler, List<Track> tracks, Track selectedTrack, List<Integer> chunks, Vector3f position, Orientation orientation);
 }

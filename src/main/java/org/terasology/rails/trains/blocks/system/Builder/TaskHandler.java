@@ -49,6 +49,6 @@ public class TaskHandler {
             newTrack = false;
         }
 
-        return task.run(commandHandler, railway.getTracks(), railway.getChunks(), position, orientation, newTrack);
+        return task.run(commandHandler, railway.getTracks(), track, railway.getChunks(), position, orientation);
     }
 }

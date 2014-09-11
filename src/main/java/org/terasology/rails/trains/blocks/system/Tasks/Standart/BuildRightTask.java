@@ -32,14 +32,14 @@ import java.util.List;
  */
 public class BuildRightTask implements Task {
     @Override
-    public boolean run(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation, boolean newTrack) {
+    public boolean run(CommandHandler commandHandler, List<Track> tracks, Track selectedTrack, List<Integer> chunks, Vector3f position, Orientation orientation) {
 
         ArrayList<Command> commands = new ArrayList<>();
         commands.add(new Command(true, TrainRailComponent.TrackType.RIGHT, position, new Orientation(0,0,0)));
         commands.add(new Command(true, TrainRailComponent.TrackType.RIGHT, position, new Orientation(0,0,0)));
         commands.add(new Command(true, TrainRailComponent.TrackType.RIGHT, position, new Orientation(0,0,0)));
 
-        TaskResult taskResult = commandHandler.run(commands, tracks, chunks);
+        TaskResult taskResult = commandHandler.run(commands, tracks, chunks, selectedTrack);
         return taskResult.success;
     }
 }
