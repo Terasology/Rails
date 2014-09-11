@@ -25,16 +25,21 @@ import javax.vecmath.Vector3f;
  */
 public class Command {
     public boolean build;
+    public boolean newTrack;
     public Track.TrackType type;
     public Orientation orientation;
     public Vector3f checkedPosition;
 
-
-    public Command(boolean build, Track.TrackType type, Vector3f checkedPosition, Orientation orientation) {
+    public Command(boolean build, Track.TrackType type, Vector3f checkedPosition, Orientation orientation, boolean newTrack) {
         this.build = build;
         this.type  = type;
         this.orientation = orientation;
         this.checkedPosition = checkedPosition;
+        this.newTrack = newTrack;
+    }
+
+    public Command(boolean build, Track.TrackType type, Vector3f checkedPosition, Orientation orientation) {
+        this(build, type, checkedPosition, orientation, false);
     }
 
     public Command(boolean build, Track.TrackType type) {

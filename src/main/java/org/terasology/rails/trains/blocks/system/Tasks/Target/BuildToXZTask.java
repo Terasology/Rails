@@ -29,7 +29,7 @@ import java.util.List;
 public class BuildToXZTask implements Task {
 
     @Override
-    public boolean run(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation) {
+    public boolean run(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation, boolean newTrack) {
         boolean buildPass = true;
         boolean firstStrightTrack = true;
 

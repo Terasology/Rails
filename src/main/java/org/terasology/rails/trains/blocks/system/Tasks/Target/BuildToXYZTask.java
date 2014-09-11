@@ -29,7 +29,7 @@ import java.util.List;
 
 public class BuildToXYZTask implements Task {
     @Override
-    public boolean run(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation) {
+    public boolean run(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation, boolean newTrack) {
         float zone = 5f;
         boolean firstStraightTrack = true;
         boolean buildPass = true;

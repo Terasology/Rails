@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class BuildToPitchTask implements Task {
     @Override
-    public boolean run(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation) {
+    public boolean run(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation, boolean newTrack) {
 
         boolean hasTracks = tracks.size() > 0;
         boolean up = false;

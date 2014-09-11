@@ -28,4 +28,10 @@ public class Orientation {
         this.pitch = pitch;
         this.roll = roll;
     }
+
+    public void add (Orientation orientation) {
+        this.yaw += orientation.yaw;
+        this.pitch += orientation.pitch;
+        this.roll += orientation.roll;
+    }
 }

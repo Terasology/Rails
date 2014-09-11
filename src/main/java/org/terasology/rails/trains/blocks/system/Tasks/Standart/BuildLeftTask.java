@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class BuildLeftTask implements Task {
     @Override
-    public boolean run(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation) {
+    public boolean run(CommandHandler commandHandler, List<Track> tracks, List<Integer> chunks, Vector3f position, Orientation orientation, boolean newTrack) {
 
         ArrayList<Command> commands = new ArrayList<>();
         commands.add(new Command(true, Track.TrackType.LEFT, position, new Orientation(0,0,0)));

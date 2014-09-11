@@ -25,10 +25,13 @@ import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.logic.common.ActivateEvent;
 import org.terasology.logic.inventory.ItemComponent;
+import org.terasology.math.Direction;
+import org.terasology.math.Side;
 import org.terasology.math.Vector3i;
 import org.terasology.rails.minecarts.blocks.ConnectsToRailsComponent;
 import org.terasology.rails.minecarts.components.WrenchComponent;
 import org.terasology.rails.trains.blocks.system.Builder.Builder;
+import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.components.RailBuilderComponent;
 import org.terasology.registry.In;
 import org.terasology.world.block.BlockComponent;
@@ -55,7 +58,6 @@ public class RailsSystem extends BaseComponentSystem {
 
         if (railBuilder == null) {
             railBuilder = new Builder(entityManager);
-            logger.info("is nuuuuuuuuuuuuuuuuuuulo");
             return;
         }
 
@@ -65,7 +67,6 @@ public class RailsSystem extends BaseComponentSystem {
 
         EntityRef targetEntity = event.getTarget();
         BlockComponent blockComponent = targetEntity.getComponent(BlockComponent.class);
-        ConnectsToRailsComponent connectsToRailsComponent = targetEntity.getComponent(ConnectsToRailsComponent.class);
 
         if (blockComponent == null) {
             return;
@@ -73,26 +74,48 @@ public class RailsSystem extends BaseComponentSystem {
 
         Vector3f placementPos = new Vector3i(event.getTarget().getComponent(BlockComponent.class).getPosition()).toVector3f();
         placementPos.y += 0.6f;
-        logger.info("Created debug rail at {}", placementPos);
-        //entityManager.create("rails:railBlock", placementPos);
 
         RailBuilderComponent railBuilderComponent = item.getComponent(RailBuilderComponent.class);
 
-        switch (railBuilderComponent.type) {
+        Vector3f direction = event.getDirection();
+        direction.y = 0;
+        Direction dir = Direction.inDirection(direction);
+        float yaw = 0;
+
+        switch (dir) {
             case LEFT:
-                railBuilder.buildLeft(placementPos);
+                yaw = 90;
+                logger.info("LEFT");
                 break;
             case RIGHT:
-                railBuilder.buildRight(placementPos);
+                yaw = 270;
+                logger.info("RIGHT");
+                break;
+            case FORWARD:
+                yaw = 180;
+                logger.info("FORWARD");
+                break;
+            case BACKWARD:
+                logger.info("BACKWARD");
+                yaw = 0;
+                break;
+        }
+
+        switch (railBuilderComponent.type) {
+            case LEFT:
+                railBuilder.buildLeft(placementPos, new Orientation(yaw, 0, 0));
+                break;
+            case RIGHT:
+                railBuilder.buildRight(placementPos, new Orientation(yaw, 0, 0));
                 break;
             case UP:
-                railBuilder.buildUp(placementPos);
+                railBuilder.buildUp(placementPos, new Orientation(yaw, 0, 0));
                 break;
             case DOWN:
-                railBuilder.buildDown(placementPos);
+                railBuilder.buildDown(placementPos, new Orientation(yaw, 0, 0));
                 break;
             case STRAIGHT:
-                railBuilder.buildStraight(placementPos);
+                railBuilder.buildStraight(placementPos, new Orientation(yaw, 0, 0));
                 break;
         }
 

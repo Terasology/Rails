@@ -43,10 +43,12 @@ public class TaskHandler {
     }
 
     private boolean runTask(Task task, Track track, Vector3f position, Orientation orientation) {
+        boolean newTrack = true;
         if (railway.getTracks().size() > 0) {
             lastTrackPitch = railway.getTracks().get(railway.getTracks().size()-1).getPitch();
+            newTrack = false;
         }
 
-        return task.run(commandHandler, railway.getTracks(), railway.getChunks(), position, orientation);
+        return task.run(commandHandler, railway.getTracks(), railway.getChunks(), position, orientation, newTrack);
     }
 }

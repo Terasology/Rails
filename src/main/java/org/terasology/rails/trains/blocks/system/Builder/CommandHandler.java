@@ -47,7 +47,7 @@ public class CommandHandler {
         Track track = null;
         for( Command command : commands ) {
             if (command.build) {
-                Track tTrack = buildTrack(tracks, command.type, command.checkedPosition, command.orientation);
+                Track tTrack = buildTrack(tracks, command.type, command.checkedPosition, command.orientation,  command.newTrack);
                 if (tTrack == null) {
                     return new TaskResult(track, false);
                 }
@@ -62,7 +62,7 @@ public class CommandHandler {
         return new TaskResult(track, true);
     }
 
-    private Track buildTrack(List<Track> tracks, Track.TrackType type, Vector3f checkedPosition, Orientation orientation) {
+    private Track buildTrack(List<Track> tracks, Track.TrackType type, Vector3f checkedPosition, Orientation orientation, boolean newTrack) {
 
         Orientation newOrientation = null;
         Orientation fixOrientation = null;
@@ -84,6 +84,11 @@ public class CommandHandler {
         switch(type) {
             case STRAIGHT:
                 newOrientation = new Orientation(startYaw, startPitch, 0);
+
+                if (newTrack) {
+                    newOrientation.add(orientation);
+                }
+
                 if (startPitch > 0) {
                     fixOrientation = new Orientation(270f, 0, 0);
                 } else {
@@ -135,13 +140,13 @@ public class CommandHandler {
                 prevPosition.z + (float)(Math.cos(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float)Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * Config.TRACK_LENGTH / 2)
         );
 
-        Track newTrack = new Track(type, newPosition, newOrientation);
+        Track track = new Track(type, newPosition, newOrientation);
 
-        tracks.add(newTrack);
+        tracks.add(track);
 
-        addTrackToWorld(newTrack, prefab, fixOrientation);
+        addTrackToWorld(track, prefab, fixOrientation);
 
-        return newTrack;
+        return track;
     }
 
     private boolean removeTrack(List<Track> tracks, List<Integer> chunks) {

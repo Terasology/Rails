@@ -35,28 +35,23 @@ public class Builder {
         taskHandler = new TaskHandler(railway, entityManager);
     }
 
-    public boolean buildStraight(Vector3f checkedPosition) {
-        Orientation orientation = new Orientation(0,0,0);
+    public boolean buildStraight(Vector3f checkedPosition, Orientation orientation) {
         return taskHandler.start(new BuildStraightTask(), checkedPosition, orientation);
     }
 
-    public boolean buildLeft(Vector3f checkedPosition) {
-        Orientation orientation = new Orientation(0,0,0);
+    public boolean buildLeft(Vector3f checkedPosition, Orientation orientation) {
         return taskHandler.start(new BuildLeftTask(), checkedPosition, orientation);
     }
 
-    public boolean buildRight(Vector3f checkedPosition) {
-        Orientation orientation = new Orientation(0,0,0);
+    public boolean buildRight(Vector3f checkedPosition, Orientation orientation) {
         return taskHandler.start(new BuildRightTask(), checkedPosition, orientation);
     }
 
-    public boolean buildUp(Vector3f checkedPosition) {
-        Orientation orientation = new Orientation(0,0,0);
+    public boolean buildUp(Vector3f checkedPosition, Orientation orientation) {
         return taskHandler.start(new BuildUpTask(), checkedPosition, orientation);
     }
 
-    public boolean buildDown(Vector3f checkedPosition) {
-        Orientation orientation = new Orientation(0,0,0);
+    public boolean buildDown(Vector3f checkedPosition, Orientation orientation) {
         return taskHandler.start(new BuildDownTask(), checkedPosition, orientation);
     }
 }
