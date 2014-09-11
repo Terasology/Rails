@@ -15,6 +15,7 @@
  */
 package org.terasology.rails.trains.blocks.system.Tasks.Standart;
 
+import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Builder.Command;
 import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
@@ -26,20 +27,21 @@ import org.terasology.rails.trains.blocks.system.Track;
 import javax.vecmath.Vector3f;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by adeon on 10.09.14.
  */
 public class BuildLeftTask implements Task {
     @Override
-    public boolean run(CommandHandler commandHandler, List<Track> tracks, Track selectedTrack, List<Integer> chunks, Vector3f position, Orientation orientation) {
+    public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation) {
 
         ArrayList<Command> commands = new ArrayList<>();
         commands.add(new Command(true, TrainRailComponent.TrackType.LEFT, position, new Orientation(0,0,0)));
         commands.add(new Command(true, TrainRailComponent.TrackType.LEFT, position, new Orientation(0,0,0)));
         commands.add(new Command(true, TrainRailComponent.TrackType.LEFT, position, new Orientation(0,0,0)));
 
-        TaskResult taskResult = commandHandler.run(commands, tracks, chunks, selectedTrack);
+        TaskResult taskResult = commandHandler.run(commands, tracks, selectedTrack);
         return taskResult.success;
     }
 }

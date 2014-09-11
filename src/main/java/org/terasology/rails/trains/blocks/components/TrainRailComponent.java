@@ -31,11 +31,9 @@ public class TrainRailComponent implements Component {
     public TrackType type;
     public Vector3f startPosition;
     public Vector3f endPosition;
-    public Vector3f blockPosition;
     public float yaw;
     public float pitch;
     public float roll;
     public EntityRef prevTrack;
     public EntityRef nextTrack;
-    public Track track;
 }

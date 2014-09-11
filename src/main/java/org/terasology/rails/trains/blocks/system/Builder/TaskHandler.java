@@ -37,10 +37,14 @@ public class TaskHandler {
 
 
     public boolean start(Task task, Track selectedTrack, Vector3f position, Orientation orientation) {
+        if (selectedTrack != null && selectedTrack.getNextTrack()!=null && selectedTrack.getPrevTrack() != null) {
+            return false;
+        }
+
         return runTask(task, selectedTrack, position, orientation);
     }
 
     private boolean runTask(Task task, Track track, Vector3f position, Orientation orientation) {
-        return task.run(commandHandler, railway.getTracks(), track, railway.getChunks(), position, orientation);
+        return task.run(commandHandler, railway.getTracks(), track, position, orientation);
     }
 }

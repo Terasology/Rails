@@ -15,6 +15,7 @@
  */
 package org.terasology.rails.trains.blocks.system.Tasks.Target;
 
+import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Builder.Command;
 import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
@@ -27,10 +28,11 @@ import org.terasology.rails.trains.blocks.system.Track;
 import javax.vecmath.Vector3f;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class BuildToXYZTask implements Task {
     @Override
-    public boolean run(CommandHandler commandHandler, List<Track> tracks, Track selectedTrack, List<Integer> chunks, Vector3f position, Orientation orientation) {
+    public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation) {
         float zone = 5f;
         boolean firstStraightTrack = true;
         boolean buildPass = true;
@@ -78,7 +80,7 @@ public class BuildToXYZTask implements Task {
             if (lastTrack.getYaw() == toYaw && lastTrack.getPitch() == toPitch) {
                 commands.clear();
                 commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0, 0, 0)));
-                TaskResult result = commandHandler.run(commands, tracks, chunks, selectedTrack);
+                TaskResult result = commandHandler.run(commands, tracks, selectedTrack);
                 buildPass = result.success;
 
                 if (buildPass) {
@@ -137,7 +139,7 @@ public class BuildToXYZTask implements Task {
                 }
                 commands.clear();
                 commands.add(new Command(true, TrainRailComponent.TrackType.CUSTOM, position, new Orientation(Config.STANDARD_ANGLE_CHANGE * yawDirection, Config.STANDARD_ANGLE_CHANGE * pitchDirection, 0)));
-                TaskResult result = commandHandler.run(commands, tracks, chunks, selectedTrack);
+                TaskResult result = commandHandler.run(commands, tracks, selectedTrack);
                 buildPass = result.success;
 
                 if (buildPass) {

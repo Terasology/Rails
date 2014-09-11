@@ -16,6 +16,7 @@
 package org.terasology.rails.trains.blocks.system.Builder;
 
 import org.terasology.entitySystem.entity.EntityManager;
+import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.blocks.system.Railway;
 import org.terasology.rails.trains.blocks.system.Tasks.Standart.*;
@@ -23,6 +24,7 @@ import org.terasology.rails.trains.blocks.system.Track;
 
 import javax.vecmath.Vector3f;
 import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * Created by adeon on 09.09.14.
@@ -30,7 +32,6 @@ import java.util.ArrayList;
 public class Builder {
     private TaskHandler taskHandler;
     private Railway railway;
-    private CommandHandler entityManager;
 
     public Builder(EntityManager entityManager) {
         railway = new Railway();
@@ -57,7 +58,7 @@ public class Builder {
         return taskHandler.start(new BuildDownTask(),selectedTrack, checkedPosition, orientation);
     }
 
-    public ArrayList<Track> getTracks() {
+    public Map<EntityRef, Track> getTracks() {
         return railway.getTracks();
     }
 }

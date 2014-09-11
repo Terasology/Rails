@@ -15,20 +15,19 @@
  */
 package org.terasology.rails.trains.blocks.system;
 
+import com.google.common.collect.Maps;
+import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.input.internal.BindableAxisImpl;
+
 import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * Created by adeon on 09.09.14.
  */
 public class Railway {
-    private ArrayList<Track> tracks = new ArrayList<>();
-    private ArrayList<Integer> chunks = new ArrayList<>();
-
-    public ArrayList<Track> getTracks() {
+    private Map<EntityRef, Track> tracks = Maps.newHashMap();
+    public Map<EntityRef, Track> getTracks() {
         return tracks;
-    }
-
-    public ArrayList<Integer> getChunks() {
-        return chunks;
     }
 }

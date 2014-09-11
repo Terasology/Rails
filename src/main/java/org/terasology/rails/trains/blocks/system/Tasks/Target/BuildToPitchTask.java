@@ -15,6 +15,7 @@
  */
 package org.terasology.rails.trains.blocks.system.Tasks.Target;
 
+import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Builder.Command;
 import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
@@ -26,13 +27,14 @@ import org.terasology.rails.trains.blocks.system.Track;
 import javax.vecmath.Vector3f;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by adeon on 09.09.14.
  */
 public class BuildToPitchTask implements Task {
     @Override
-    public boolean run(CommandHandler commandHandler, List<Track> tracks, Track selectedTrack, List<Integer> chunks, Vector3f position, Orientation orientation) {
+    public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation) {
 
         boolean hasTracks = tracks.size() > 0;
         boolean up = false;
@@ -59,22 +61,22 @@ public class BuildToPitchTask implements Task {
         }
 
         if (up) {
-            TaskResult result = tryTrackType(commandHandler, tracks, selectedTrack, chunks, position, orientation, TrainRailComponent.TrackType.UP);
+            TaskResult result = tryTrackType(commandHandler, tracks, selectedTrack, position, orientation, TrainRailComponent.TrackType.UP);
         } else {
-            TaskResult result = tryTrackType(commandHandler, tracks, selectedTrack, chunks, position, orientation, TrainRailComponent.TrackType.DOWN);
+            TaskResult result = tryTrackType(commandHandler, tracks, selectedTrack, position, orientation, TrainRailComponent.TrackType.DOWN);
         }
 
         return true;
     }
 
-    private TaskResult tryTrackType(CommandHandler commandHandler, List<Track> tracks, Track selectedTrack, List<Integer> chunks, Vector3f position, Orientation orientation, TrainRailComponent.TrackType type) {
+    private TaskResult tryTrackType(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation, TrainRailComponent.TrackType type) {
         ArrayList<Command> commands = new ArrayList<>();
         TaskResult taskResult = null;
         Track lastTrack = tracks.get(tracks.size()-1);
         commands.add(new Command(true, type, position, orientation));
 
         while( lastTrack.getPitch()!= orientation.pitch) {
-            taskResult = commandHandler.run(commands, tracks, chunks, selectedTrack);
+            taskResult = commandHandler.run(commands, tracks, selectedTrack);
             lastTrack = taskResult.track;
             if (!taskResult.success) {
                 break;

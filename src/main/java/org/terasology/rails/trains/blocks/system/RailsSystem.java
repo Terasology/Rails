@@ -41,6 +41,7 @@ import org.terasology.world.block.BlockManager;
 
 import javax.vecmath.Vector3f;
 import java.util.ArrayList;
+import java.util.Map;
 
 @RegisterSystem
 public class RailsSystem extends BaseComponentSystem {
@@ -52,14 +53,14 @@ public class RailsSystem extends BaseComponentSystem {
     private final Logger logger = LoggerFactory.getLogger(RailsSystem.class);
     private Builder railBuilder;
 
-    public void initialise() {
+    public void postBegin() {
         logger.info("Loading railway...");
         railBuilder = new Builder(entityManager);
-        ArrayList<Track> tracks = railBuilder.getTracks();
+        Map<EntityRef, Track> tracks = railBuilder.getTracks();
 
         int countBlocks = 0;
         for (EntityRef railBlock : entityManager.getEntitiesWith(TrainRailComponent.class)) {
-            tracks.add(new Track(railBlock));
+            tracks.put(railBlock, new Track(railBlock));
             countBlocks++;
         }
         logger.info("Loaded " + countBlocks + " railway blocks.");
@@ -153,8 +154,6 @@ public class RailsSystem extends BaseComponentSystem {
             return null;
         }
 
-        TrainRailComponent trainRailComponent = target.getComponent(TrainRailComponent.class);
-
-        return trainRailComponent.track;
+        return railBuilder.getTracks().get(target);
     }
 }

@@ -59,8 +59,6 @@ public class Track {
             this.startPosition = trainRailComponent.startPosition;
             this.endPosition = trainRailComponent.endPosition;
         }
-
-        trainRailComponent.track = this;
         entity.saveComponent(trainRailComponent);
     }
 

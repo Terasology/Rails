@@ -32,6 +32,7 @@ import org.terasology.registry.In;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by adeon on 09.09.14.
@@ -44,17 +45,17 @@ public class CommandHandler {
         this.entityManager = entityManager;
     }
 
-    public TaskResult run(List<Command> commands, List<Track> tracks, List<Integer> chunks, Track selectedTrack) {
+    public TaskResult run(List<Command> commands, Map<EntityRef, Track> tracks, Track selectedTrack) {
         Track track = null;
         for( Command command : commands ) {
             if (command.build) {
-                selectedTrack = buildTrack(selectedTrack, command.type, command.checkedPosition, command.orientation,  command.newTrack);
+                selectedTrack = buildTrack(tracks, selectedTrack, command.type, command.checkedPosition, command.orientation,  command.newTrack);
                 if (selectedTrack == null) {
                     return new TaskResult(track, false);
                 }
                 track = selectedTrack;
             } else {
-                boolean removeResult = removeTrack(tracks, chunks);
+                boolean removeResult = removeTrack(tracks);
                 if (!removeResult) {
                     return new TaskResult(null, false);
                 }
@@ -63,7 +64,7 @@ public class CommandHandler {
         return new TaskResult(track, true);
     }
 
-    private Track buildTrack(Track selectedTrack, TrainRailComponent.TrackType type, Vector3f checkedPosition, Orientation orientation, boolean newTrack) {
+    private Track buildTrack(Map<EntityRef, Track> tracks, Track selectedTrack, TrainRailComponent.TrackType type, Vector3f checkedPosition, Orientation orientation, boolean newTrack) {
 
         Orientation newOrientation = null;
         Orientation fixOrientation = null;
@@ -141,19 +142,12 @@ public class CommandHandler {
 
         EntityRef entity = createEntityInTheWorld(prefab, type, selectedTrack, newPosition, newOrientation, fixOrientation);
         Track track = new Track(entity, true);
-
+        tracks.put(entity, track);
         return track;
     }
 
-    private boolean removeTrack(List<Track> tracks, List<Integer> chunks) {
-        tracks.remove(tracks.size() - 1);
-        int countTracks = chunks.get(chunks.size() - 1);
-        if (countTracks == 0) {
-            chunks.remove(chunks.size() - 1);
-        } else {
-            chunks.set(chunks.size() - 1, countTracks - 1);
-        }
-
+    private boolean removeTrack(Map<EntityRef, Track> tracks) {
+        //tracks.remove();
         return true;
     }
 
