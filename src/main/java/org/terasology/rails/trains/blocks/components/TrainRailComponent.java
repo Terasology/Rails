@@ -20,6 +20,7 @@ import org.terasology.entitySystem.Component;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.network.Replicate;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
+import org.terasology.rails.trains.blocks.system.Track;
 
 import javax.vecmath.Vector3f;
 import java.util.List;
@@ -36,4 +37,5 @@ public class TrainRailComponent implements Component {
     public float roll;
     public EntityRef prevTrack;
     public EntityRef nextTrack;
+    public Track track;
 }

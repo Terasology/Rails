@@ -27,7 +27,6 @@ import javax.vecmath.Vector3f;
  * Created by adeon on 09.09.14.
  */
 public class TaskHandler {
-    private float lastTrackPitch = 0;
     private Railway railway;
     private CommandHandler commandHandler;
 
@@ -37,18 +36,11 @@ public class TaskHandler {
     }
 
 
-    public boolean start(Task task, Vector3f position, Orientation orientation) {
-        Track track = null;
-        return runTask(task, track, position, orientation);
+    public boolean start(Task task, Track selectedTrack, Vector3f position, Orientation orientation) {
+        return runTask(task, selectedTrack, position, orientation);
     }
 
     private boolean runTask(Task task, Track track, Vector3f position, Orientation orientation) {
-        boolean newTrack = true;
-        if (railway.getTracks().size() > 0) {
-            lastTrackPitch = railway.getTracks().get(railway.getTracks().size()-1).getPitch();
-            newTrack = false;
-        }
-
         return task.run(commandHandler, railway.getTracks(), track, railway.getChunks(), position, orientation);
     }
 }

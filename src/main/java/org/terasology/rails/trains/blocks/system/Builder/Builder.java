@@ -37,24 +37,24 @@ public class Builder {
         taskHandler = new TaskHandler(railway, entityManager);
     }
 
-    public boolean buildStraight(Vector3f checkedPosition, Orientation orientation) {
-        return taskHandler.start(new BuildStraightTask(), checkedPosition, orientation);
+    public boolean buildStraight(Vector3f checkedPosition, Track selectedTrack, Orientation orientation) {
+        return taskHandler.start(new BuildStraightTask(),selectedTrack, checkedPosition, orientation);
     }
 
-    public boolean buildLeft(Vector3f checkedPosition, Orientation orientation) {
-        return taskHandler.start(new BuildLeftTask(), checkedPosition, orientation);
+    public boolean buildLeft(Vector3f checkedPosition, Track selectedTrack, Orientation orientation) {
+        return taskHandler.start(new BuildLeftTask(),selectedTrack, checkedPosition, orientation);
     }
 
-    public boolean buildRight(Vector3f checkedPosition, Orientation orientation) {
-        return taskHandler.start(new BuildRightTask(), checkedPosition, orientation);
+    public boolean buildRight(Vector3f checkedPosition, Track selectedTrack, Orientation orientation) {
+        return taskHandler.start(new BuildRightTask(),selectedTrack, checkedPosition, orientation);
     }
 
-    public boolean buildUp(Vector3f checkedPosition, Orientation orientation) {
-        return taskHandler.start(new BuildUpTask(), checkedPosition, orientation);
+    public boolean buildUp(Vector3f checkedPosition, Track selectedTrack, Orientation orientation) {
+        return taskHandler.start(new BuildUpTask(),selectedTrack, checkedPosition, orientation);
     }
 
-    public boolean buildDown(Vector3f checkedPosition, Orientation orientation) {
-        return taskHandler.start(new BuildDownTask(), checkedPosition, orientation);
+    public boolean buildDown(Vector3f checkedPosition, Track selectedTrack, Orientation orientation) {
+        return taskHandler.start(new BuildDownTask(),selectedTrack, checkedPosition, orientation);
     }
 
     public ArrayList<Track> getTracks() {

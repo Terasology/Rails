@@ -68,6 +68,10 @@ public class RailsSystem extends BaseComponentSystem {
     @ReceiveEvent(components = {RailBuilderComponent.class, ItemComponent.class})
     public void onPlaceFunctional(ActivateEvent event, EntityRef item) {
 
+        Track selectedTrack = null;
+        float yaw = 0;
+        Vector3f placementPos = null;
+
         if (railBuilder == null) {
             railBuilder = new Builder(entityManager);
             return;
@@ -81,67 +85,76 @@ public class RailsSystem extends BaseComponentSystem {
         BlockComponent blockComponent = targetEntity.getComponent(BlockComponent.class);
 
         if (blockComponent == null) {
-            onSelectRail(event, item);
-            return;
+            selectedTrack = onSelectRail(event, item);
+
+            if (selectedTrack == null) {
+                return;
+            }
         }
 
-        Vector3f placementPos = new Vector3i(event.getTarget().getComponent(BlockComponent.class).getPosition()).toVector3f();
-        placementPos.y += 0.6f;
 
         RailBuilderComponent railBuilderComponent = item.getComponent(RailBuilderComponent.class);
 
-        Vector3f direction = event.getDirection();
-        direction.y = 0;
-        Direction dir = Direction.inDirection(direction);
-        float yaw = 0;
+        if (selectedTrack == null) {
+            placementPos = new Vector3i(event.getTarget().getComponent(BlockComponent.class).getPosition()).toVector3f();
+            placementPos.y += 0.6f;
 
-        switch (dir) {
-            case LEFT:
-                yaw = 90;
-                logger.info("LEFT");
-                break;
-            case RIGHT:
-                yaw = 270;
-                logger.info("RIGHT");
-                break;
-            case FORWARD:
-                yaw = 180;
-                logger.info("FORWARD");
-                break;
-            case BACKWARD:
-                logger.info("BACKWARD");
-                yaw = 0;
-                break;
+            Vector3f direction = event.getDirection();
+            direction.y = 0;
+            Direction dir = Direction.inDirection(direction);
+
+
+            switch (dir) {
+                case LEFT:
+                    yaw = 90;
+                    logger.info("LEFT");
+                    break;
+                case RIGHT:
+                    yaw = 270;
+                    logger.info("RIGHT");
+                    break;
+                case FORWARD:
+                    yaw = 180;
+                    logger.info("FORWARD");
+                    break;
+                case BACKWARD:
+                    logger.info("BACKWARD");
+                    yaw = 0;
+                    break;
+            }
         }
 
         switch (railBuilderComponent.type) {
             case LEFT:
-                railBuilder.buildLeft(placementPos, new Orientation(yaw, 0, 0));
+                railBuilder.buildLeft(placementPos, selectedTrack, new Orientation(yaw, 0, 0));
                 break;
             case RIGHT:
-                railBuilder.buildRight(placementPos, new Orientation(yaw, 0, 0));
+                railBuilder.buildRight(placementPos, selectedTrack, new Orientation(yaw, 0, 0));
                 break;
             case UP:
-                railBuilder.buildUp(placementPos, new Orientation(yaw, 0, 0));
+                railBuilder.buildUp(placementPos, selectedTrack, new Orientation(yaw, 0, 0));
                 break;
             case DOWN:
-                railBuilder.buildDown(placementPos, new Orientation(yaw, 0, 0));
+                railBuilder.buildDown(placementPos, selectedTrack, new Orientation(yaw, 0, 0));
                 break;
             case STRAIGHT:
-                railBuilder.buildStraight(placementPos, new Orientation(yaw, 0, 0));
+                railBuilder.buildStraight(placementPos, selectedTrack, new Orientation(yaw, 0, 0));
                 break;
         }
 
         event.consume();
     }
 
-    private void onSelectRail(ActivateEvent event, EntityRef item) {
+    private Track onSelectRail(ActivateEvent event, EntityRef item) {
         EntityRef target = event.getTarget();
-        EntityRef player = event.getInstigator();
+        //EntityRef player = event.getInstigator();
 
-        if (!target.hasComponent(RailBuilderComponent.class)) {
-            return;
+        if (!target.hasComponent(TrainRailComponent.class)) {
+            return null;
         }
 
+        TrainRailComponent trainRailComponent = target.getComponent(TrainRailComponent.class);
+
+        return trainRailComponent.track;
     }
 }

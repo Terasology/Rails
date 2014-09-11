@@ -55,12 +55,13 @@ public class Track {
             calculatePositions();
             trainRailComponent.startPosition = this.startPosition;
             trainRailComponent.endPosition = this.endPosition;
-            entity.saveComponent(trainRailComponent);
         } else {
             this.startPosition = trainRailComponent.startPosition;
             this.endPosition = trainRailComponent.endPosition;
         }
 
+        trainRailComponent.track = this;
+        entity.saveComponent(trainRailComponent);
     }
 
     public Vector3f getStartPosition() {
