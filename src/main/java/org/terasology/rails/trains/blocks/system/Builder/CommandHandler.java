@@ -22,12 +22,16 @@ import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.TeraMath;
+import org.terasology.physics.Physics;
+import org.terasology.physics.StandardCollisionGroup;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Config;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.blocks.system.Tasks.Task;
 import org.terasology.rails.trains.blocks.system.Track;
+import org.terasology.registry.CoreRegistry;
 import org.terasology.registry.In;
+import org.terasology.rendering.logic.MeshComponent;
 
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
@@ -40,9 +44,11 @@ import java.util.Map;
 public class CommandHandler {
     private EntityManager entityManager;
     private final Logger logger = LoggerFactory.getLogger(CommandHandler.class);
+    private Physics physics;
 
     public CommandHandler(EntityManager entityManager) {
         this.entityManager = entityManager;
+        this.physics = CoreRegistry.get(Physics.class);
     }
 
     public TaskResult run(List<Command> commands, Map<EntityRef, Track> tracks, Track selectedTrack) {
@@ -141,8 +147,11 @@ public class CommandHandler {
         );
 
         EntityRef entity = createEntityInTheWorld(prefab, type, selectedTrack, newPosition, newOrientation, fixOrientation);
-        Track track = new Track(entity, true);
-        tracks.put(entity, track);
+        Track track = null;
+        if (entity != null) {
+            track = new Track(entity, true);
+            tracks.put(entity, track);
+        }
         return track;
     }
 
@@ -155,6 +164,12 @@ public class CommandHandler {
         Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
         QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * (newOrientation.yaw + fixOrientation.yaw), TeraMath.DEG_TO_RAD * (newOrientation.roll + fixOrientation.roll), TeraMath.DEG_TO_RAD * (newOrientation.pitch + fixOrientation.pitch));
         EntityRef railBlock = entityManager.create(prefab, position);
+        MeshComponent mesh = railBlock.getComponent(MeshComponent.class);
+        if (!physics.scanArea(mesh.mesh.getAABB(), StandardCollisionGroup.DEFAULT, StandardCollisionGroup.CHARACTER).isEmpty()) {
+            railBlock.destroy();
+            return null;
+        }
+
         LocationComponent locationComponent = railBlock.getComponent(LocationComponent.class);
         locationComponent.setWorldRotation(yawPitch);
 
