@@ -55,7 +55,7 @@ public class CommandHandler {
         Track track = null;
         for( Command command : commands ) {
             if (command.build) {
-                selectedTrack = buildTrack(tracks, selectedTrack, command.type, command.checkedPosition, command.orientation,  command.newTrack);
+                selectedTrack = buildTrack(tracks, selectedTrack, command.type, command.checkedPosition, command.orientation);
                 if (selectedTrack == null) {
                     return new TaskResult(track, false);
                 }
@@ -70,12 +70,13 @@ public class CommandHandler {
         return new TaskResult(track, true);
     }
 
-    private Track buildTrack(Map<EntityRef, Track> tracks, Track selectedTrack, TrainRailComponent.TrackType type, Vector3f checkedPosition, Orientation orientation, boolean newTrack) {
+    private Track buildTrack(Map<EntityRef, Track> tracks, Track selectedTrack, TrainRailComponent.TrackType type, Vector3f checkedPosition, Orientation orientation) {
 
         Orientation newOrientation = null;
         Orientation fixOrientation = null;
         Vector3f newPosition;
         Vector3f prevPosition = checkedPosition;
+        boolean newTrack = false;
         float startYaw = 0;
         float startPitch = 0;
 
@@ -83,6 +84,8 @@ public class CommandHandler {
             startYaw = selectedTrack.getYaw();
             startPitch = selectedTrack.getPitch();
             prevPosition = selectedTrack.getEndPosition();
+        }else{
+            newTrack = true;
         }
 
         String prefab = "rails:railBlock";
@@ -126,6 +129,7 @@ public class CommandHandler {
                 break;
             case RIGHT:
                 newOrientation = new Orientation(startYaw - Config.STANDARD_ANGLE_CHANGE, startPitch, 0);
+                logger.info("left -- " + newOrientation.yaw);
                 fixOrientation = new Orientation(90f, 0, 0);
                 prefab = "rails:railBlock-right";
                 break;

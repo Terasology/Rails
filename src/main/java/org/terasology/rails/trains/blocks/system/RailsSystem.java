@@ -23,6 +23,7 @@ import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterSystem;
+import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
 import org.terasology.logic.common.ActivateEvent;
 import org.terasology.logic.inventory.ItemComponent;
 import org.terasology.math.Direction;
@@ -44,7 +45,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 @RegisterSystem
-public class RailsSystem extends BaseComponentSystem {
+public class RailsSystem extends BaseComponentSystem implements UpdateSubscriberSystem {
     @In
     private BlockManager blockManager;
     @In
@@ -115,12 +116,12 @@ public class RailsSystem extends BaseComponentSystem {
                     logger.info("RIGHT");
                     break;
                 case FORWARD:
-                    yaw = 180;
+                    yaw = 0;
                     logger.info("FORWARD");
                     break;
                 case BACKWARD:
                     logger.info("BACKWARD");
-                    yaw = 0;
+                    yaw = 180;
                     break;
             }
         }
@@ -155,5 +156,10 @@ public class RailsSystem extends BaseComponentSystem {
         }
 
         return railBuilder.getTracks().get(target);
+    }
+
+    @Override
+    public void update(float delta) {
+
     }
 }

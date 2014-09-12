@@ -37,10 +37,10 @@ public class BuildLeftTask implements Task {
     public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation) {
 
         ArrayList<Command> commands = new ArrayList<>();
-        commands.add(new Command(true, TrainRailComponent.TrackType.LEFT, position, new Orientation(0,0,0)));
-        commands.add(new Command(true, TrainRailComponent.TrackType.LEFT, position, new Orientation(0,0,0)));
-        commands.add(new Command(true, TrainRailComponent.TrackType.LEFT, position, new Orientation(0,0,0)));
 
+        for (int i = 0; i<12; i++) {
+            commands.add(new Command(true, TrainRailComponent.TrackType.LEFT, position, new Orientation(0,0,0)));
+        }
         TaskResult taskResult = commandHandler.run(commands, tracks, selectedTrack);
         return taskResult.success;
     }

@@ -6,7 +6,7 @@
         "material": "Rails:debug"
     },
     "RigidBody": {
-        "kinematic" : true,
+        "kinematic": true,
         "collisionGroup": "engine:world",
         "collidesWith": [
             "engine:world",
