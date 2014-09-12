@@ -113,30 +113,25 @@ public class CommandHandler {
 
                 fixOrientation = new Orientation(270f, 0, 0);
                 prefab = "rails:railBlock-up";
-                logger.info("Try to add up");
                 break;
             case DOWN:
                 newOrientation = new Orientation(startYaw, startPitch - Config.STANDARD_PITCH_ANGLE_CHANGE, 0);
                 fixOrientation = new Orientation(270f, 0, 0);
                 prefab = "rails:railBlock-down";
-                logger.info("Try to add down");
                 break;
             case LEFT:
                 newOrientation = new Orientation(startYaw + Config.STANDARD_ANGLE_CHANGE, startPitch, 0);
                 fixOrientation = new Orientation(90f, 0, 0);
                 prefab = "rails:railBlock-left";
-                logger.info("Try to add left");
                 break;
             case RIGHT:
                 newOrientation = new Orientation(startYaw - Config.STANDARD_ANGLE_CHANGE, startPitch, 0);
                 fixOrientation = new Orientation(90f, 0, 0);
-                prefab = "rails:railBlock-left";
-                logger.info("Try to add right");
+                prefab = "rails:railBlock-right";
                 break;
             case CUSTOM:
                 newOrientation = new Orientation(orientation.yaw, orientation.pitch, orientation.roll);
                 fixOrientation = new Orientation(90f, 0, 0);
-                logger.info("Try to add custom");
                 break;
         }
 
@@ -165,10 +160,10 @@ public class CommandHandler {
         QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * (newOrientation.yaw + fixOrientation.yaw), TeraMath.DEG_TO_RAD * (newOrientation.roll + fixOrientation.roll), TeraMath.DEG_TO_RAD * (newOrientation.pitch + fixOrientation.pitch));
         EntityRef railBlock = entityManager.create(prefab, position);
         MeshComponent mesh = railBlock.getComponent(MeshComponent.class);
-        if (!physics.scanArea(mesh.mesh.getAABB(), StandardCollisionGroup.DEFAULT, StandardCollisionGroup.CHARACTER).isEmpty()) {
+        /*if (!physics.scanArea(mesh.mesh.getAABB(), StandardCollisionGroup.DEFAULT, StandardCollisionGroup.CHARACTER).isEmpty()) {
             railBlock.destroy();
             return null;
-        }
+        }*/
 
         LocationComponent locationComponent = railBlock.getComponent(LocationComponent.class);
         locationComponent.setWorldRotation(yawPitch);
@@ -185,7 +180,7 @@ public class CommandHandler {
         }
 
         railBlock.saveComponent(locationComponent);
-        railBlock.saveComponent(trainRailComponent);
+        railBlock.addComponent(trainRailComponent);
         return railBlock;
     }
 }

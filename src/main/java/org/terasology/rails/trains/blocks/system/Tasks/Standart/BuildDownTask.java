@@ -37,9 +37,15 @@ public class BuildDownTask implements Task {
     public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation) {
 
         ArrayList<Command> commands = new ArrayList<>();
+        //commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, new Orientation(0,0,0)));
+        //commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, new Orientation(0,0,0)));
         commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, new Orientation(0,0,0)));
-        commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, new Orientation(0,0,0)));
-        commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, new Orientation(0,0,0)));
+        commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
+        commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
+        commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
+        commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
+        commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
+        commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
         TaskResult taskResult = commandHandler.run(commands, tracks, selectedTrack);
         return taskResult.success;
     }
