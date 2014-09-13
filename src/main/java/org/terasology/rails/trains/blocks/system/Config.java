@@ -13,16 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.trains.controllers;
+package org.terasology.rails.trains.blocks.system;
 
-import org.terasology.entitySystem.systems.BaseComponentSystem;
-import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
-
-
-public class VehicleSystem extends BaseComponentSystem implements UpdateSubscriberSystem {
-
-    @Override
-    public void update(float delta) {
-
-    }
+/**
+ * Created by adeon on 08.09.14.
+ */
+public class Config {
+    public static final float TRACK_LENGTH = 1f;
+    public static final float STANDARD_ANGLE_CHANGE = 7.5f;
+    public static final float STANDARD_PITCH_ANGLE_CHANGE = 7.5f;
+    public static final float MAX_PITCH = 22.5f;
 }

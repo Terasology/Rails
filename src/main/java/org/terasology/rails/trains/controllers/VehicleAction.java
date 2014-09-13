@@ -23,25 +23,14 @@ import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
-import org.terasology.logic.common.ActivateEvent;
 import org.terasology.logic.inventory.InventoryComponent;
 import org.terasology.logic.inventory.InventoryManager;
-import org.terasology.logic.inventory.ItemComponent;
 import org.terasology.logic.players.event.OnPlayerSpawnedEvent;
-import org.terasology.math.Vector3i;
 import org.terasology.physics.Physics;
-import org.terasology.rails.minecarts.blocks.ConnectsToRailsComponent;
-import org.terasology.rails.minecarts.components.RailVehicleComponent;
-import org.terasology.rails.minecarts.components.WrenchComponent;
-import org.terasology.rails.minecarts.controllers.MinecartFactory;
-import org.terasology.rails.trains.components.DebugTrainComponent;
 import org.terasology.registry.In;
 import org.terasology.world.WorldProvider;
-import org.terasology.world.block.BlockComponent;
 import org.terasology.world.block.BlockManager;
 import org.terasology.world.block.items.BlockItemFactory;
-
-import javax.vecmath.Vector3f;
 
 @RegisterSystem(RegisterMode.AUTHORITY)
 public class VehicleAction extends BaseComponentSystem {
@@ -64,30 +53,12 @@ public class VehicleAction extends BaseComponentSystem {
         BlockItemFactory blockFactory = new BlockItemFactory(entityManager);
         //inventoryManager.giveItem(player,player,entityManager.create("rails:minecart"));
         //inventoryManager.giveItem(player,player,entityManager.create("rails:loco"));
-        inventoryManager.giveItem(player,player,entityManager.create("rails:debugCube"));
+        inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool"));
+        inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-left"));
+        inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-right"));
+        inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-up"));
+        inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-down"));
         //inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("rails:Rails"), 99));
-    }
-
-    @ReceiveEvent(components = {DebugTrainComponent.class, ItemComponent.class})
-    public void onPlaceFunctional(ActivateEvent event, EntityRef item) {
-
-        if (item.hasComponent(WrenchComponent.class)) {
-            return;
-        }
-
-        EntityRef targetEntity = event.getTarget();
-        BlockComponent blockComponent = targetEntity.getComponent(BlockComponent.class);
-        ConnectsToRailsComponent connectsToRailsComponent = targetEntity.getComponent(ConnectsToRailsComponent.class);
-
-        if (blockComponent == null) {
-            return;
-        }
-
-        Vector3f placementPos = new Vector3i(event.getTarget().getComponent(BlockComponent.class).getPosition()).toVector3f();
-        placementPos.y += 1.2f;
-        logger.info("Created debug block at {}", placementPos);
-        entityManager.create("rails:debugCube", placementPos);
-        event.consume();
     }
 
 }

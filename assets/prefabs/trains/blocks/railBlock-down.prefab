@@ -1,0 +1,21 @@
+{
+    "Location": {
+    },
+    "Mesh": {
+        "mesh": "Rails:single",
+        "material": "Rails:debug"
+    },
+    "RigidBody": {
+            "kinematic": true,
+            "collisionGroup": "engine:world",
+            "collidesWith": [
+                "engine:world",
+                "engine:debris",
+                "engine:character",
+                "engine:default"
+            ]
+    },
+    "BoxShape": {
+            "extents": [1, 0.2, 1]
+    }
+}

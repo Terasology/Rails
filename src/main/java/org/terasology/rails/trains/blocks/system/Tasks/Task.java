@@ -13,27 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.trains.blocks.components;
+package org.terasology.rails.trains.blocks.system.Tasks;
 
-import com.google.common.collect.Lists;
-import org.terasology.entitySystem.Component;
 import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.network.Replicate;
+import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.blocks.system.Track;
 
 import javax.vecmath.Vector3f;
 import java.util.List;
+import java.util.Map;
 
-public class TrainRailComponent implements Component {
-    @Replicate
-    public static enum TrackType {STRAIGHT, UP, DOWN, LEFT, RIGHT, CUSTOM};
-    public TrackType type;
-    public Vector3f startPosition;
-    public Vector3f endPosition;
-    public float yaw;
-    public float pitch;
-    public float roll;
-    public EntityRef prevTrack;
-    public EntityRef nextTrack;
+/**
+ * Created by adeon on 08.09.14.
+ */
+public interface Task {
+    public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation);
 }

@@ -13,16 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.trains.controllers;
+package org.terasology.rails.trains.components;
 
-import org.terasology.entitySystem.systems.BaseComponentSystem;
-import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
+import org.terasology.entitySystem.Component;
+import org.terasology.entitySystem.entity.EntityRef;
+
+import javax.vecmath.Vector3f;
+import java.util.ArrayList;
 
 
-public class VehicleSystem extends BaseComponentSystem implements UpdateSubscriberSystem {
-
-    @Override
-    public void update(float delta) {
-
-    }
+public class TrainComponent implements Component {
+    Vector3f velocity = new Vector3f();
+    float yaw = 0;
+    float pitch = 0;
+    //EntityRef wheelFront;
+    //EntityRef wheelBack;
 }

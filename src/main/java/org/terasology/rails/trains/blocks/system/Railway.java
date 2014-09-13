@@ -13,16 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.trains.controllers;
+package org.terasology.rails.trains.blocks.system;
 
-import org.terasology.entitySystem.systems.BaseComponentSystem;
-import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
+import com.google.common.collect.Maps;
+import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.input.internal.BindableAxisImpl;
 
+import java.util.ArrayList;
+import java.util.Map;
 
-public class VehicleSystem extends BaseComponentSystem implements UpdateSubscriberSystem {
-
-    @Override
-    public void update(float delta) {
-
+/**
+ * Created by adeon on 09.09.14.
+ */
+public class Railway {
+    private Map<EntityRef, Track> tracks = Maps.newHashMap();
+    public Map<EntityRef, Track> getTracks() {
+        return tracks;
     }
 }

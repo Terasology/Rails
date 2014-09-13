@@ -13,10 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.trains.components;
+package org.terasology.rails.trains.blocks.system.Builder;
 
-import org.terasology.entitySystem.Component;
+import org.terasology.rails.trains.blocks.system.Track;
 
+/**
+ * Created by adeon on 10.09.14.
+ */
+public class TaskResult {
+    public Track track;
+    public boolean success;
 
-public class DebugTrainComponent implements Component {
+    public TaskResult(Track track, boolean success) {
+        this.track = track;
+        this.success = success;
+    }
 }

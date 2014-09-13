@@ -13,16 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.trains.controllers;
+package org.terasology.rails.trains.components;
 
-import org.terasology.entitySystem.systems.BaseComponentSystem;
-import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
+import org.terasology.entitySystem.Component;
 
 
-public class VehicleSystem extends BaseComponentSystem implements UpdateSubscriberSystem {
-
-    @Override
-    public void update(float delta) {
-
-    }
+public class RailBuilderComponent implements Component {
+    public static enum RailType {LEFT, RIGHT, UP, DOWN, STRAIGHT};
+    public RailType type = RailType.STRAIGHT;
 }

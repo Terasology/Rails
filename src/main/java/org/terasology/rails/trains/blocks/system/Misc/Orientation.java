@@ -13,16 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.trains.controllers;
+package org.terasology.rails.trains.blocks.system.Misc;
 
-import org.terasology.entitySystem.systems.BaseComponentSystem;
-import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
+/**
+ * Created by adeon on 09.09.14.
+ */
+public class Orientation {
+    public float yaw = 0;
+    public float pitch = 0;
+    public float roll = 0;
 
+    public Orientation (float yaw, float pitch, float roll) {
+        this.yaw = yaw;
+        this.pitch = pitch;
+        this.roll = roll;
+    }
 
-public class VehicleSystem extends BaseComponentSystem implements UpdateSubscriberSystem {
-
-    @Override
-    public void update(float delta) {
-
+    public void add (Orientation orientation) {
+        this.yaw += orientation.yaw;
+        this.pitch += orientation.pitch;
+        this.roll += orientation.roll;
     }
 }
