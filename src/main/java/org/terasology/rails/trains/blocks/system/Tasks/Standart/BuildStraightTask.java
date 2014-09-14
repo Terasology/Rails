@@ -39,13 +39,9 @@ public class BuildStraightTask implements Task {
 
         ArrayList<Command> commands = new ArrayList<>();
 
-        if (selectedTrack == null) {
-            return  false;
-        }
-
-        if (selectedTrack.getPitch() > 0) {
+        if (selectedTrack!=null && selectedTrack.getPitch() > 0) {
             commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, orientation));
-        } else if(selectedTrack.getPitch() < 0) {
+        } else if(selectedTrack!=null && selectedTrack.getPitch() < 0) {
             commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, orientation));
         } else {
             commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation));

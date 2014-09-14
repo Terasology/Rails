@@ -36,6 +36,10 @@ public class BuildLeftTask implements Task {
     @Override
     public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation) {
 
+        if (selectedTrack == null) {
+            return  false;
+        }
+
         ArrayList<Command> commands = new ArrayList<>();
 
         for (int i = 0; i<12; i++) {
