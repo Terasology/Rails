@@ -32,7 +32,7 @@ import java.util.Map;
 
 public class BuildToXYZTask implements Task {
     @Override
-    public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation) {
+    public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation, boolean reverse) {
         float zone = 5f;
         boolean firstStraightTrack = true;
         boolean buildPass = true;
@@ -79,8 +79,8 @@ public class BuildToXYZTask implements Task {
 
             if (lastTrack.getYaw() == toYaw && lastTrack.getPitch() == toPitch) {
                 commands.clear();
-                commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0, 0, 0)));
-                TaskResult result = commandHandler.run(commands, tracks, selectedTrack);
+                commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0, 0, 0), false, reverse));
+                TaskResult result = commandHandler.run(commands, tracks, selectedTrack, reverse);
                 buildPass = result.success;
 
                 if (buildPass) {
@@ -138,8 +138,8 @@ public class BuildToXYZTask implements Task {
                     }
                 }
                 commands.clear();
-                commands.add(new Command(true, TrainRailComponent.TrackType.CUSTOM, position, new Orientation(Config.STANDARD_ANGLE_CHANGE * yawDirection, Config.STANDARD_ANGLE_CHANGE * pitchDirection, 0)));
-                TaskResult result = commandHandler.run(commands, tracks, selectedTrack);
+                commands.add(new Command(true, TrainRailComponent.TrackType.CUSTOM, position, new Orientation(Config.STANDARD_ANGLE_CHANGE * yawDirection, Config.STANDARD_ANGLE_CHANGE * pitchDirection, 0), false, reverse));
+                TaskResult result = commandHandler.run(commands, tracks, selectedTrack, reverse);
                 buildPass = result.success;
 
                 if (buildPass) {

@@ -33,7 +33,7 @@ import java.util.Map;
  */
 public class BuildRightTask implements Task {
     @Override
-    public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation) {
+    public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation, boolean reverse) {
 
         if (selectedTrack == null) {
             return  false;
@@ -42,10 +42,10 @@ public class BuildRightTask implements Task {
         ArrayList<Command> commands = new ArrayList<>();
 
         for (int i = 0; i<12; i++) {
-            commands.add(new Command(true, TrainRailComponent.TrackType.RIGHT, position, new Orientation(0,0,0)));
+            commands.add(new Command(true, TrainRailComponent.TrackType.RIGHT, position, new Orientation(0,0,0), false, reverse));
         }
 
-        TaskResult taskResult = commandHandler.run(commands, tracks, selectedTrack);
+        TaskResult taskResult = commandHandler.run(commands, tracks, selectedTrack, reverse);
         return taskResult.success;
     }
 }

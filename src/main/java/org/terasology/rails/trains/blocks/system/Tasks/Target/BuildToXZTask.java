@@ -31,7 +31,7 @@ import java.util.Map;
 public class BuildToXZTask implements Task {
 
     @Override
-    public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation) {
+    public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientationm, boolean reverse) {
         boolean buildPass = true;
         boolean firstStrightTrack = true;
 

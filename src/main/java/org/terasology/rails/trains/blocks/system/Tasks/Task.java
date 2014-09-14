@@ -28,5 +28,5 @@ import java.util.Map;
  * Created by adeon on 08.09.14.
  */
 public interface Task {
-    public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation);
+    public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation, boolean reverse);
 }

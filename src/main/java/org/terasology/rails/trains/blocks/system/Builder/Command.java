@@ -27,11 +27,12 @@ import javax.vecmath.Vector3f;
 public class Command {
     public boolean build;
     public boolean newTrack;
+    public boolean reverse;
     public TrainRailComponent.TrackType type;
     public Orientation orientation;
     public Vector3f checkedPosition;
 
-    public Command(boolean build, TrainRailComponent.TrackType type, Vector3f checkedPosition, Orientation orientation, boolean newTrack) {
+    public Command(boolean build, TrainRailComponent.TrackType type, Vector3f checkedPosition, Orientation orientation, boolean newTrack, boolean reverse) {
         this.build = build;
         this.type  = type;
         this.orientation = orientation;
@@ -40,7 +41,7 @@ public class Command {
     }
 
     public Command(boolean build, TrainRailComponent.TrackType type, Vector3f checkedPosition, Orientation orientation) {
-        this(build, type, checkedPosition, orientation, false);
+        this(build, type, checkedPosition, orientation, false, false);
     }
 
     public Command(boolean build, TrainRailComponent.TrackType type) {

@@ -73,6 +73,7 @@ public class RailsSystem extends BaseComponentSystem implements UpdateSubscriber
         Track selectedTrack = null;
         float yaw = 0;
         Vector3f placementPos = null;
+        boolean reverse = false;
 
         if (railBuilder == null) {
             railBuilder = new Builder(entityManager);
@@ -91,6 +92,23 @@ public class RailsSystem extends BaseComponentSystem implements UpdateSubscriber
 
             if (selectedTrack == null) {
                 return;
+            }
+
+            Vector3f  hitPosition = event.getHitPosition();
+            if (hitPosition != null) {
+                logger.info("GO!");
+                Vector3f startPosition = new Vector3f(selectedTrack.getStartPosition());
+                Vector3f endPosition = new Vector3f(selectedTrack.getEndPosition());
+                startPosition.sub(hitPosition);
+                endPosition.sub(hitPosition);
+                float distFromStart = startPosition.lengthSquared();
+                float distFromend = endPosition.lengthSquared();
+
+                logger.info("from start:" + distFromStart);
+                logger.info("from end:" + distFromend);
+                if ( distFromStart > distFromend) {
+                    reverse = true;
+                }
             }
         }
 
@@ -130,19 +148,19 @@ public class RailsSystem extends BaseComponentSystem implements UpdateSubscriber
 
         switch (railBuilderComponent.type) {
             case LEFT:
-                railBuilder.buildLeft(placementPos, selectedTrack, new Orientation(yaw, 0, 0));
+                railBuilder.buildLeft(placementPos, selectedTrack, new Orientation(yaw, 0, 0), reverse);
                 break;
             case RIGHT:
-                railBuilder.buildRight(placementPos, selectedTrack, new Orientation(yaw, 0, 0));
+                railBuilder.buildRight(placementPos, selectedTrack, new Orientation(yaw, 0, 0), reverse);
                 break;
             case UP:
-                railBuilder.buildUp(placementPos, selectedTrack, new Orientation(yaw, 0, 0));
+                railBuilder.buildUp(placementPos, selectedTrack, new Orientation(yaw, 0, 0), reverse);
                 break;
             case DOWN:
-                railBuilder.buildDown(placementPos, selectedTrack, new Orientation(yaw, 0, 0));
+                railBuilder.buildDown(placementPos, selectedTrack, new Orientation(yaw, 0, 0), reverse);
                 break;
             case STRAIGHT:
-                railBuilder.buildStraight(placementPos, selectedTrack, new Orientation(yaw, 0, 0));
+                railBuilder.buildStraight(placementPos, selectedTrack, new Orientation(yaw, 0, 0), reverse);
                 break;
         }
 

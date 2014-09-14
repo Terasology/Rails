@@ -35,25 +35,23 @@ import java.util.Map;
  */
 public class BuildStraightTask implements Task {
         @Override
-    public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation) {
+    public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation, boolean reverse) {
 
         ArrayList<Command> commands = new ArrayList<>();
 
         if (selectedTrack!=null && selectedTrack.getPitch() > 0) {
-            commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, orientation));
+            commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, orientation, false, reverse));
         } else if(selectedTrack!=null && selectedTrack.getPitch() < 0) {
-            commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, orientation));
+            commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, orientation, false, reverse));
         } else {
-            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation));
+            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation, false, reverse));
         }
 
-        commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation));
-        commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation));
-        commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation));
-        commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation));
-        commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation));
-        commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation));
-        TaskResult taskResult = commandHandler.run(commands, tracks, selectedTrack);
+        for (int i=0; i<7; i++) {
+            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0), false, reverse));
+        }
+
+        TaskResult taskResult = commandHandler.run(commands, tracks, selectedTrack, reverse);
         return taskResult.success;
     }
 }

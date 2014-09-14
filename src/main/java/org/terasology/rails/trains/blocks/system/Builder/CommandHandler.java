@@ -51,11 +51,11 @@ public class CommandHandler {
         this.physics = CoreRegistry.get(Physics.class);
     }
 
-    public TaskResult run(List<Command> commands, Map<EntityRef, Track> tracks, Track selectedTrack) {
+    public TaskResult run(List<Command> commands, Map<EntityRef, Track> tracks, Track selectedTrack, boolean reverse) {
         Track track = null;
         for( Command command : commands ) {
             if (command.build) {
-                selectedTrack = buildTrack(tracks, selectedTrack, command.type, command.checkedPosition, command.orientation);
+                selectedTrack = buildTrack(tracks, selectedTrack, command.type, command.checkedPosition, command.orientation, reverse);
                 if (selectedTrack == null) {
                     return new TaskResult(track, false);
                 }
@@ -70,7 +70,7 @@ public class CommandHandler {
         return new TaskResult(track, true);
     }
 
-    private Track buildTrack(Map<EntityRef, Track> tracks, Track selectedTrack, TrainRailComponent.TrackType type, Vector3f checkedPosition, Orientation orientation) {
+    private Track buildTrack(Map<EntityRef, Track> tracks, Track selectedTrack, TrainRailComponent.TrackType type, Vector3f checkedPosition, Orientation orientation, boolean reverse) {
 
         Orientation newOrientation = null;
         Orientation fixOrientation = null;
@@ -79,11 +79,19 @@ public class CommandHandler {
         boolean newTrack = false;
         float startYaw = 0;
         float startPitch = 0;
+        int revC = 1;
 
         if (selectedTrack != null) {
             startYaw = selectedTrack.getYaw();
             startPitch = selectedTrack.getPitch();
-            prevPosition = selectedTrack.getEndPosition();
+            if (reverse) {
+                prevPosition = selectedTrack.getStartPosition();
+                revC = -1;
+                logger.info("REVEEEEEEERSSEEEE!!!!!");
+            } else {
+                prevPosition = selectedTrack.getEndPosition();
+            }
+
         }else{
             newTrack = true;
         }
@@ -140,9 +148,9 @@ public class CommandHandler {
         }
 
         newPosition = new Vector3f(
-                prevPosition.x + (float)(Math.sin(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float) Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * Config.TRACK_LENGTH / 2),
-                prevPosition.y + (float)(Math.sin(TeraMath.DEG_TO_RAD * newOrientation.pitch) * Config.TRACK_LENGTH / 2),
-                prevPosition.z + (float)(Math.cos(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float)Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * Config.TRACK_LENGTH / 2)
+                prevPosition.x + revC * (float)(Math.sin(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float) Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * Config.TRACK_LENGTH / 2),
+                prevPosition.y + revC * (float)(Math.sin(TeraMath.DEG_TO_RAD * newOrientation.pitch) * Config.TRACK_LENGTH / 2),
+                prevPosition.z + revC * (float)(Math.cos(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float)Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * Config.TRACK_LENGTH / 2)
         );
 
         EntityRef entity = createEntityInTheWorld(prefab, type, selectedTrack, newPosition, newOrientation, fixOrientation);

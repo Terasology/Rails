@@ -34,7 +34,7 @@ import java.util.Map;
  */
 public class BuildDownTask implements Task {
     @Override
-    public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation) {
+    public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation, boolean reverse) {
 
         ArrayList<Command> commands = new ArrayList<>();
 
@@ -43,24 +43,16 @@ public class BuildDownTask implements Task {
         }
 
         if (selectedTrack.getPitch() >= 0) {
-            commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, new Orientation(0,0,0)));
-            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
-            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
-            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
-            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
-            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
-            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
+            commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, new Orientation(0,0,0), false, reverse));
         } else {
-            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
-            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
-            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
-            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
-            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
-            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
-            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
+            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0), false, reverse));
         }
 
-        TaskResult taskResult = commandHandler.run(commands, tracks, selectedTrack);
+        for (int i=0; i<7; i++) {
+            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0), false, reverse));
+        }
+
+        TaskResult taskResult = commandHandler.run(commands, tracks, selectedTrack, reverse);
         return taskResult.success;
     }
 }

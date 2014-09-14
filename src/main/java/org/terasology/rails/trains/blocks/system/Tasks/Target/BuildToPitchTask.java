@@ -34,7 +34,7 @@ import java.util.Map;
  */
 public class BuildToPitchTask implements Task {
     @Override
-    public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation) {
+    public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation, boolean reverse) {
 
         boolean hasTracks = tracks.size() > 0;
         boolean up = false;
@@ -61,22 +61,22 @@ public class BuildToPitchTask implements Task {
         }
 
         if (up) {
-            TaskResult result = tryTrackType(commandHandler, tracks, selectedTrack, position, orientation, TrainRailComponent.TrackType.UP);
+            TaskResult result = tryTrackType(commandHandler, tracks, selectedTrack, position, orientation, TrainRailComponent.TrackType.UP, reverse);
         } else {
-            TaskResult result = tryTrackType(commandHandler, tracks, selectedTrack, position, orientation, TrainRailComponent.TrackType.DOWN);
+            TaskResult result = tryTrackType(commandHandler, tracks, selectedTrack, position, orientation, TrainRailComponent.TrackType.DOWN, reverse);
         }
 
         return true;
     }
 
-    private TaskResult tryTrackType(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation, TrainRailComponent.TrackType type) {
+    private TaskResult tryTrackType(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation, TrainRailComponent.TrackType type, boolean reverse) {
         ArrayList<Command> commands = new ArrayList<>();
         TaskResult taskResult = null;
         Track lastTrack = tracks.get(tracks.size()-1);
-        commands.add(new Command(true, type, position, orientation));
+        commands.add(new Command(true, type, position, orientation, false, reverse));
 
         while( lastTrack.getPitch()!= orientation.pitch) {
-            taskResult = commandHandler.run(commands, tracks, selectedTrack);
+            taskResult = commandHandler.run(commands, tracks, selectedTrack, reverse);
             lastTrack = taskResult.track;
             if (!taskResult.success) {
                 break;
