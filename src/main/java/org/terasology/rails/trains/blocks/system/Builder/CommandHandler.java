@@ -98,18 +98,18 @@ public class CommandHandler {
                     newOrientation.add(orientation);
                 }
 
-                if (startPitch > 0) {
+                if (startPitch != 0) {
                     fixOrientation = new Orientation(270f, 0, 0);
                 } else {
                     fixOrientation = new Orientation(90f, 0, 0);
                 }
-                logger.info("Try to add straight");
+                logger.info("Try to add straight. Pitch is " + startPitch);
                 break;
             case UP:
                 float pitch = startPitch + Config.STANDARD_PITCH_ANGLE_CHANGE;
 
-                if (pitch > Config.MAX_PITCH) {
-                    newOrientation = new Orientation(startYaw, Config.MAX_PITCH, 0);
+                if (pitch > Config.STANDARD_ANGLE_CHANGE) {
+                    newOrientation = new Orientation(startYaw, Config.STANDARD_ANGLE_CHANGE, 0);
                 } else {
                     newOrientation = new Orientation(startYaw, startPitch + Config.STANDARD_PITCH_ANGLE_CHANGE, 0);
                 }

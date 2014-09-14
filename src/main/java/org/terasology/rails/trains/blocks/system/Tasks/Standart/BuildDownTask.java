@@ -44,6 +44,12 @@ public class BuildDownTask implements Task {
 
         if (selectedTrack.getPitch() >= 0) {
             commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, new Orientation(0,0,0)));
+            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
+            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
+            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
+            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
+            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
+            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
         } else {
             commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));
             commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0)));

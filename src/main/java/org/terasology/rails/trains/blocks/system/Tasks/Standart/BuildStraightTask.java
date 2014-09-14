@@ -38,8 +38,25 @@ public class BuildStraightTask implements Task {
     public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation) {
 
         ArrayList<Command> commands = new ArrayList<>();
-        commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation));
 
+        if (selectedTrack == null) {
+            return  false;
+        }
+
+        if (selectedTrack.getPitch() > 0) {
+            commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, orientation));
+        } else if(selectedTrack.getPitch() < 0) {
+            commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, orientation));
+        } else {
+            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation));
+        }
+
+        commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation));
+        commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation));
+        commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation));
+        commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation));
+        commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation));
+        commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation));
         TaskResult taskResult = commandHandler.run(commands, tracks, selectedTrack);
         return taskResult.success;
     }

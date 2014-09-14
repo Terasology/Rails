@@ -72,9 +72,9 @@ public class BuildToXYZTask implements Task {
             if (lastTrack.getPosition().y <= (position.y + (withInY / 2)) && lastTrack.getPosition().y >= (position.y - (withInY / 2))) {
                 toPitch = 0;
             } else if(position.y > 0) {
-                toPitch = 90 + Config.MAX_PITCH;
+                toPitch = 90 + Config.STANDARD_ANGLE_CHANGE;
             } else {
-                toPitch = 270 + Config.MAX_PITCH;
+                toPitch = 270 + Config.STANDARD_ANGLE_CHANGE;
             }
 
             if (lastTrack.getYaw() == toYaw && lastTrack.getPitch() == toPitch) {

@@ -124,6 +124,8 @@ public class RailsSystem extends BaseComponentSystem implements UpdateSubscriber
                     yaw = 180;
                     break;
             }
+        }else{
+            logger.info("Track is selected!");
         }
 
         switch (railBuilderComponent.type) {
