@@ -32,6 +32,7 @@ import org.terasology.logic.players.event.OnPlayerSpawnedEvent;
 import org.terasology.math.Vector3i;
 import org.terasology.physics.Physics;
 import org.terasology.rails.trains.blocks.components.DebugTrainComponent;
+import org.terasology.rails.trains.blocks.components.TrainCreaterComponent;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.registry.In;
 import org.terasology.world.WorldProvider;
@@ -61,26 +62,20 @@ public class VehicleAction extends BaseComponentSystem {
     public void onPlayerSpawn(OnPlayerSpawnedEvent event, EntityRef player, InventoryComponent inventory) {
         BlockItemFactory blockFactory = new BlockItemFactory(entityManager);
         //inventoryManager.giveItem(player,player,entityManager.create("rails:minecart"));
-        inventoryManager.giveItem(player,player,entityManager.create("rails:debugCube"));
+        inventoryManager.giveItem(player,player,entityManager.create("rails:trainCreater"));
         inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool"));
-        /*inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-left"));
+        inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-left"));
         inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-right"));
         inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-up"));
-        inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-down"));*/
+        inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-down"));
         //inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("rails:Rails"), 99));
     }
 
-    @ReceiveEvent(components = {DebugTrainComponent.class, ItemComponent.class})
+    @ReceiveEvent(components = {TrainCreaterComponent.class, ItemComponent.class})
     public void onPlaceFunctional(ActivateEvent event, EntityRef item) {
 
-        DebugTrainComponent functionalItem = item.getComponent(DebugTrainComponent.class);
 
         logger.info("Go go go");
-
-        if (functionalItem.isCreated) {
-            logger.info("oooops");
-            return;
-        }
 
         EntityRef targetEntity = event.getTarget();
         TrainRailComponent trainRailComponent = targetEntity.getComponent(TrainRailComponent.class);

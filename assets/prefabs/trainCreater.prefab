@@ -1,0 +1,13 @@
+{
+    "parent" : "engine:iconItem",
+    "DisplayName" : {
+        "name" : "Debug cube"
+    },
+    "TrainCreater": {},
+    "Item" : {
+        "icon": "Rails:minecart.wrench",
+        "usage": "IN_DIRECTION",
+        "renderWithIcon" : true,
+        "baseDamage" : 0
+    }
+}

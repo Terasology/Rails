@@ -53,7 +53,7 @@ public class VehicleSystem extends BaseComponentSystem implements UpdateSubscrib
             EntityRef rail = hit.getEntity();
 
             if (!railVehicleComponent.isCreated) {
-              //  logger.info("somethink wrong !!!!");
+                logger.info("somethink wrong !!!!");
                 return;
             }
 
@@ -63,30 +63,42 @@ public class VehicleSystem extends BaseComponentSystem implements UpdateSubscrib
             }
 
             if(!rail.hasComponent(TrainRailComponent.class)) {
-                logger.info("somethink wrong222");
-                return;
+                logger.info("somethink wrong222" + hit.getBlockPosition());
+                rail = railVehicleComponent.currentRail;
+                //return;
+            } else {
+                if (railVehicleComponent.currentRail == null) {
+                    railVehicleComponent.currentRail = rail;
+                } else {
+                    TrainRailComponent railComponent2 = railVehicleComponent.currentRail.getComponent(TrainRailComponent.class);
+                    if (rail.equals(railComponent2.nextTrack)) {
+                        railVehicleComponent.currentRail = rail;
+                    }
+                }
             }
 
             TrainRailComponent railComponent = rail.getComponent(TrainRailComponent.class);
 
             EntityRef nextRail = railComponent.nextTrack;
 
+
             if (nextRail == null) {
                 logger.info("nextRail is empty");
                 return;
             }
 
-            //LocationComponent fromRail = rail.getComponent(LocationComponent.class);
             LocationComponent toRail = nextRail.getComponent(LocationComponent.class);
+            LocationComponent fromRail = rail.getComponent(LocationComponent.class);
 
             Vector3f dir = toRail.getWorldPosition();
-            dir.sub(location.getWorldPosition());
+            dir.sub(fromRail.getWorldPosition());
 
             dir.normalize();
-            dir.scale(0.1f);
+            dir.scale(0.05f);
             logger.info("dir is " + dir);
 
             Vector3f position = location.getWorldPosition();
+            //dir.y=0;
             position.add(dir);
 
             location.setWorldPosition(position);

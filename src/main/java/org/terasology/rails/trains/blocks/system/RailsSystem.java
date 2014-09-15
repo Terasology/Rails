@@ -106,7 +106,7 @@ public class RailsSystem extends BaseComponentSystem implements UpdateSubscriber
 
                 logger.info("from start:" + distFromStart);
                 logger.info("from end:" + distFromend);
-                if ( distFromStart > distFromend) {
+                if ( distFromStart > distFromend && selectedTrack.getPrevTrack() == null) {
                     reverse = true;
                 }
             }

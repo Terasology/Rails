@@ -17,11 +17,10 @@ package org.terasology.rails.trains.blocks.components;
 
 import org.terasology.entitySystem.Component;
 import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.network.Replicate;
+import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
 
-public class DebugTrainComponent implements Component {
-    @Replicate
-    public boolean isCreated = false;
-    @Replicate
-    public EntityRef currentRail;
+/**
+ * Created by adeon on 15.09.14.
+ */
+public class TrainCreaterComponent implements Component {
 }
