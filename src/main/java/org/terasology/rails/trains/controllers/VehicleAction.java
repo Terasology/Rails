@@ -75,15 +75,18 @@ public class VehicleAction extends BaseComponentSystem {
 
         DebugTrainComponent functionalItem = item.getComponent(DebugTrainComponent.class);
 
+        logger.info("Go go go");
+
         if (functionalItem.isCreated) {
+            logger.info("oooops");
             return;
         }
 
         EntityRef targetEntity = event.getTarget();
-        BlockComponent blockComponent = targetEntity.getComponent(BlockComponent.class);
         TrainRailComponent trainRailComponent = targetEntity.getComponent(TrainRailComponent.class);
 
-        if (blockComponent == null || trainRailComponent == null) {
+        if (trainRailComponent == null) {
+            logger.info("cant find train component");
             return;
         }
 
@@ -93,7 +96,10 @@ public class VehicleAction extends BaseComponentSystem {
 
         logger.info("AAAA Created vehicle at {}", placementPos);
 
-        entityManager.create("rails:debugCube", placementPos);
+        EntityRef ent  = entityManager.create("rails:debugCube", placementPos);
+        DebugTrainComponent t1 = ent.getComponent(DebugTrainComponent.class);
+        t1.isCreated = true;
+        ent.saveComponent(t1);
         event.consume();
     }
 

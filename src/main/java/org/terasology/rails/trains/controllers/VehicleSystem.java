@@ -20,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
+import org.terasology.entitySystem.systems.RegisterMode;
+import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.physics.HitResult;
@@ -31,7 +33,7 @@ import org.terasology.registry.In;
 
 import javax.vecmath.Vector3f;
 
-
+@RegisterSystem(RegisterMode.AUTHORITY)
 public class VehicleSystem extends BaseComponentSystem implements UpdateSubscriberSystem {
 
     @In
@@ -49,6 +51,11 @@ public class VehicleSystem extends BaseComponentSystem implements UpdateSubscrib
             HitResult hit = physics.rayTrace(location.getWorldPosition(), new Vector3f(0,-1,0), 5f, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
 
             EntityRef rail = hit.getEntity();
+
+            if (!railVehicleComponent.isCreated) {
+                logger.info("somethink wrong !!!!");
+                return;
+            }
 
             if (rail == null || !rail.hasComponent(TrainRailComponent.class)) {
                 logger.info("somethink wrong");
