@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.trains.controllers;
+package org.terasology.rails.trains.blocks.components;
 
+import org.terasology.entitySystem.Component;
 
-public class MoveDescriptor {
-
+public class DebugTrainComponent implements Component {
+    public boolean isCreated = false;
 }

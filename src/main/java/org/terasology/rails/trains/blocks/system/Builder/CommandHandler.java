@@ -92,7 +92,7 @@ public class CommandHandler {
                 prevPosition = selectedTrack.getEndPosition();
             }
 
-        }else{
+        } else {
             newTrack = true;
         }
 
