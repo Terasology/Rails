@@ -53,12 +53,17 @@ public class VehicleSystem extends BaseComponentSystem implements UpdateSubscrib
             EntityRef rail = hit.getEntity();
 
             if (!railVehicleComponent.isCreated) {
-                logger.info("somethink wrong !!!!");
+              //  logger.info("somethink wrong !!!!");
                 return;
             }
 
-            if (rail == null || !rail.hasComponent(TrainRailComponent.class)) {
+            if (rail == null) {
                 logger.info("somethink wrong");
+                return;
+            }
+
+            if(!rail.hasComponent(TrainRailComponent.class)) {
+                logger.info("somethink wrong222");
                 return;
             }
 

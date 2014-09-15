@@ -10,6 +10,7 @@
             "collisionGroup": "engine:world",
             "collidesWith": ["engine:character"]
     },
+    "TrainRail": {},
     "BoxShape": {
             "extents": [1, 1, 1]
     }

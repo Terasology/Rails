@@ -180,7 +180,7 @@ public class CommandHandler {
         LocationComponent locationComponent = railBlock.getComponent(LocationComponent.class);
         locationComponent.setWorldRotation(yawPitch);
 
-        TrainRailComponent trainRailComponent = new TrainRailComponent();
+        TrainRailComponent trainRailComponent = railBlock.getComponent(TrainRailComponent.class);
         trainRailComponent.pitch = newOrientation.pitch;
         trainRailComponent.yaw = newOrientation.yaw;
         trainRailComponent.roll = newOrientation.roll;
@@ -192,7 +192,7 @@ public class CommandHandler {
         }
 
         railBlock.saveComponent(locationComponent);
-        railBlock.addComponent(trainRailComponent);
+        railBlock.saveComponent(trainRailComponent);
         return railBlock;
     }
 }
