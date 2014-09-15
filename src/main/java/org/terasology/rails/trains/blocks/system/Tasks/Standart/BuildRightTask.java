@@ -41,6 +41,12 @@ public class BuildRightTask implements Task {
 
         ArrayList<Command> commands = new ArrayList<>();
 
+        if (selectedTrack!=null && selectedTrack.getPitch() > 0) {
+            commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, orientation, false, reverse));
+        } else if(selectedTrack!=null && selectedTrack.getPitch() < 0) {
+            commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, orientation, false, reverse));
+        }
+
         for (int i = 0; i<12; i++) {
             commands.add(new Command(true, TrainRailComponent.TrackType.RIGHT, position, new Orientation(0,0,0), false, reverse));
         }

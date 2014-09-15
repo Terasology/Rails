@@ -15,6 +15,7 @@
  */
 package org.terasology.rails.trains.controllers;
 
+import com.bulletphysics.linearmath.QuaternionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityManager;
@@ -24,6 +25,7 @@ import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
 import org.terasology.logic.location.LocationComponent;
+import org.terasology.math.TeraMath;
 import org.terasology.physics.HitResult;
 import org.terasology.physics.Physics;
 import org.terasology.physics.StandardCollisionGroup;
@@ -31,6 +33,7 @@ import org.terasology.rails.trains.blocks.components.DebugTrainComponent;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.registry.In;
 
+import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
 @RegisterSystem(RegisterMode.AUTHORITY)
@@ -84,6 +87,7 @@ public class VehicleSystem extends BaseComponentSystem implements UpdateSubscrib
 
             if (nextRail == null) {
                 logger.info("nextRail is empty");
+                railVehicle.destroy();
                 return;
             }
 
@@ -101,7 +105,11 @@ public class VehicleSystem extends BaseComponentSystem implements UpdateSubscrib
             //dir.y=0;
             position.add(dir);
 
+            Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
+            QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * railComponent.yaw, TeraMath.DEG_TO_RAD * (railComponent.pitch!=0?180 - railComponent.pitch:0), 0);
+
             location.setWorldPosition(position);
+            location.setWorldRotation(yawPitch);
             railVehicle.saveComponent(location);
 
         }

@@ -117,7 +117,7 @@ public class RailsSystem extends BaseComponentSystem implements UpdateSubscriber
 
         if (selectedTrack == null) {
             placementPos = new Vector3i(event.getTarget().getComponent(BlockComponent.class).getPosition()).toVector3f();
-            placementPos.y += 0.6f;
+            placementPos.y += 0.8f;
 
             Vector3f direction = event.getDirection();
             direction.y = 0;
