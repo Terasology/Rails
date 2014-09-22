@@ -1,8 +1,8 @@
 {
     "Location": {},
     "Mesh": {
-        "mesh": "Rails:loco",
-        "material": "Rails:loco"
+        "mesh": "Rails:cherepanov",
+        "material": "Rails:cherepanov"
     },
     "DebugTrain": {},
     "BoxShape": {

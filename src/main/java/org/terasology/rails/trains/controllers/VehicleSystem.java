@@ -106,7 +106,7 @@ public class VehicleSystem extends BaseComponentSystem implements UpdateSubscrib
             position.add(dir);
 
             Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
-            QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * railComponent.yaw, TeraMath.DEG_TO_RAD * (railComponent.pitch!=0?180 - railComponent.pitch:0), 0);
+            QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * (railComponent.yaw + 90), TeraMath.DEG_TO_RAD * (railComponent.pitch!=0?180 - railComponent.pitch:0), 0);
 
             location.setWorldPosition(position);
             location.setWorldRotation(yawPitch);
