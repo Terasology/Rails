@@ -87,7 +87,7 @@ public class VehicleAction extends BaseComponentSystem {
 
         LocationComponent locationComponent = targetEntity.getComponent(LocationComponent.class);
         Vector3f placementPos = locationComponent.getWorldPosition();
-        placementPos.y += 1f;
+        placementPos.y += 0.4f;
 
         logger.info("AAAA Created vehicle at {}", placementPos);
 

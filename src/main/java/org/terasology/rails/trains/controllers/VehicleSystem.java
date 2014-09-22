@@ -49,6 +49,10 @@ public class VehicleSystem extends BaseComponentSystem implements UpdateSubscrib
     @Override
     public void update(float delta) {
         for (EntityRef railVehicle : entityManager.getEntitiesWith(DebugTrainComponent.class)) {
+
+            if (true) {
+                break;
+            }
             DebugTrainComponent railVehicleComponent = railVehicle.getComponent(DebugTrainComponent.class);
             LocationComponent location = railVehicle.getComponent(LocationComponent.class);
             HitResult hit = physics.rayTrace(location.getWorldPosition(), new Vector3f(0,-1,0), 5f, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
@@ -108,9 +112,9 @@ public class VehicleSystem extends BaseComponentSystem implements UpdateSubscrib
             Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
             QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * (railComponent.yaw + 90), TeraMath.DEG_TO_RAD * (railComponent.pitch!=0?180 - railComponent.pitch:0), 0);
 
-            location.setWorldPosition(position);
-            location.setWorldRotation(yawPitch);
-            railVehicle.saveComponent(location);
+         //   location.setWorldPosition(position);
+          //  location.setWorldRotation(yawPitch);
+        //    railVehicle.saveComponent(location);
 
         }
     }
