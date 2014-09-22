@@ -17,11 +17,16 @@ package org.terasology.rails.trains.blocks.components;
 
 import org.terasology.entitySystem.Component;
 import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
+
+import javax.vecmath.Vector3f;
 
 /**
- * Created by adeon on 15.09.14.
+ * Created by adeon on 22.09.14.
  */
-public class TrainCreaterComponent implements Component {
-    public enum Trains {CHEREPANOV_LOCOMOTIVE};
+public class TrainComponent implements Component {
+    public float maxSpeed = 30f;
+    public EntityRef currentRailBlock = EntityRef.NULL;
+    public Vector3f targetBlock = new Vector3f();
+    public Vector3f velocity = new Vector3f();
+
 }
