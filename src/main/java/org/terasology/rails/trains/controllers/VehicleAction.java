@@ -92,9 +92,6 @@ public class VehicleAction extends BaseComponentSystem {
         logger.info("AAAA Created vehicle at {}", placementPos);
 
         EntityRef ent  = entityManager.create("rails:debugCube", placementPos);
-        DebugTrainComponent t1 = ent.getComponent(DebugTrainComponent.class);
-        t1.isCreated = true;
-        ent.saveComponent(t1);
         event.consume();
     }
 

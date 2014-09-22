@@ -1,0 +1,7 @@
+{
+    "Location": {},
+    "Mesh": {
+        "mesh": "Rails:cherepanov_wheel",
+        "material": "Rails:train_wheels"
+    },
+}

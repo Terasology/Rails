@@ -8,6 +8,9 @@
     "BoxShape": {
          "extents" : [1, 1, 1]
     },
+    "Train" : {
+        "maxSpeed" : 30
+    },
     "RigidBody": {
         "kinematic": true,
         "collisionGroup": "engine:world"
