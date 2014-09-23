@@ -15,16 +15,16 @@
  */
 package org.terasology.rails.trains.blocks.system.Builder;
 
-import org.terasology.rails.trains.blocks.system.Track;
+import org.terasology.entitySystem.entity.EntityRef;
 
 /**
  * Created by adeon on 10.09.14.
  */
 public class TaskResult {
-    public Track track;
+    public EntityRef track;
     public boolean success;
 
-    public TaskResult(Track track, boolean success) {
+    public TaskResult(EntityRef track, boolean success) {
         this.track = track;
         this.success = success;
     }

@@ -15,11 +15,10 @@
  */
 package org.terasology.rails.trains.blocks.system.Builder;
 
-import org.terasology.entitySystem.entity.EntityManager;
+import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
-import org.terasology.rails.trains.blocks.system.Railway;
 import org.terasology.rails.trains.blocks.system.Tasks.Task;
-import org.terasology.rails.trains.blocks.system.Track;
 
 import javax.vecmath.Vector3f;
 
@@ -27,24 +26,21 @@ import javax.vecmath.Vector3f;
  * Created by adeon on 09.09.14.
  */
 public class TaskHandler {
-    private Railway railway;
-    private CommandHandler commandHandler;
+    public boolean start(Task task, EntityRef selectedTrack, Vector3f position, Orientation orientation, boolean reverse) {
+        if (!selectedTrack.hasComponent(TrainRailComponent.class)) {
+            return false;
+        }
 
-    public TaskHandler(Railway railway, EntityManager entityManager) {
-        this.railway = railway;
-        this.commandHandler = new CommandHandler(entityManager);
-    }
+        TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
 
-
-    public boolean start(Task task, Track selectedTrack, Vector3f position, Orientation orientation, boolean reverse) {
-        if (selectedTrack != null && selectedTrack.getNextTrack()!=null && selectedTrack.getPrevTrack() != null) {
+        if (selectedTrack != null && trainRailComponent.nextTrack!=null && trainRailComponent.prevTrack != null) {
             return false;
         }
 
         return runTask(task, selectedTrack, position, orientation, reverse);
     }
 
-    private boolean runTask(Task task, Track track, Vector3f position, Orientation orientation, boolean reverse) {
-        return task.run(commandHandler, railway.getTracks(), track, position, orientation, reverse);
+    private boolean runTask(Task task, EntityRef track, Vector3f position, Orientation orientation, boolean reverse) {
+        return task.run(track, position, orientation, reverse);
     }
 }

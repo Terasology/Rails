@@ -23,20 +23,14 @@ import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.TeraMath;
 import org.terasology.physics.Physics;
-import org.terasology.physics.StandardCollisionGroup;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Config;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
-import org.terasology.rails.trains.blocks.system.Tasks.Task;
-import org.terasology.rails.trains.blocks.system.Track;
+import org.terasology.rails.trains.blocks.system.RailsSystem;
 import org.terasology.registry.CoreRegistry;
-import org.terasology.registry.In;
-import org.terasology.rendering.logic.MeshComponent;
-
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by adeon on 09.09.14.
@@ -45,23 +39,32 @@ public class CommandHandler {
     private EntityManager entityManager;
     private final Logger logger = LoggerFactory.getLogger(CommandHandler.class);
     private Physics physics;
+    private static CommandHandler instance = null;
 
-    public CommandHandler(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    public static CommandHandler getInstance() {
+        if (instance == null) {
+            instance = new CommandHandler();
+        }
+
+        return instance;
+    }
+
+    private CommandHandler() {
+        this.entityManager = CoreRegistry.get(EntityManager.class);
         this.physics = CoreRegistry.get(Physics.class);
     }
 
-    public TaskResult run(List<Command> commands, Map<EntityRef, Track> tracks, Track selectedTrack, boolean reverse) {
-        Track track = null;
+    public TaskResult run(List<Command> commands, EntityRef selectedTrack, boolean reverse) {
+        EntityRef track = null;
         for( Command command : commands ) {
             if (command.build) {
-                selectedTrack = buildTrack(tracks, selectedTrack, command.type, command.checkedPosition, command.orientation, reverse);
+                selectedTrack = buildTrack(selectedTrack, command.type, command.checkedPosition, command.orientation, reverse);
                 if (selectedTrack == null) {
                     return new TaskResult(track, false);
                 }
                 track = selectedTrack;
             } else {
-                boolean removeResult = removeTrack(tracks);
+                boolean removeResult = removeChunk(selectedTrack);
                 if (!removeResult) {
                     return new TaskResult(null, false);
                 }
@@ -70,7 +73,7 @@ public class CommandHandler {
         return new TaskResult(track, true);
     }
 
-    private Track buildTrack(Map<EntityRef, Track> tracks, Track selectedTrack, TrainRailComponent.TrackType type, Vector3f checkedPosition, Orientation orientation, boolean reverse) {
+    private EntityRef buildTrack(EntityRef selectedTrack, TrainRailComponent.TrackType type, Vector3f checkedPosition, Orientation orientation, boolean reverse) {
 
         Orientation newOrientation = null;
         Orientation fixOrientation = null;
@@ -82,14 +85,15 @@ public class CommandHandler {
         int revC = 1;
 
         if (selectedTrack != null) {
-            startYaw = selectedTrack.getYaw();
-            startPitch = selectedTrack.getPitch();
+            TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
+            startYaw = trainRailComponent.yaw;
+            startPitch = trainRailComponent.pitch;
             if (reverse) {
-                prevPosition = selectedTrack.getStartPosition();
+                prevPosition = trainRailComponent.startPosition;
                 revC = -1;
                 logger.info("REVEEEEEEERSSEEEE!!!!!");
             } else {
-                prevPosition = selectedTrack.getEndPosition();
+                prevPosition = trainRailComponent.endPosition;
             }
 
         } else {
@@ -114,29 +118,29 @@ public class CommandHandler {
                 logger.info("Try to add straight. Pitch is " + startPitch);
                 break;
             case UP:
-                float pitch = startPitch + Config.STANDARD_PITCH_ANGLE_CHANGE;
+                float pitch = startPitch + RailsSystem.STANDARD_PITCH_ANGLE_CHANGE;
 
-                if (pitch > Config.STANDARD_ANGLE_CHANGE) {
-                    newOrientation = new Orientation(startYaw, Config.STANDARD_ANGLE_CHANGE, 0);
+                if (pitch > RailsSystem.STANDARD_ANGLE_CHANGE) {
+                    newOrientation = new Orientation(startYaw, RailsSystem.STANDARD_ANGLE_CHANGE, 0);
                 } else {
-                    newOrientation = new Orientation(startYaw, startPitch + Config.STANDARD_PITCH_ANGLE_CHANGE, 0);
+                    newOrientation = new Orientation(startYaw, startPitch + RailsSystem.STANDARD_PITCH_ANGLE_CHANGE, 0);
                 }
 
                 fixOrientation = new Orientation(270f, 0, 0);
                 prefab = "rails:railBlock-up";
                 break;
             case DOWN:
-                newOrientation = new Orientation(startYaw, startPitch - Config.STANDARD_PITCH_ANGLE_CHANGE, 0);
+                newOrientation = new Orientation(startYaw, startPitch - RailsSystem.STANDARD_PITCH_ANGLE_CHANGE, 0);
                 fixOrientation = new Orientation(270f, 0, 0);
                 prefab = "rails:railBlock-down";
                 break;
             case LEFT:
-                newOrientation = new Orientation(startYaw + Config.STANDARD_ANGLE_CHANGE, startPitch, 0);
+                newOrientation = new Orientation(startYaw + RailsSystem.STANDARD_ANGLE_CHANGE, startPitch, 0);
                 fixOrientation = new Orientation(90f, 0, 0);
                 prefab = "rails:railBlock-left";
                 break;
             case RIGHT:
-                newOrientation = new Orientation(startYaw - Config.STANDARD_ANGLE_CHANGE, startPitch, 0);
+                newOrientation = new Orientation(startYaw - RailsSystem.STANDARD_ANGLE_CHANGE, startPitch, 0);
                 logger.info("left -- " + newOrientation.yaw);
                 fixOrientation = new Orientation(90f, 0, 0);
                 prefab = "rails:railBlock-right";
@@ -148,26 +152,22 @@ public class CommandHandler {
         }
 
         newPosition = new Vector3f(
-                prevPosition.x + revC * (float)(Math.sin(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float) Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * Config.TRACK_LENGTH / 2),
-                prevPosition.y + revC * (float)(Math.sin(TeraMath.DEG_TO_RAD * newOrientation.pitch) * Config.TRACK_LENGTH / 2),
-                prevPosition.z + revC * (float)(Math.cos(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float)Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * Config.TRACK_LENGTH / 2)
+                prevPosition.x + revC * (float)(Math.sin(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float) Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * RailsSystem.TRACK_LENGTH / 2),
+                prevPosition.y + revC * (float)(Math.sin(TeraMath.DEG_TO_RAD * newOrientation.pitch) * RailsSystem.TRACK_LENGTH / 2),
+                prevPosition.z + revC * (float)(Math.cos(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float)Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * RailsSystem.TRACK_LENGTH / 2)
         );
 
-        EntityRef entity = createEntityInTheWorld(prefab, type, selectedTrack, newPosition, newOrientation, fixOrientation);
-        Track track = null;
-        if (entity != null) {
-            track = new Track(entity, true);
-            tracks.put(entity, track);
-        }
+        EntityRef track = createEntityInTheWorld(prefab, type, selectedTrack, newPosition, newOrientation, fixOrientation);
+
         return track;
     }
 
-    private boolean removeTrack(Map<EntityRef, Track> tracks) {
+    private boolean removeChunk(EntityRef selectedTrack) {
         //tracks.remove();
         return true;
     }
 
-    private EntityRef createEntityInTheWorld(String prefab, TrainRailComponent.TrackType type, Track prevTrack,  Vector3f position, Orientation newOrientation, Orientation fixOrientation) {
+    private EntityRef createEntityInTheWorld(String prefab, TrainRailComponent.TrackType type, EntityRef prevTrack,  Vector3f position, Orientation newOrientation, Orientation fixOrientation) {
         Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
         QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * (newOrientation.yaw + fixOrientation.yaw), TeraMath.DEG_TO_RAD * (newOrientation.roll + fixOrientation.roll), TeraMath.DEG_TO_RAD * (newOrientation.pitch + fixOrientation.pitch));
         EntityRef railBlock = entityManager.create(prefab, position);
@@ -185,14 +185,35 @@ public class CommandHandler {
         trainRailComponent.yaw = newOrientation.yaw;
         trainRailComponent.roll = newOrientation.roll;
         trainRailComponent.type = type;
+        trainRailComponent.startPosition = calculateStartPosition(newOrientation);
+        trainRailComponent.endPosition = calculateEndPosition(newOrientation, position);
 
         if (prevTrack != null) {
-            trainRailComponent.prevTrack = prevTrack.getEntity();
-            prevTrack.setNextTrack(railBlock);
+            trainRailComponent.prevTrack = prevTrack;
+            TrainRailComponent prevTrainRailComponent = prevTrack.getComponent(TrainRailComponent.class);
+            prevTrainRailComponent.nextTrack = railBlock;
+            prevTrack.saveComponent(prevTrainRailComponent);
         }
 
         railBlock.saveComponent(locationComponent);
         railBlock.saveComponent(trainRailComponent);
         return railBlock;
+    }
+
+    private Vector3f calculateStartPosition(Orientation orientation) {
+        return  new Vector3f(
+                (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.yaw) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * RailsSystem.TRACK_LENGTH / 2),
+                (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.pitch ) * RailsSystem.TRACK_LENGTH / 2),
+                (float)(Math.cos(TeraMath.DEG_TO_RAD * orientation.yaw ) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * RailsSystem.TRACK_LENGTH / 2)
+        );
+
+    }
+
+    private Vector3f calculateEndPosition(Orientation orientation, Vector3f position) {
+        return new Vector3f(
+                position.x + (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.yaw) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * RailsSystem.TRACK_LENGTH / 2),
+                position.y + (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.pitch ) * RailsSystem.TRACK_LENGTH / 2),
+                position.z + (float)(Math.cos(TeraMath.DEG_TO_RAD * orientation.yaw ) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * RailsSystem.TRACK_LENGTH / 2)
+        );
     }
 }

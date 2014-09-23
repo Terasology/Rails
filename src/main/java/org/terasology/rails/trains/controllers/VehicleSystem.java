@@ -29,7 +29,7 @@ import org.terasology.math.TeraMath;
 import org.terasology.physics.HitResult;
 import org.terasology.physics.Physics;
 import org.terasology.physics.StandardCollisionGroup;
-import org.terasology.rails.trains.blocks.components.DebugTrainComponent;
+import org.terasology.rails.trains.blocks.components.TrainComponent;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.registry.In;
 
@@ -48,38 +48,30 @@ public class VehicleSystem extends BaseComponentSystem implements UpdateSubscrib
 
     @Override
     public void update(float delta) {
-        for (EntityRef railVehicle : entityManager.getEntitiesWith(DebugTrainComponent.class)) {
+        for (EntityRef railVehicle : entityManager.getEntitiesWith(TrainComponent.class)) {
 
             if (true) {
                 break;
             }
-            DebugTrainComponent railVehicleComponent = railVehicle.getComponent(DebugTrainComponent.class);
+            TrainComponent railVehicleComponent = railVehicle.getComponent(TrainComponent.class);
             LocationComponent location = railVehicle.getComponent(LocationComponent.class);
             HitResult hit = physics.rayTrace(location.getWorldPosition(), new Vector3f(0,-1,0), 5f, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
 
             EntityRef rail = hit.getEntity();
 
-            if (!railVehicleComponent.isCreated) {
-                logger.info("somethink wrong !!!!");
-                return;
-            }
-
             if (rail == null) {
-                logger.info("somethink wrong");
                 return;
             }
 
             if(!rail.hasComponent(TrainRailComponent.class)) {
-                logger.info("somethink wrong222" + hit.getBlockPosition());
-                rail = railVehicleComponent.currentRail;
-                //return;
+                rail = railVehicleComponent.currentRailBlock;
             } else {
-                if (railVehicleComponent.currentRail == null) {
-                    railVehicleComponent.currentRail = rail;
+                if (railVehicleComponent.currentRailBlock == null) {
+                    railVehicleComponent.currentRailBlock = rail;
                 } else {
-                    TrainRailComponent railComponent2 = railVehicleComponent.currentRail.getComponent(TrainRailComponent.class);
+                    TrainRailComponent railComponent2 = railVehicleComponent.currentRailBlock.getComponent(TrainRailComponent.class);
                     if (rail.equals(railComponent2.nextTrack)) {
-                        railVehicleComponent.currentRail = rail;
+                        railVehicleComponent.currentRailBlock = rail;
                     }
                 }
             }
@@ -112,9 +104,9 @@ public class VehicleSystem extends BaseComponentSystem implements UpdateSubscrib
             Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
             QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * (railComponent.yaw + 90), TeraMath.DEG_TO_RAD * (railComponent.pitch!=0?180 - railComponent.pitch:0), 0);
 
-         //   location.setWorldPosition(position);
-          //  location.setWorldRotation(yawPitch);
-        //    railVehicle.saveComponent(location);
+            location.setWorldPosition(position);
+            location.setWorldRotation(yawPitch);
+            railVehicle.saveComponent(location);
 
         }
     }

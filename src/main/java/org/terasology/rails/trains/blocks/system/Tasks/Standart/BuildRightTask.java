@@ -20,38 +20,42 @@ import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Builder.Command;
 import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
 import org.terasology.rails.trains.blocks.system.Builder.TaskResult;
+import org.terasology.rails.trains.blocks.system.Config;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
+import org.terasology.rails.trains.blocks.system.RailsSystem;
+import org.terasology.rails.trains.blocks.system.Railway;
 import org.terasology.rails.trains.blocks.system.Tasks.Task;
-import org.terasology.rails.trains.blocks.system.Track;
 
 import javax.vecmath.Vector3f;
 import java.util.ArrayList;
-import java.util.Map;
 
 /**
  * Created by adeon on 10.09.14.
  */
 public class BuildRightTask implements Task {
     @Override
-    public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation, boolean reverse) {
+    public boolean run(EntityRef selectedTrack, Vector3f position, Orientation orientation, boolean reverse) {
 
         if (selectedTrack == null) {
             return  false;
         }
 
+        TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
+        float count = 90/ RailsSystem.STANDARD_ANGLE_CHANGE;
         ArrayList<Command> commands = new ArrayList<>();
+        String chunkKey = Railway.getInstance().createChunk(position);
 
-        if (selectedTrack!=null && selectedTrack.getPitch() > 0) {
-            commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, orientation, false, reverse));
-        } else if(selectedTrack!=null && selectedTrack.getPitch() < 0) {
-            commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, orientation, false, reverse));
+        if (trainRailComponent.pitch > 0) {
+            commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, orientation, chunkKey, false, reverse));
+        } else if(trainRailComponent.pitch < 0) {
+            commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, orientation, chunkKey, false, reverse));
         }
 
-        for (int i = 0; i<12; i++) {
-            commands.add(new Command(true, TrainRailComponent.TrackType.RIGHT, position, new Orientation(0,0,0), false, reverse));
+        for (int i = 0; i<count; i++) {
+            commands.add(new Command(true, TrainRailComponent.TrackType.RIGHT, position, new Orientation(0,0,0), chunkKey, false, reverse));
         }
 
-        TaskResult taskResult = commandHandler.run(commands, tracks, selectedTrack, reverse);
+        TaskResult taskResult = CommandHandler.getInstance().run(commands, selectedTrack, reverse);
         return taskResult.success;
     }
 }

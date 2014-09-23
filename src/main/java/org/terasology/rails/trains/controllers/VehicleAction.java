@@ -31,7 +31,6 @@ import org.terasology.logic.location.LocationComponent;
 import org.terasology.logic.players.event.OnPlayerSpawnedEvent;
 import org.terasology.math.Vector3i;
 import org.terasology.physics.Physics;
-import org.terasology.rails.trains.blocks.components.DebugTrainComponent;
 import org.terasology.rails.trains.blocks.components.TrainCreaterComponent;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.registry.In;

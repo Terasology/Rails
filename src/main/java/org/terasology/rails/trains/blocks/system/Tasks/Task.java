@@ -16,17 +16,13 @@
 package org.terasology.rails.trains.blocks.system.Tasks;
 
 import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
-import org.terasology.rails.trains.blocks.system.Track;
 
 import javax.vecmath.Vector3f;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by adeon on 08.09.14.
  */
 public interface Task {
-    public boolean run(CommandHandler commandHandler, Map<EntityRef, Track> tracks, Track selectedTrack, Vector3f position, Orientation orientation, boolean reverse);
+    public boolean run(EntityRef selectedTrack, Vector3f position, Orientation orientation, boolean reverse);
 }

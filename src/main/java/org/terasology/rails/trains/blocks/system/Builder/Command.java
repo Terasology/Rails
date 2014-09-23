@@ -17,7 +17,6 @@ package org.terasology.rails.trains.blocks.system.Builder;
 
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
-import org.terasology.rails.trains.blocks.system.Track;
 
 import javax.vecmath.Vector3f;
 
@@ -31,17 +30,20 @@ public class Command {
     public TrainRailComponent.TrackType type;
     public Orientation orientation;
     public Vector3f checkedPosition;
+    public String chunkKey;
 
-    public Command(boolean build, TrainRailComponent.TrackType type, Vector3f checkedPosition, Orientation orientation, boolean newTrack, boolean reverse) {
+    public Command(boolean build, TrainRailComponent.TrackType type, Vector3f checkedPosition, Orientation orientation, String chunkKey, boolean newTrack, boolean reverse) {
         this.build = build;
         this.type  = type;
         this.orientation = orientation;
         this.checkedPosition = checkedPosition;
         this.newTrack = newTrack;
+        this.reverse = reverse;
+        this.chunkKey = chunkKey;
     }
 
-    public Command(boolean build, TrainRailComponent.TrackType type, Vector3f checkedPosition, Orientation orientation) {
-        this(build, type, checkedPosition, orientation, false, false);
+    public Command(boolean build, TrainRailComponent.TrackType type, Vector3f checkedPosition, Orientation orientation, String chunkKey) {
+        this(build, type, checkedPosition, orientation, chunkKey, false, false);
     }
 
     public Command(boolean build, TrainRailComponent.TrackType type) {

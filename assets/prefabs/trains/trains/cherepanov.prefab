@@ -14,5 +14,12 @@
     "RigidBody": {
         "kinematic": true,
         "collisionGroup": "engine:world"
+    },
+    "Health": {
+         "currentHealth": 1,
+         "maxHealth": 1,
+         "regenRate": 1,
+         "waitBeforeRegen": 2,
+         "destroyEntityOnNoHealth" : true
     }
 }

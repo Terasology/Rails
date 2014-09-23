@@ -45,7 +45,11 @@ import java.util.ArrayList;
 import java.util.Map;
 
 @RegisterSystem
-public class RailsSystem extends BaseComponentSystem implements UpdateSubscriberSystem {
+public class RailsSystem extends BaseComponentSystem {
+    public static final float TRACK_LENGTH = 1f;
+    public static final float STANDARD_ANGLE_CHANGE = 7.5f;
+    public static final float STANDARD_PITCH_ANGLE_CHANGE = 7.5f;
+
     @In
     private BlockManager blockManager;
     @In
@@ -54,26 +58,13 @@ public class RailsSystem extends BaseComponentSystem implements UpdateSubscriber
     private final Logger logger = LoggerFactory.getLogger(RailsSystem.class);
     private Builder railBuilder;
 
-    public void postBegin() {
-        logger.info("Loading railway...");
-        railBuilder = new Builder(entityManager);
-        Map<EntityRef, Track> tracks = railBuilder.getTracks();
-
-        int countBlocks = 0;
-        for (EntityRef railBlock : entityManager.getEntitiesWith(TrainRailComponent.class)) {
-            tracks.put(railBlock, new Track(railBlock));
-            countBlocks++;
-        }
-        logger.info("Loaded " + countBlocks + " railway blocks.");
-    }
-
     @ReceiveEvent(components = {RailBuilderComponent.class, ItemComponent.class})
     public void onPlaceFunctional(ActivateEvent event, EntityRef item) {
 
-        Track selectedTrack = null;
         float yaw = 0;
         Vector3f placementPos = null;
         boolean reverse = false;
+        EntityRef selectedTrack = EntityRef.NULL;
 
         if (railBuilder == null) {
             railBuilder = new Builder(entityManager);
@@ -88,17 +79,17 @@ public class RailsSystem extends BaseComponentSystem implements UpdateSubscriber
         BlockComponent blockComponent = targetEntity.getComponent(BlockComponent.class);
 
         if (blockComponent == null) {
-            selectedTrack = onSelectRail(event, item);
 
-            if (selectedTrack == null) {
+            if (!checkSelectRail(event, item)) {
                 return;
             }
+            TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
 
             Vector3f  hitPosition = event.getHitPosition();
             if (hitPosition != null) {
                 logger.info("GO!");
-                Vector3f startPosition = new Vector3f(selectedTrack.getStartPosition());
-                Vector3f endPosition = new Vector3f(selectedTrack.getEndPosition());
+                Vector3f startPosition = new Vector3f(trainRailComponent.startPosition);
+                Vector3f endPosition = new Vector3f(trainRailComponent.endPosition);
                 startPosition.sub(hitPosition);
                 endPosition.sub(hitPosition);
                 float distFromStart = startPosition.lengthSquared();
@@ -106,7 +97,7 @@ public class RailsSystem extends BaseComponentSystem implements UpdateSubscriber
 
                 logger.info("from start:" + distFromStart);
                 logger.info("from end:" + distFromend);
-                if ( distFromStart > distFromend && selectedTrack.getPrevTrack() == null) {
+                if ( distFromStart > distFromend && trainRailComponent.prevTrack == null) {
                     reverse = true;
                 }
             }
@@ -117,7 +108,8 @@ public class RailsSystem extends BaseComponentSystem implements UpdateSubscriber
 
         if (selectedTrack == null) {
             placementPos = new Vector3i(event.getTarget().getComponent(BlockComponent.class).getPosition()).toVector3f();
-            placementPos.y += 0.8f;
+            placementPos.y += 0.65f;
+            //placementPos.z +=0.5f;
 
             Vector3f direction = event.getDirection();
             direction.y = 0;
@@ -127,22 +119,26 @@ public class RailsSystem extends BaseComponentSystem implements UpdateSubscriber
             switch (dir) {
                 case LEFT:
                     yaw = 90;
+                    placementPos.x -=0.5f;
                     logger.info("LEFT");
                     break;
                 case RIGHT:
                     yaw = 270;
+                    placementPos.x +=0.5f;
                     logger.info("RIGHT");
                     break;
                 case FORWARD:
                     yaw = 0;
+                    placementPos.z -=0.5f;
                     logger.info("FORWARD");
                     break;
                 case BACKWARD:
                     logger.info("BACKWARD");
+                    placementPos.z +=0.5f;
                     yaw = 180;
                     break;
             }
-        }else{
+        } else {
             logger.info("Track is selected!");
         }
 
@@ -167,19 +163,13 @@ public class RailsSystem extends BaseComponentSystem implements UpdateSubscriber
         event.consume();
     }
 
-    private Track onSelectRail(ActivateEvent event, EntityRef item) {
+    private boolean checkSelectRail(ActivateEvent event, EntityRef item) {
         EntityRef target = event.getTarget();
-        //EntityRef player = event.getInstigator();
 
         if (!target.hasComponent(TrainRailComponent.class)) {
-            return null;
+            return true;
         }
 
-        return railBuilder.getTracks().get(target);
-    }
-
-    @Override
-    public void update(float delta) {
-
+        return false;
     }
 }
