@@ -34,13 +34,20 @@ public class BuildStraightTask implements Task {
         @Override
     public boolean run(EntityRef selectedTrack, Vector3f position, Orientation orientation, boolean reverse) {
 
+        float pitch = 0;
         ArrayList<Command> commands = new ArrayList<>();
-        TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
-        String chunkKey = Railway.getInstance().createChunk(position);
+        String chunkKey = "";//Railway.getInstance().createChunk(position);
 
-        if (trainRailComponent.pitch > 0) {
+        if (!selectedTrack.equals(EntityRef.NULL)) {
+            TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
+            pitch = trainRailComponent.pitch;
+        }
+
+
+
+        if (pitch > 0) {
             commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, orientation, chunkKey, false, reverse));
-        } else if(trainRailComponent.pitch < 0) {
+        } else if(pitch < 0) {
             commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, orientation, chunkKey, false, reverse));
         } else {
             commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation, chunkKey, false, reverse));

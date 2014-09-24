@@ -16,6 +16,7 @@
 package org.terasology.rails.trains.blocks.system.Tasks.Standart;
 
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.logic.location.LocationComponent;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Builder.Command;
 import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
@@ -34,13 +35,14 @@ public class BuildUpTask implements Task {
     @Override
     public boolean run(EntityRef selectedTrack, Vector3f position, Orientation orientation, boolean reverse) {
 
-        if (selectedTrack == null) {
+        if (selectedTrack.equals(EntityRef.NULL)) {
             return false;
         }
 
         TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
         ArrayList<Command> commands = new ArrayList<>();
-        String chunkKey = Railway.getInstance().createChunk(position);
+        LocationComponent location = selectedTrack.getComponent(LocationComponent.class);
+        String chunkKey = ""; //Railway.getInstance().createChunk(location.getWorldPosition());
 
         if (trainRailComponent.pitch >= 0) {
             commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, new Orientation(0,0,0), chunkKey, false, reverse));

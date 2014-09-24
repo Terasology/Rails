@@ -24,7 +24,6 @@ import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.TeraMath;
 import org.terasology.physics.Physics;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
-import org.terasology.rails.trains.blocks.system.Config;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.blocks.system.RailsSystem;
 import org.terasology.registry.CoreRegistry;
@@ -84,7 +83,7 @@ public class CommandHandler {
         float startPitch = 0;
         int revC = 1;
 
-        if (selectedTrack != null) {
+        if (!selectedTrack.equals(EntityRef.NULL)) {
             TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
             startYaw = trainRailComponent.yaw;
             startPitch = trainRailComponent.pitch;
@@ -151,10 +150,12 @@ public class CommandHandler {
                 break;
         }
 
+        logger.info(prefab);
+
         newPosition = new Vector3f(
-                prevPosition.x + revC * (float)(Math.sin(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float) Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * RailsSystem.TRACK_LENGTH / 2),
+                prevPosition.x + revC * (float)(Math.sin(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float) Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * RailsSystem.TRACK_LENGTH / 2f),
                 prevPosition.y + revC * (float)(Math.sin(TeraMath.DEG_TO_RAD * newOrientation.pitch) * RailsSystem.TRACK_LENGTH / 2),
-                prevPosition.z + revC * (float)(Math.cos(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float)Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * RailsSystem.TRACK_LENGTH / 2)
+                prevPosition.z + revC * (float)(Math.cos(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float)Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * RailsSystem.TRACK_LENGTH / 2f)
         );
 
         EntityRef track = createEntityInTheWorld(prefab, type, selectedTrack, newPosition, newOrientation, fixOrientation);
@@ -188,7 +189,7 @@ public class CommandHandler {
         trainRailComponent.startPosition = calculateStartPosition(newOrientation);
         trainRailComponent.endPosition = calculateEndPosition(newOrientation, position);
 
-        if (prevTrack != null) {
+        if (!prevTrack.equals(EntityRef.NULL)) {
             trainRailComponent.prevTrack = prevTrack;
             TrainRailComponent prevTrainRailComponent = prevTrack.getComponent(TrainRailComponent.class);
             prevTrainRailComponent.nextTrack = railBlock;

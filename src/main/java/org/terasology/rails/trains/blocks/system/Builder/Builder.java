@@ -33,7 +33,7 @@ public class Builder {
     }
 
     public boolean buildStraight(Vector3f checkedPosition, EntityRef selectedTrack, Orientation orientation, boolean reverse) {
-        return taskHandler.start(new BuildStraightTask(),selectedTrack, checkedPosition, orientation, reverse);
+        return taskHandler.start(new BuildStraightTask(), selectedTrack, checkedPosition, orientation, reverse);
     }
 
     public boolean buildLeft(Vector3f checkedPosition, EntityRef selectedTrack, Orientation orientation, boolean reverse) {

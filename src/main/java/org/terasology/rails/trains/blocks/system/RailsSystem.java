@@ -68,7 +68,6 @@ public class RailsSystem extends BaseComponentSystem {
 
         if (railBuilder == null) {
             railBuilder = new Builder(entityManager);
-            return;
         }
 
         if (item.hasComponent(WrenchComponent.class)) {
@@ -78,11 +77,16 @@ public class RailsSystem extends BaseComponentSystem {
         EntityRef targetEntity = event.getTarget();
         BlockComponent blockComponent = targetEntity.getComponent(BlockComponent.class);
 
+        logger.info("1");
         if (blockComponent == null) {
-
-            if (!checkSelectRail(event, item)) {
+            if (!checkSelectRail(targetEntity, item)) {
+                logger.info("2");
                 return;
             }
+
+            logger.info("3");
+            selectedTrack = targetEntity;
+
             TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
 
             Vector3f  hitPosition = event.getHitPosition();
@@ -100,16 +104,15 @@ public class RailsSystem extends BaseComponentSystem {
                 if ( distFromStart > distFromend && trainRailComponent.prevTrack == null) {
                     reverse = true;
                 }
+                logger.info("4");
             }
         }
 
-
         RailBuilderComponent railBuilderComponent = item.getComponent(RailBuilderComponent.class);
 
-        if (selectedTrack == null) {
+        if (selectedTrack.equals(EntityRef.NULL)) {
             placementPos = new Vector3i(event.getTarget().getComponent(BlockComponent.class).getPosition()).toVector3f();
             placementPos.y += 0.65f;
-            //placementPos.z +=0.5f;
 
             Vector3f direction = event.getDirection();
             direction.y = 0;
@@ -156,6 +159,7 @@ public class RailsSystem extends BaseComponentSystem {
                 railBuilder.buildDown(placementPos, selectedTrack, new Orientation(yaw, 0, 0), reverse);
                 break;
             case STRAIGHT:
+                logger.info("buildStraight!");
                 railBuilder.buildStraight(placementPos, selectedTrack, new Orientation(yaw, 0, 0), reverse);
                 break;
         }
@@ -163,13 +167,11 @@ public class RailsSystem extends BaseComponentSystem {
         event.consume();
     }
 
-    private boolean checkSelectRail(ActivateEvent event, EntityRef item) {
-        EntityRef target = event.getTarget();
-
+    private boolean checkSelectRail(EntityRef target, EntityRef item) {
         if (!target.hasComponent(TrainRailComponent.class)) {
-            return true;
+            return false;
         }
 
-        return false;
+        return true;
     }
 }

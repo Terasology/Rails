@@ -16,11 +16,11 @@
 package org.terasology.rails.trains.blocks.system.Tasks.Standart;
 
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.logic.location.LocationComponent;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Builder.Command;
 import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
 import org.terasology.rails.trains.blocks.system.Builder.TaskResult;
-import org.terasology.rails.trains.blocks.system.Config;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.blocks.system.RailsSystem;
 import org.terasology.rails.trains.blocks.system.Railway;
@@ -36,14 +36,15 @@ public class BuildLeftTask implements Task {
     @Override
     public boolean run(EntityRef selectedTrack, Vector3f position, Orientation orientation, boolean reverse) {
 
-        if (selectedTrack == null) {
+        if (selectedTrack.equals(EntityRef.NULL)) {
             return  false;
         }
 
         TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
         float count = 90/ RailsSystem.STANDARD_ANGLE_CHANGE;
         ArrayList<Command> commands = new ArrayList<>();
-        String chunkKey = Railway.getInstance().createChunk(position);
+        LocationComponent location = selectedTrack.getComponent(LocationComponent.class);
+        String chunkKey = Railway.getInstance().createChunk(location.getWorldPosition());
 
         if (trainRailComponent.pitch > 0) {
             commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, orientation, chunkKey, false, reverse));

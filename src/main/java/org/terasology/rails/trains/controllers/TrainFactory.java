@@ -33,15 +33,9 @@ import javax.vecmath.Vector3f;
 public class TrainFactory {
     private EntityManager entityManager;
 
-    public EntityRef create(Vector3f position, TrainCreaterComponent.Trains train) {
+    public EntityRef create(Vector3f position) {
         EntityRef entity = null;
-        switch (train) {
-            case CHEREPANOV_LOCOMOTIVE: {
-                entity = createCherepanov(position);
-                break;
-            }
-        }
-
+        entity = createCherepanov(position);
         return entity;
     }
 
@@ -55,31 +49,16 @@ public class TrainFactory {
 
         LocationComponent trainLocation = entity.getComponent(LocationComponent.class);
         if (trainLocation != null) {
-            TrainComponent trainComponent = entity.getComponent(TrainComponent.class);
-            attachVehicle("rails:cherepanov_wheel", entity, new Vector3f(-0.125f, -1.5f, 0.55f), 1f);
-            attachVehicle("rails:cherepanov_wheel", entity, new Vector3f(-0.125f, -1.5f, -0.55f), 1f);
-            entity.saveComponent(trainComponent);
+            attachVehicle("rails:cherepanov_wheel", entity, new Vector3f(0.7f, -0.15f, 0), 1f);
+            attachVehicle("rails:cherepanov_wheel", entity, new Vector3f(-0.45f, -0.15f, -0f), 1f);
         }
 
         return entity;
     }
 
     public void attachVehicle(String prefabName, EntityRef railVehicleEntity, Vector3f position, float scale) {
-        RailVehicleComponent railVehicle = railVehicleEntity.getComponent(RailVehicleComponent.class);
         EntityRef wheel = entityManager.create(prefabName);
         Location.attachChild(railVehicleEntity, wheel, position, new Quat4f());
-        if (scale != 1) {
-            LocationComponent locationComponent = wheel.getComponent(LocationComponent.class);
-            locationComponent.setLocalScale(scale);
-            wheel.saveComponent(locationComponent);
-        }
-        WheelComponent wheelComponent = wheel.getComponent(WheelComponent.class);
-        wheelComponent.parent = railVehicleEntity;
-        wheelComponent.position = position;
-        wheelComponent.scale = scale;
-        wheel.saveComponent(wheelComponent);
-        railVehicle.vehicles.add(wheel);
-        railVehicleEntity.saveComponent(railVehicle);
     }
 
     public void setEntityManager(EntityManager entityManager) {

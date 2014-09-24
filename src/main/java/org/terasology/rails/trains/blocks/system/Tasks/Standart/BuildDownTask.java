@@ -16,6 +16,7 @@
 package org.terasology.rails.trains.blocks.system.Tasks.Standart;
 
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.logic.location.LocationComponent;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Builder.Command;
 import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
@@ -35,13 +36,13 @@ public class BuildDownTask implements Task {
 
         ArrayList<Command> commands = new ArrayList<>();
 
-        if (selectedTrack == null) {
+        if (selectedTrack.equals(EntityRef.NULL)) {
             return false;
         }
 
         TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
-
-        String chunkKey = Railway.getInstance().createChunk(position);
+        LocationComponent location = selectedTrack.getComponent(LocationComponent.class);
+        String chunkKey = Railway.getInstance().createChunk(location.getWorldPosition());
 
         if (trainRailComponent.pitch >= 0) {
             commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, new Orientation(0,0,0), chunkKey, false, reverse));

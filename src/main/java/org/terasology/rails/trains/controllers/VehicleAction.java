@@ -86,11 +86,13 @@ public class VehicleAction extends BaseComponentSystem {
 
         LocationComponent locationComponent = targetEntity.getComponent(LocationComponent.class);
         Vector3f placementPos = locationComponent.getWorldPosition();
-        placementPos.y += 0.4f;
+        placementPos.y += 0.7f;
 
         logger.info("AAAA Created vehicle at {}", placementPos);
 
-        EntityRef ent  = entityManager.create("rails:debugCube", placementPos);
+        TrainFactory f = new TrainFactory();
+        f.setEntityManager(entityManager);
+        f.create(placementPos);
         event.consume();
     }
 

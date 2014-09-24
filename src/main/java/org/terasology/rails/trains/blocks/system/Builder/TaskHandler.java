@@ -27,13 +27,13 @@ import javax.vecmath.Vector3f;
  */
 public class TaskHandler {
     public boolean start(Task task, EntityRef selectedTrack, Vector3f position, Orientation orientation, boolean reverse) {
-        if (!selectedTrack.hasComponent(TrainRailComponent.class)) {
+        if (!selectedTrack.equals(EntityRef.NULL) && !selectedTrack.hasComponent(TrainRailComponent.class)) {
             return false;
         }
 
         TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
 
-        if (selectedTrack != null && trainRailComponent.nextTrack!=null && trainRailComponent.prevTrack != null) {
+        if (!selectedTrack.equals(EntityRef.NULL) && trainRailComponent.nextTrack!=null && trainRailComponent.prevTrack != null) {
             return false;
         }
 
