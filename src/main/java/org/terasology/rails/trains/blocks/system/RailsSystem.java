@@ -23,14 +23,10 @@ import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterSystem;
-import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
 import org.terasology.logic.common.ActivateEvent;
 import org.terasology.logic.inventory.ItemComponent;
 import org.terasology.math.Direction;
-import org.terasology.math.Side;
 import org.terasology.math.Vector3i;
-import org.terasology.rails.minecarts.blocks.ConnectsToRailsComponent;
-import org.terasology.rails.minecarts.components.RailVehicleComponent;
 import org.terasology.rails.minecarts.components.WrenchComponent;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Builder.Builder;
@@ -39,10 +35,7 @@ import org.terasology.rails.trains.components.RailBuilderComponent;
 import org.terasology.registry.In;
 import org.terasology.world.block.BlockComponent;
 import org.terasology.world.block.BlockManager;
-
 import javax.vecmath.Vector3f;
-import java.util.ArrayList;
-import java.util.Map;
 
 @RegisterSystem
 public class RailsSystem extends BaseComponentSystem {

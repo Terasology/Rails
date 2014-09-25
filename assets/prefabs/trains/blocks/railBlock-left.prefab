@@ -8,7 +8,7 @@
     "RigidBody": {
             "kinematic": true,
             "collisionGroup": "engine:world",
-            "collidesWith": ["engine:character"]
+            "collidesWith": ["engine:character","engine:sensor"]
     },
     "TrainRail": {},
     "BoxShape": {

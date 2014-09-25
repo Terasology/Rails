@@ -33,4 +33,5 @@ public class TrainRailComponent implements Component {
     public float roll;
     public EntityRef prevTrack;
     public EntityRef nextTrack;
+    public String chunkKey;
 }

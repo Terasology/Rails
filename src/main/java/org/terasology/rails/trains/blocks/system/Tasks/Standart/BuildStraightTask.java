@@ -16,6 +16,7 @@
 package org.terasology.rails.trains.blocks.system.Tasks.Standart;
 
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.logic.location.LocationComponent;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Builder.Command;
 import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
@@ -36,14 +37,16 @@ public class BuildStraightTask implements Task {
 
         float pitch = 0;
         ArrayList<Command> commands = new ArrayList<>();
-        String chunkKey = "";//Railway.getInstance().createChunk(position);
+        String chunkKey = "";
 
         if (!selectedTrack.equals(EntityRef.NULL)) {
             TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
+            LocationComponent locationComponent = selectedTrack.getComponent(LocationComponent.class);
             pitch = trainRailComponent.pitch;
+            chunkKey = Railway.getInstance().createChunk(locationComponent.getWorldPosition());
+        } else {
+            chunkKey = Railway.getInstance().createChunk(position);
         }
-
-
 
         if (pitch > 0) {
             commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, orientation, chunkKey, false, reverse));
