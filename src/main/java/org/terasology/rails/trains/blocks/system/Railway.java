@@ -30,6 +30,7 @@ import java.util.Map;
 public class Railway {
     private Map<String, ArrayList<EntityRef>> chunks = Maps.newHashMap();
     private int id;
+    public static final String GHOST_KEY = "ghost";
 
     private static Railway instance;
 
@@ -64,4 +65,11 @@ public class Railway {
         }
     }
 
+    public String createGhostChunk() {
+        if (chunks.containsKey(GHOST_KEY)) {
+            removeChunk(GHOST_KEY);
+        }
+        chunks.put(GHOST_KEY, new ArrayList<EntityRef>());
+        return GHOST_KEY;
+    }
 }

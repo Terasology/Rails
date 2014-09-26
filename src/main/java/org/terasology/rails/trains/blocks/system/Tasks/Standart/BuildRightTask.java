@@ -34,7 +34,7 @@ import java.util.ArrayList;
  */
 public class BuildRightTask implements Task {
     @Override
-    public boolean run(EntityRef selectedTrack, Vector3f position, Orientation orientation, boolean reverse) {
+    public boolean run(EntityRef selectedTrack, Vector3f position, Orientation orientation, boolean ghost) {
 
         if (selectedTrack.equals(EntityRef.NULL)) {
             return  false;
@@ -47,16 +47,16 @@ public class BuildRightTask implements Task {
         String chunkKey = Railway.getInstance().createChunk(location.getWorldPosition());
 
         if (trainRailComponent.pitch > 0) {
-            commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, orientation, chunkKey, false, reverse));
+            commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, orientation, chunkKey, false, ghost));
         } else if(trainRailComponent.pitch < 0) {
-            commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, orientation, chunkKey, false, reverse));
+            commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, orientation, chunkKey, false, ghost));
         }
 
         for (int i = 0; i<count; i++) {
-            commands.add(new Command(true, TrainRailComponent.TrackType.RIGHT, position, new Orientation(0,0,0), chunkKey, false, reverse));
+            commands.add(new Command(true, TrainRailComponent.TrackType.RIGHT, position, new Orientation(0,0,0), chunkKey, false, ghost));
         }
 
-        TaskResult taskResult = CommandHandler.getInstance().run(commands, selectedTrack, reverse);
+        TaskResult taskResult = CommandHandler.getInstance().run(commands, selectedTrack, ghost);
         return taskResult.success;
     }
 }

@@ -32,23 +32,23 @@ public class Builder {
         taskHandler = new TaskHandler();
     }
 
-    public boolean buildStraight(Vector3f checkedPosition, EntityRef selectedTrack, Orientation orientation, boolean reverse) {
-        return taskHandler.start(new BuildStraightTask(), selectedTrack, checkedPosition, orientation, reverse);
+    public boolean buildStraight(Vector3f checkedPosition, EntityRef selectedTrack, Orientation orientation, boolean ghost) {
+        return taskHandler.start(new BuildStraightTask(), selectedTrack, checkedPosition, orientation, ghost);
     }
 
-    public boolean buildLeft(Vector3f checkedPosition, EntityRef selectedTrack, Orientation orientation, boolean reverse) {
-        return taskHandler.start(new BuildLeftTask(),selectedTrack, checkedPosition, orientation, reverse);
+    public boolean buildLeft(Vector3f checkedPosition, EntityRef selectedTrack, Orientation orientation, boolean ghost) {
+        return taskHandler.start(new BuildLeftTask(),selectedTrack, checkedPosition, orientation, ghost);
     }
 
-    public boolean buildRight(Vector3f checkedPosition, EntityRef selectedTrack, Orientation orientation, boolean reverse) {
-        return taskHandler.start(new BuildRightTask(),selectedTrack, checkedPosition, orientation, reverse);
+    public boolean buildRight(Vector3f checkedPosition, EntityRef selectedTrack, Orientation orientation, boolean ghost) {
+        return taskHandler.start(new BuildRightTask(),selectedTrack, checkedPosition, orientation, ghost);
     }
 
-    public boolean buildUp(Vector3f checkedPosition, EntityRef selectedTrack, Orientation orientation, boolean reverse) {
-        return taskHandler.start(new BuildUpTask(),selectedTrack, checkedPosition, orientation, reverse);
+    public boolean buildUp(Vector3f checkedPosition, EntityRef selectedTrack, Orientation orientation, boolean ghost) {
+        return taskHandler.start(new BuildUpTask(),selectedTrack, checkedPosition, orientation, ghost);
     }
 
-    public boolean buildDown(Vector3f checkedPosition, EntityRef selectedTrack, Orientation orientation, boolean reverse) {
-        return taskHandler.start(new BuildDownTask(),selectedTrack, checkedPosition, orientation, reverse);
+    public boolean buildDown(Vector3f checkedPosition, EntityRef selectedTrack, Orientation orientation, boolean ghost) {
+        return taskHandler.start(new BuildDownTask(),selectedTrack, checkedPosition, orientation, ghost);
     }
 }

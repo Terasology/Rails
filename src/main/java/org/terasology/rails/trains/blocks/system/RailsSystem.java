@@ -20,13 +20,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.entitySystem.event.EventPriority;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterSystem;
+import org.terasology.input.cameraTarget.CameraTargetChangedEvent;
+import org.terasology.logic.characters.CharacterComponent;
 import org.terasology.logic.common.ActivateEvent;
+import org.terasology.logic.inventory.InventoryUtils;
 import org.terasology.logic.inventory.ItemComponent;
+import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.Direction;
 import org.terasology.math.Vector3i;
+import org.terasology.rails.minecarts.components.RailVehicleComponent;
 import org.terasology.rails.minecarts.components.WrenchComponent;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Builder.Builder;
@@ -54,6 +60,51 @@ public class RailsSystem extends BaseComponentSystem {
     @ReceiveEvent(components = {RailBuilderComponent.class, ItemComponent.class})
     public void onPlaceFunctional(ActivateEvent event, EntityRef item) {
 
+        if (!item.hasComponent(RailBuilderComponent.class)) {
+            return;
+        }
+
+        RailBuilderComponent railBuilderComponent = item.getComponent(RailBuilderComponent.class);
+
+        createRail(event.getTarget(), event.getDirection(), railBuilderComponent.type, false);
+        event.consume();
+    }
+
+    @ReceiveEvent(components = {LocationComponent.class}, priority = EventPriority.PRIORITY_HIGH)
+    public void onCamTargetChanged(CameraTargetChangedEvent event, EntityRef entity) {
+        //EntityRef oldTarget = event.getOldTarget();
+        EntityRef newTarget = event.getNewTarget();
+        CharacterComponent characterComponent = entity.getComponent(CharacterComponent.class);
+        EntityRef heldItem = InventoryUtils.getItemAt(entity, characterComponent.selectedItem);
+
+        if (!heldItem.hasComponent(RailBuilderComponent.class)) {
+            return;
+        }
+
+        RailBuilderComponent railBuilderComponent = heldItem.getComponent(RailBuilderComponent.class);
+        createRail(newTarget, characterComponent.getLookDirection(), railBuilderComponent.type, true);
+
+/*        if (oldTarget.hasComponent(RailVehicleComponent.class)) {
+            RailVehicleComponent railVehicleComponent = oldTarget.getComponent(RailVehicleComponent.class);
+            if (railVehicleComponent.type.equals(RailVehicleComponent.Types.minecart)) {
+                setSelectMaterial(oldTarget, "rails:minecart");
+            }
+        }
+
+        if (newTarget.hasComponent(RailVehicleComponent.class)) {
+            RailVehicleComponent railVehicleComponent = newTarget.getComponent(RailVehicleComponent.class);
+            if (railVehicleComponent.type.equals(RailVehicleComponent.Types.minecart)) {
+                LocationComponent location = newTarget.getComponent(LocationComponent.class);
+                if (railVehicleComponent.parentNode != null) {
+                    setSelectMaterial(newTarget, "rails:minecart-unjoin");
+                }else if (checkMineCartJoin(railVehicleComponent, location.getWorldPosition()) != null) {
+                    setSelectMaterial(newTarget, "rails:minecart-join");
+                }
+            }
+        }  */
+    }
+
+    private void createRail(EntityRef target, Vector3f direction, RailBuilderComponent.RailType type, boolean ghost) {
         float yaw = 0;
         Vector3f placementPos = null;
         boolean reverse = false;
@@ -63,51 +114,19 @@ public class RailsSystem extends BaseComponentSystem {
             railBuilder = new Builder(entityManager);
         }
 
-        if (item.hasComponent(WrenchComponent.class)) {
-            return;
-        }
-
-        EntityRef targetEntity = event.getTarget();
-        BlockComponent blockComponent = targetEntity.getComponent(BlockComponent.class);
-
-        logger.info("1");
+        BlockComponent blockComponent = target.getComponent(BlockComponent.class);
         if (blockComponent == null) {
-            if (!checkSelectRail(targetEntity, item)) {
-                logger.info("2");
+            if (!checkSelectRail(target)) {
                 return;
             }
-
-            logger.info("3");
-            selectedTrack = targetEntity;
-
-            TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
-
-            Vector3f  hitPosition = event.getHitPosition();
-            if (hitPosition != null) {
-                logger.info("GO!");
-                Vector3f startPosition = new Vector3f(trainRailComponent.startPosition);
-                Vector3f endPosition = new Vector3f(trainRailComponent.endPosition);
-                startPosition.sub(hitPosition);
-                endPosition.sub(hitPosition);
-                float distFromStart = startPosition.lengthSquared();
-                float distFromend = endPosition.lengthSquared();
-
-                logger.info("from start:" + distFromStart);
-                logger.info("from end:" + distFromend);
-                if ( distFromStart > distFromend && trainRailComponent.prevTrack == null) {
-                    reverse = true;
-                }
-                logger.info("4");
-            }
+            selectedTrack = target;
         }
 
-        RailBuilderComponent railBuilderComponent = item.getComponent(RailBuilderComponent.class);
 
         if (selectedTrack.equals(EntityRef.NULL)) {
-            placementPos = new Vector3i(event.getTarget().getComponent(BlockComponent.class).getPosition()).toVector3f();
+            placementPos = new Vector3i(target.getComponent(BlockComponent.class).getPosition()).toVector3f();
             placementPos.y += 0.65f;
 
-            Vector3f direction = event.getDirection();
             direction.y = 0;
             Direction dir = Direction.inDirection(direction);
 
@@ -115,52 +134,43 @@ public class RailsSystem extends BaseComponentSystem {
             switch (dir) {
                 case LEFT:
                     yaw = 90;
-                    placementPos.x -=0.5f;
-                    logger.info("LEFT");
+                    placementPos.x -= 0.5f;
                     break;
                 case RIGHT:
                     yaw = 270;
-                    placementPos.x +=0.5f;
-                    logger.info("RIGHT");
+                    placementPos.x += 0.5f;
                     break;
                 case FORWARD:
                     yaw = 0;
-                    placementPos.z -=0.5f;
-                    logger.info("FORWARD");
+                    placementPos.z -= 0.5f;
                     break;
                 case BACKWARD:
-                    logger.info("BACKWARD");
-                    placementPos.z +=0.5f;
+                    placementPos.z += 0.5f;
                     yaw = 180;
                     break;
             }
-        } else {
-            logger.info("Track is selected!");
         }
 
-        switch (railBuilderComponent.type) {
+        switch (type) {
             case LEFT:
-                railBuilder.buildLeft(placementPos, selectedTrack, new Orientation(yaw, 0, 0), reverse);
+                railBuilder.buildLeft(placementPos, selectedTrack, new Orientation(yaw, 0, 0), ghost);
                 break;
             case RIGHT:
-                railBuilder.buildRight(placementPos, selectedTrack, new Orientation(yaw, 0, 0), reverse);
+                railBuilder.buildRight(placementPos, selectedTrack, new Orientation(yaw, 0, 0), ghost);
                 break;
             case UP:
-                railBuilder.buildUp(placementPos, selectedTrack, new Orientation(yaw, 0, 0), reverse);
+                railBuilder.buildUp(placementPos, selectedTrack, new Orientation(yaw, 0, 0), ghost);
                 break;
             case DOWN:
-                railBuilder.buildDown(placementPos, selectedTrack, new Orientation(yaw, 0, 0), reverse);
+                railBuilder.buildDown(placementPos, selectedTrack, new Orientation(yaw, 0, 0), ghost);
                 break;
             case STRAIGHT:
-                logger.info("buildStraight!");
-                railBuilder.buildStraight(placementPos, selectedTrack, new Orientation(yaw, 0, 0), reverse);
+                railBuilder.buildStraight(placementPos, selectedTrack, new Orientation(yaw, 0, 0), ghost);
                 break;
         }
-
-        event.consume();
     }
 
-    private boolean checkSelectRail(EntityRef target, EntityRef item) {
+    private boolean checkSelectRail(EntityRef target) {
         if (!target.hasComponent(TrainRailComponent.class)) {
             return false;
         }

@@ -60,12 +60,12 @@ public class CommandHandler {
         this.physics = CoreRegistry.get(Physics.class);
     }
 
-    public TaskResult run(List<Command> commands, EntityRef selectedTrack, boolean reverse) {
+    public TaskResult run(List<Command> commands, EntityRef selectedTrack, boolean ghost) {
         EntityRef track = null;
         for( Command command : commands ) {
             if (command.build) {
-                selectedTrack = buildTrack(selectedTrack, command, reverse);
-                if (selectedTrack == null) {
+                selectedTrack = buildTrack(selectedTrack, command, ghost);
+                if (selectedTrack.equals(EntityRef.NULL)) {
                     return new TaskResult(track, false);
                 }
                 track = selectedTrack;
@@ -79,7 +79,7 @@ public class CommandHandler {
         return new TaskResult(track, true);
     }
 
-    private EntityRef buildTrack(EntityRef selectedTrack, Command command, boolean reverse) {
+    private EntityRef buildTrack(EntityRef selectedTrack, Command command, boolean ghost) {
 
         Orientation newOrientation = null;
         Orientation fixOrientation = null;
@@ -118,14 +118,6 @@ public class CommandHandler {
             TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
             startYaw = trainRailComponent.yaw;
             startPitch = trainRailComponent.pitch;
-            if (reverse) {
-                prevPosition = trainRailComponent.startPosition;
-                revC = -1;
-                logger.info("REVEEEEEEERSSEEEE!!!!!");
-            } else {
-                prevPosition = trainRailComponent.endPosition;
-            }
-
         } else {
             newTrack = true;
         }
@@ -189,7 +181,7 @@ public class CommandHandler {
                 prevPosition.z + revC * (float)(Math.cos(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float)Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * RailsSystem.TRACK_LENGTH / 2f)
         );
 
-        EntityRef track = createEntityInTheWorld(prefab, command.type, command.chunkKey, selectedTrack, newPosition, newOrientation, fixOrientation);
+        EntityRef track = createEntityInTheWorld(prefab, command.type, command.chunkKey, selectedTrack, newPosition, newOrientation, fixOrientation, ghost);
 
         return track;
     }
@@ -199,13 +191,15 @@ public class CommandHandler {
         return true;
     }
 
-    private EntityRef createEntityInTheWorld(String prefab, TrainRailComponent.TrackType type, String chunkKey, EntityRef prevTrack,  Vector3f position, Orientation newOrientation, Orientation fixOrientation) {
+    private EntityRef createEntityInTheWorld(String prefab, TrainRailComponent.TrackType type, String chunkKey, EntityRef prevTrack,  Vector3f position, Orientation newOrientation, Orientation fixOrientation, boolean ghost) {
         Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
         QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * (newOrientation.yaw + fixOrientation.yaw), TeraMath.DEG_TO_RAD * (newOrientation.roll + fixOrientation.roll), TeraMath.DEG_TO_RAD * (newOrientation.pitch + fixOrientation.pitch));
         EntityRef railBlock = entityManager.create(prefab, position);
-        MeshComponent mesh = railBlock.getComponent(MeshComponent.class);
 
-        List<EntityRef> aroundList = physics.scanArea(mesh.mesh.getAABB(), StandardCollisionGroup.WORLD, StandardCollisionGroup.KINEMATIC);
+        AABB aabb = AABB.createCenterExtent(position,
+                new Vector3f(1.2f, 0.5f, 1.2f)
+        );
+        List<EntityRef> aroundList = physics.scanArea(aabb, StandardCollisionGroup.WORLD, StandardCollisionGroup.KINEMATIC);
         if (!aroundList.isEmpty()) {
             for (EntityRef checkEntity : aroundList) {
                 if (checkEntity.hasComponent(TrainRailComponent.class)) {
@@ -215,6 +209,10 @@ public class CommandHandler {
                         return EntityRef.NULL;
                     }
                 }
+            }
+        } else {
+            if (ghost) {
+
             }
         }
 

@@ -26,7 +26,7 @@ import javax.vecmath.Vector3f;
  * Created by adeon on 09.09.14.
  */
 public class TaskHandler {
-    public boolean start(Task task, EntityRef selectedTrack, Vector3f position, Orientation orientation, boolean reverse) {
+    public boolean start(Task task, EntityRef selectedTrack, Vector3f position, Orientation orientation, boolean ghost) {
         if (!selectedTrack.equals(EntityRef.NULL) && !selectedTrack.hasComponent(TrainRailComponent.class)) {
             return false;
         }
@@ -37,10 +37,10 @@ public class TaskHandler {
             return false;
         }
 
-        return runTask(task, selectedTrack, position, orientation, reverse);
+        return runTask(task, selectedTrack, position, orientation, ghost);
     }
 
-    private boolean runTask(Task task, EntityRef track, Vector3f position, Orientation orientation, boolean reverse) {
-        return task.run(track, position, orientation, reverse);
+    private boolean runTask(Task task, EntityRef track, Vector3f position, Orientation orientation, boolean ghost) {
+        return task.run(track, position, orientation, ghost);
     }
 }
