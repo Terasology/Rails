@@ -70,15 +70,15 @@ public class VehicleSystem extends BaseComponentSystem implements UpdateSubscrib
                     railVehicleComponent.currentRailBlock = rail;
                 } else {
                     TrainRailComponent railComponent2 = railVehicleComponent.currentRailBlock.getComponent(TrainRailComponent.class);
-                    if (rail.equals(railComponent2.nextTrack)) {
+                  /*  if (rail.equals(railComponent2.nextTrack)) {
                         railVehicleComponent.currentRailBlock = rail;
-                    }
+                    }*/
                 }
             }
 
             TrainRailComponent railComponent = rail.getComponent(TrainRailComponent.class);
 
-            EntityRef nextRail = railComponent.nextTrack;
+            EntityRef nextRail = null;//railComponent.nextTrack;
 
 
             if (nextRail == null) {

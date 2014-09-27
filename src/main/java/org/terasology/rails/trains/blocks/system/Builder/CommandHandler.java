@@ -114,12 +114,10 @@ public class CommandHandler {
             if (!aroundList.isEmpty()) {
                 for (EntityRef checkEntity : aroundList) {
                     if (checkEntity.hasComponent(TrainRailComponent.class)) {
-                        LocationComponent location = checkEntity.getComponent(LocationComponent.class);
                         TrainRailComponent trainRailComponent = checkEntity.getComponent(TrainRailComponent.class);
-
                         if (Math.abs(trainRailComponent.yaw - command.orientation.yaw)<=7.5 &&
                             Math.abs(trainRailComponent.pitch - command.orientation.pitch)<=7.5 &&
-                            trainRailComponent.nextTrack.equals(EntityRef.NULL)
+                            trainRailComponent.linkedTracks.size()<2
                            ) {
                             selectedTrack = checkEntity;
                             break;
@@ -273,9 +271,9 @@ public class CommandHandler {
         Railway.getInstance().getChunk(command.chunkKey).add(railBlock);
 
         if (!prevTrack.equals(EntityRef.NULL)&&!preview) {
-            trainRailComponent.prevTrack = prevTrack;
+            trainRailComponent.linkedTracks.add(prevTrack);
             TrainRailComponent prevTrainRailComponent = prevTrack.getComponent(TrainRailComponent.class);
-            prevTrainRailComponent.nextTrack = railBlock;
+            prevTrainRailComponent.linkedTracks.add(railBlock);
             prevTrack.saveComponent(prevTrainRailComponent);
         }
 

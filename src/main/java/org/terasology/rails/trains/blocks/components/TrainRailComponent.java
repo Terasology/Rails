@@ -18,8 +18,10 @@ package org.terasology.rails.trains.blocks.components;
 import org.terasology.entitySystem.Component;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.network.Replicate;
+import org.terasology.protobuf.EntityData;
 
 import javax.vecmath.Vector3f;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TrainRailComponent implements Component {
@@ -31,7 +33,6 @@ public class TrainRailComponent implements Component {
     public float yaw;
     public float pitch;
     public float roll;
-    public EntityRef prevTrack = EntityRef.NULL;
-    public EntityRef nextTrack = EntityRef.NULL;
+    public ArrayList<EntityRef> linkedTracks = new ArrayList<EntityRef>();
     public String chunkKey;
 }

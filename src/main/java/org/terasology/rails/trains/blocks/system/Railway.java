@@ -29,7 +29,6 @@ import java.util.Map;
  */
 public class Railway {
     private Map<String, ArrayList<EntityRef>> chunks = Maps.newHashMap();
-    private int id;
     public static final String GHOST_KEY = "ghost";
 
     private static Railway instance;
@@ -50,9 +49,8 @@ public class Railway {
     }
 
     public String createChunk(Vector3f position) {
-        String key = "{" + position.toString() + ")_" + id;
+        String key = "{" + position.toString() + ")";
         chunks.put(key, new ArrayList<EntityRef>());
-        id++;
         return key;
     }
 

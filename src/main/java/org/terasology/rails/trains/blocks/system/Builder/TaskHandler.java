@@ -33,7 +33,7 @@ public class TaskHandler {
 
         TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
 
-        if (!selectedTrack.equals(EntityRef.NULL) && !trainRailComponent.nextTrack.equals(EntityRef.NULL) && !trainRailComponent.prevTrack.equals(EntityRef.NULL)) {
+        if (!selectedTrack.equals(EntityRef.NULL) && trainRailComponent.linkedTracks.size()>=2) {
             return false;
         }
 
