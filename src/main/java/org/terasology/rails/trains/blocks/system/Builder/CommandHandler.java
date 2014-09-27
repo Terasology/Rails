@@ -16,22 +16,34 @@
 package org.terasology.rails.trains.blocks.system.Builder;
 
 import com.bulletphysics.linearmath.QuaternionUtil;
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.terasology.asset.Assets;
+import org.terasology.entitySystem.Component;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.logic.health.DoDamageEvent;
+import org.terasology.logic.health.EngineDamageTypes;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.AABB;
 import org.terasology.math.TeraMath;
+import org.terasology.physics.CollisionGroup;
 import org.terasology.physics.Physics;
 import org.terasology.physics.StandardCollisionGroup;
+import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.protobuf.EntityData;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.blocks.system.RailsSystem;
 import org.terasology.rails.trains.blocks.system.Railway;
 import org.terasology.registry.CoreRegistry;
+import org.terasology.registry.In;
 import org.terasology.rendering.logic.MeshComponent;
+import org.terasology.world.BlockEntityRegistry;
+import org.terasology.world.WorldProvider;
+import org.terasology.world.block.Block;
+import org.terasology.world.block.BlockComponent;
 
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
@@ -43,8 +55,9 @@ import java.util.List;
  */
 public class CommandHandler {
     private EntityManager entityManager;
-    private final Logger logger = LoggerFactory.getLogger(CommandHandler.class);
+    private BlockEntityRegistry blockEntityRegistry;
     private Physics physics;
+    private final Logger logger = LoggerFactory.getLogger(CommandHandler.class);
     private static CommandHandler instance = null;
 
     public static CommandHandler getInstance() {
@@ -58,13 +71,14 @@ public class CommandHandler {
     private CommandHandler() {
         this.entityManager = CoreRegistry.get(EntityManager.class);
         this.physics = CoreRegistry.get(Physics.class);
+        this.blockEntityRegistry = CoreRegistry.get(BlockEntityRegistry.class);
     }
 
-    public TaskResult run(List<Command> commands, EntityRef selectedTrack, boolean ghost) {
+    public TaskResult run(List<Command> commands, EntityRef selectedTrack, boolean preview) {
         EntityRef track = null;
         for( Command command : commands ) {
             if (command.build) {
-                selectedTrack = buildTrack(selectedTrack, command, ghost);
+                selectedTrack = buildTrack(selectedTrack, command, preview);
                 if (selectedTrack.equals(EntityRef.NULL)) {
                     return new TaskResult(track, false);
                 }
@@ -79,7 +93,7 @@ public class CommandHandler {
         return new TaskResult(track, true);
     }
 
-    private EntityRef buildTrack(EntityRef selectedTrack, Command command, boolean ghost) {
+    private EntityRef buildTrack(EntityRef selectedTrack, Command command, boolean preview) {
 
         Orientation newOrientation = null;
         Orientation fixOrientation = null;
@@ -104,8 +118,9 @@ public class CommandHandler {
                         TrainRailComponent trainRailComponent = checkEntity.getComponent(TrainRailComponent.class);
 
                         if (Math.abs(trainRailComponent.yaw - command.orientation.yaw)<=7.5 &&
-                                Math.abs(trainRailComponent.pitch - command.orientation.pitch)<=7.5
-                                ) {
+                            Math.abs(trainRailComponent.pitch - command.orientation.pitch)<=7.5 &&
+                            trainRailComponent.nextTrack.equals(EntityRef.NULL)
+                           ) {
                             selectedTrack = checkEntity;
                             break;
                         }
@@ -116,6 +131,7 @@ public class CommandHandler {
 
         if (!selectedTrack.equals(EntityRef.NULL)) {
             TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
+            prevPosition = trainRailComponent.endPosition;
             startYaw = trainRailComponent.yaw;
             startPitch = trainRailComponent.pitch;
         } else {
@@ -137,7 +153,6 @@ public class CommandHandler {
                 } else {
                     fixOrientation = new Orientation(90f, 0, 0);
                 }
-                logger.info("Try to add straight. Pitch is " + startPitch);
                 break;
             case UP:
                 float pitch = startPitch + RailsSystem.STANDARD_PITCH_ANGLE_CHANGE;
@@ -173,15 +188,13 @@ public class CommandHandler {
                 break;
         }
 
-        logger.info(prefab);
-
         newPosition = new Vector3f(
                 prevPosition.x + revC * (float)(Math.sin(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float) Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * RailsSystem.TRACK_LENGTH / 2f),
                 prevPosition.y + revC * (float)(Math.sin(TeraMath.DEG_TO_RAD * newOrientation.pitch) * RailsSystem.TRACK_LENGTH / 2),
                 prevPosition.z + revC * (float)(Math.cos(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float)Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * RailsSystem.TRACK_LENGTH / 2f)
         );
 
-        EntityRef track = createEntityInTheWorld(prefab, command.type, command.chunkKey, selectedTrack, newPosition, newOrientation, fixOrientation, ghost);
+        EntityRef track = createEntityInTheWorld(prefab, command, selectedTrack, newPosition, newOrientation, fixOrientation, preview);
 
         return track;
     }
@@ -191,7 +204,7 @@ public class CommandHandler {
         return true;
     }
 
-    private EntityRef createEntityInTheWorld(String prefab, TrainRailComponent.TrackType type, String chunkKey, EntityRef prevTrack,  Vector3f position, Orientation newOrientation, Orientation fixOrientation, boolean ghost) {
+    private EntityRef createEntityInTheWorld(String prefab, Command command, EntityRef prevTrack,  Vector3f position, Orientation newOrientation, Orientation fixOrientation, boolean preview) {
         Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
         QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * (newOrientation.yaw + fixOrientation.yaw), TeraMath.DEG_TO_RAD * (newOrientation.roll + fixOrientation.roll), TeraMath.DEG_TO_RAD * (newOrientation.pitch + fixOrientation.pitch));
         EntityRef railBlock = entityManager.create(prefab, position);
@@ -199,20 +212,49 @@ public class CommandHandler {
         AABB aabb = AABB.createCenterExtent(position,
                 new Vector3f(1.2f, 0.5f, 1.2f)
         );
-        List<EntityRef> aroundList = physics.scanArea(aabb, StandardCollisionGroup.WORLD, StandardCollisionGroup.KINEMATIC);
+        List<EntityRef> aroundList = physics.scanArea(aabb, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD, StandardCollisionGroup.KINEMATIC);
         if (!aroundList.isEmpty()) {
-            for (EntityRef checkEntity : aroundList) {
-                if (checkEntity.hasComponent(TrainRailComponent.class)) {
-                    if (!checkEntity.equals(prevTrack)) {
-                        Railway.getInstance().removeChunk(chunkKey);
-                        railBlock.destroy();
-                        return EntityRef.NULL;
+            if (preview) {
+                MeshComponent mesh = railBlock.getComponent(MeshComponent.class);
+                RigidBodyComponent rigidBodyComponent = railBlock.getComponent(RigidBodyComponent.class);
+                rigidBodyComponent.collisionGroup = StandardCollisionGroup.STATIC;
+                rigidBodyComponent.collidesWith = Lists.<CollisionGroup>newArrayList();
+                mesh.material = Assets.getMaterial("rails:minecart-unjoin");
+                railBlock.saveComponent(mesh);
+                railBlock.saveComponent(rigidBodyComponent);
+            } else {
+                for (EntityRef checkEntity : aroundList) {
+                    if (checkEntity.hasComponent(TrainRailComponent.class)) {
+                        if (!checkEntity.equals(prevTrack)) {
+                                Railway.getInstance().removeChunk(command.chunkKey);
+                                railBlock.destroy();
+                                return EntityRef.NULL;
+                        }
                     }
                 }
             }
         } else {
-            if (ghost) {
+            if (preview) {
+                MeshComponent mesh = railBlock.getComponent(MeshComponent.class);
+                RigidBodyComponent rigidBodyComponent = railBlock.getComponent(RigidBodyComponent.class);
+                rigidBodyComponent.collisionGroup = StandardCollisionGroup.STATIC;
+                rigidBodyComponent.collidesWith = Lists.<CollisionGroup>newArrayList();
+                mesh.material = Assets.getMaterial("rails:minecart-join");
+                railBlock.saveComponent(mesh);
+                railBlock.saveComponent(rigidBodyComponent);
+            }
+        }
 
+        if (!preview) {
+            for(int y = 0; y<10; y++) {
+                for(int z = -3; z<4; z++) {
+                    for(int x = -3; x<4; x++) {
+                        EntityRef blockEntity = blockEntityRegistry.getBlockEntityAt(new Vector3f(position.x + x, position.y + y, position.z + z));
+                        if (blockEntity!=null) {
+                            blockEntity.send(new DoDamageEvent(1000, EngineDamageTypes.EXPLOSIVE.get()));
+                        }
+                    }
+                }
             }
         }
 
@@ -223,13 +265,14 @@ public class CommandHandler {
         trainRailComponent.pitch = newOrientation.pitch;
         trainRailComponent.yaw = newOrientation.yaw;
         trainRailComponent.roll = newOrientation.roll;
-        trainRailComponent.type = type;
+        trainRailComponent.type = command.type;
         trainRailComponent.startPosition = calculateStartPosition(newOrientation);
         trainRailComponent.endPosition = calculateEndPosition(newOrientation, position);
-        trainRailComponent.chunkKey = chunkKey;
-        Railway.getInstance().getChunk(chunkKey).add(railBlock);
+        trainRailComponent.chunkKey = command.chunkKey;
 
-        if (!prevTrack.equals(EntityRef.NULL)) {
+        Railway.getInstance().getChunk(command.chunkKey).add(railBlock);
+
+        if (!prevTrack.equals(EntityRef.NULL)&&!preview) {
             trainRailComponent.prevTrack = prevTrack;
             TrainRailComponent prevTrainRailComponent = prevTrack.getComponent(TrainRailComponent.class);
             prevTrainRailComponent.nextTrack = railBlock;

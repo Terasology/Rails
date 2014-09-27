@@ -65,7 +65,7 @@ public class Railway {
         }
     }
 
-    public String createGhostChunk() {
+    public String createPreviewChunk() {
         if (chunks.containsKey(GHOST_KEY)) {
             removeChunk(GHOST_KEY);
         }

@@ -33,9 +33,10 @@ import java.util.ArrayList;
  */
 public class BuildStraightTask implements Task {
         @Override
-    public boolean run(EntityRef selectedTrack, Vector3f position, Orientation orientation, boolean ghost) {
+    public boolean run(EntityRef selectedTrack, Vector3f position, Orientation orientation, boolean preview) {
 
         float pitch = 0;
+        Vector3f  tPosition;
         ArrayList<Command> commands = new ArrayList<>();
         String chunkKey = "";
 
@@ -43,24 +44,30 @@ public class BuildStraightTask implements Task {
             TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
             LocationComponent locationComponent = selectedTrack.getComponent(LocationComponent.class);
             pitch = trainRailComponent.pitch;
-            chunkKey = Railway.getInstance().createChunk(locationComponent.getWorldPosition());
+            tPosition = locationComponent.getWorldPosition();
         } else {
-            chunkKey = Railway.getInstance().createChunk(position);
+            tPosition = position;
+        }
+
+        if (preview) {
+            chunkKey = Railway.getInstance().createPreviewChunk();
+        } else {
+            chunkKey = Railway.getInstance().createChunk(tPosition);
         }
 
         if (pitch > 0) {
-            commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, orientation, chunkKey, false, ghost));
+            commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, orientation, chunkKey, false, preview));
         } else if(pitch < 0) {
-            commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, orientation, chunkKey, false, ghost));
+            commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, orientation, chunkKey, false, preview));
         } else {
-            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation, chunkKey, false, ghost));
+            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation, chunkKey, false, preview));
         }
 
         for (int i=0; i<7; i++) {
-            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0), chunkKey, false, ghost));
+            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0), chunkKey, false, preview));
         }
 
-        TaskResult taskResult = CommandHandler.getInstance().run(commands, selectedTrack, ghost);
+        TaskResult taskResult = CommandHandler.getInstance().run(commands, selectedTrack, preview);
         return taskResult.success;
     }
 }

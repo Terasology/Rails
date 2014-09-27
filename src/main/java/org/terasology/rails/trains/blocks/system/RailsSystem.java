@@ -24,20 +24,28 @@ import org.terasology.entitySystem.event.EventPriority;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterSystem;
+import org.terasology.input.Mouse;
 import org.terasology.input.cameraTarget.CameraTargetChangedEvent;
+import org.terasology.input.cameraTarget.CameraTargetSystem;
+import org.terasology.input.events.MouseWheelEvent;
 import org.terasology.logic.characters.CharacterComponent;
 import org.terasology.logic.common.ActivateEvent;
 import org.terasology.logic.inventory.InventoryUtils;
 import org.terasology.logic.inventory.ItemComponent;
+import org.terasology.logic.inventory.events.InventorySlotChangedEvent;
 import org.terasology.logic.location.LocationComponent;
+import org.terasology.logic.players.LocalPlayer;
 import org.terasology.math.Direction;
 import org.terasology.math.Vector3i;
+import org.terasology.network.ClientComponent;
+import org.terasology.physics.Physics;
 import org.terasology.rails.minecarts.components.RailVehicleComponent;
 import org.terasology.rails.minecarts.components.WrenchComponent;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Builder.Builder;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.components.RailBuilderComponent;
+import org.terasology.registry.CoreRegistry;
 import org.terasology.registry.In;
 import org.terasology.world.block.BlockComponent;
 import org.terasology.world.block.BlockManager;
@@ -53,6 +61,8 @@ public class RailsSystem extends BaseComponentSystem {
     private BlockManager blockManager;
     @In
     private EntityManager entityManager;
+    @In
+    private LocalPlayer localPlayer;
 
     private final Logger logger = LoggerFactory.getLogger(RailsSystem.class);
     private Builder railBuilder;
@@ -70,41 +80,38 @@ public class RailsSystem extends BaseComponentSystem {
         event.consume();
     }
 
-    @ReceiveEvent(components = {LocationComponent.class}, priority = EventPriority.PRIORITY_HIGH)
-    public void onCamTargetChanged(CameraTargetChangedEvent event, EntityRef entity) {
-        //EntityRef oldTarget = event.getOldTarget();
-        EntityRef newTarget = event.getNewTarget();
-        CharacterComponent characterComponent = entity.getComponent(CharacterComponent.class);
-        EntityRef heldItem = InventoryUtils.getItemAt(entity, characterComponent.selectedItem);
+    @ReceiveEvent(components = ClientComponent.class, priority = EventPriority.PRIORITY_NORMAL)
+    public void mouseWheelEvent(MouseWheelEvent event, EntityRef entity) {
+        ClientComponent clientComponent = entity.getComponent(ClientComponent.class);
+        EntityRef player = clientComponent.character;
+        CharacterComponent characterComponent = player.getComponent(CharacterComponent.class);
+        CameraTargetSystem ct = CoreRegistry.get(CameraTargetSystem.class);
+        Railway.getInstance().removeChunk(Railway.GHOST_KEY);
+        EntityRef heldItem = InventoryUtils.getItemAt(player, characterComponent.selectedItem);
 
         if (!heldItem.hasComponent(RailBuilderComponent.class)) {
             return;
         }
 
         RailBuilderComponent railBuilderComponent = heldItem.getComponent(RailBuilderComponent.class);
-        createRail(newTarget, characterComponent.getLookDirection(), railBuilderComponent.type, true);
-
-/*        if (oldTarget.hasComponent(RailVehicleComponent.class)) {
-            RailVehicleComponent railVehicleComponent = oldTarget.getComponent(RailVehicleComponent.class);
-            if (railVehicleComponent.type.equals(RailVehicleComponent.Types.minecart)) {
-                setSelectMaterial(oldTarget, "rails:minecart");
-            }
-        }
-
-        if (newTarget.hasComponent(RailVehicleComponent.class)) {
-            RailVehicleComponent railVehicleComponent = newTarget.getComponent(RailVehicleComponent.class);
-            if (railVehicleComponent.type.equals(RailVehicleComponent.Types.minecart)) {
-                LocationComponent location = newTarget.getComponent(LocationComponent.class);
-                if (railVehicleComponent.parentNode != null) {
-                    setSelectMaterial(newTarget, "rails:minecart-unjoin");
-                }else if (checkMineCartJoin(railVehicleComponent, location.getWorldPosition()) != null) {
-                    setSelectMaterial(newTarget, "rails:minecart-join");
-                }
-            }
-        }  */
+        createRail(ct.getTarget(), characterComponent.getLookDirection(), railBuilderComponent.type, true);
     }
 
-    private void createRail(EntityRef target, Vector3f direction, RailBuilderComponent.RailType type, boolean ghost) {
+    @ReceiveEvent(components = {LocationComponent.class}, priority = EventPriority.PRIORITY_HIGH)
+    public void onCamTargetChanged(CameraTargetChangedEvent event, EntityRef entity) {
+        EntityRef newTarget = event.getNewTarget();
+        CharacterComponent characterComponent = entity.getComponent(CharacterComponent.class);
+        EntityRef heldItem = InventoryUtils.getItemAt(entity, characterComponent.selectedItem);
+        Railway.getInstance().removeChunk(Railway.GHOST_KEY);
+        if (!heldItem.hasComponent(RailBuilderComponent.class)) {
+            return;
+        }
+
+        RailBuilderComponent railBuilderComponent = heldItem.getComponent(RailBuilderComponent.class);
+        createRail(newTarget, characterComponent.getLookDirection(), railBuilderComponent.type, true);
+    }
+
+    private void createRail(EntityRef target, Vector3f direction, RailBuilderComponent.RailType type, boolean preview) {
         float yaw = 0;
         Vector3f placementPos = null;
         boolean reverse = false;
@@ -149,23 +156,28 @@ public class RailsSystem extends BaseComponentSystem {
                     yaw = 180;
                     break;
             }
+        }else if (selectedTrack.hasComponent(TrainRailComponent.class)) {
+            TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
+            if (trainRailComponent.chunkKey.equals(Railway.GHOST_KEY)){
+                return;
+            }
         }
 
         switch (type) {
             case LEFT:
-                railBuilder.buildLeft(placementPos, selectedTrack, new Orientation(yaw, 0, 0), ghost);
+                railBuilder.buildLeft(placementPos, selectedTrack, new Orientation(yaw, 0, 0), preview);
                 break;
             case RIGHT:
-                railBuilder.buildRight(placementPos, selectedTrack, new Orientation(yaw, 0, 0), ghost);
+                railBuilder.buildRight(placementPos, selectedTrack, new Orientation(yaw, 0, 0), preview);
                 break;
             case UP:
-                railBuilder.buildUp(placementPos, selectedTrack, new Orientation(yaw, 0, 0), ghost);
+                railBuilder.buildUp(placementPos, selectedTrack, new Orientation(yaw, 0, 0), preview);
                 break;
             case DOWN:
-                railBuilder.buildDown(placementPos, selectedTrack, new Orientation(yaw, 0, 0), ghost);
+                railBuilder.buildDown(placementPos, selectedTrack, new Orientation(yaw, 0, 0), preview);
                 break;
             case STRAIGHT:
-                railBuilder.buildStraight(placementPos, selectedTrack, new Orientation(yaw, 0, 0), ghost);
+                railBuilder.buildStraight(placementPos, selectedTrack, new Orientation(yaw, 0, 0), preview);
                 break;
         }
     }

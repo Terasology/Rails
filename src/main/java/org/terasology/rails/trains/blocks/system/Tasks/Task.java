@@ -24,5 +24,5 @@ import javax.vecmath.Vector3f;
  * Created by adeon on 08.09.14.
  */
 public interface Task {
-    public boolean run(EntityRef selectedTrack, Vector3f position, Orientation orientation, boolean ghost);
+    public boolean run(EntityRef selectedTrack, Vector3f position, Orientation orientation, boolean preview);
 }

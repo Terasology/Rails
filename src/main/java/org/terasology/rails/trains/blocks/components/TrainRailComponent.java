@@ -31,7 +31,7 @@ public class TrainRailComponent implements Component {
     public float yaw;
     public float pitch;
     public float roll;
-    public EntityRef prevTrack;
-    public EntityRef nextTrack;
+    public EntityRef prevTrack = EntityRef.NULL;
+    public EntityRef nextTrack = EntityRef.NULL;
     public String chunkKey;
 }

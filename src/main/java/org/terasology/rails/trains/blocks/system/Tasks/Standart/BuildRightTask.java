@@ -34,7 +34,7 @@ import java.util.ArrayList;
  */
 public class BuildRightTask implements Task {
     @Override
-    public boolean run(EntityRef selectedTrack, Vector3f position, Orientation orientation, boolean ghost) {
+    public boolean run(EntityRef selectedTrack, Vector3f position, Orientation orientation, boolean preview) {
 
         if (selectedTrack.equals(EntityRef.NULL)) {
             return  false;
@@ -44,19 +44,25 @@ public class BuildRightTask implements Task {
         float count = 90/ RailsSystem.STANDARD_ANGLE_CHANGE;
         ArrayList<Command> commands = new ArrayList<>();
         LocationComponent location = selectedTrack.getComponent(LocationComponent.class);
-        String chunkKey = Railway.getInstance().createChunk(location.getWorldPosition());
+
+        String chunkKey = "";
+        if (preview) {
+            chunkKey = Railway.getInstance().createPreviewChunk();
+        } else {
+            chunkKey = Railway.getInstance().createChunk(location.getWorldPosition());
+        }
 
         if (trainRailComponent.pitch > 0) {
-            commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, orientation, chunkKey, false, ghost));
+            commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, orientation, chunkKey, false, preview));
         } else if(trainRailComponent.pitch < 0) {
-            commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, orientation, chunkKey, false, ghost));
+            commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, orientation, chunkKey, false, preview));
         }
 
         for (int i = 0; i<count; i++) {
-            commands.add(new Command(true, TrainRailComponent.TrackType.RIGHT, position, new Orientation(0,0,0), chunkKey, false, ghost));
+            commands.add(new Command(true, TrainRailComponent.TrackType.RIGHT, position, new Orientation(0,0,0), chunkKey, false, preview));
         }
 
-        TaskResult taskResult = CommandHandler.getInstance().run(commands, selectedTrack, ghost);
+        TaskResult taskResult = CommandHandler.getInstance().run(commands, selectedTrack, preview);
         return taskResult.success;
     }
 }

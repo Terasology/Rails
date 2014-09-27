@@ -50,7 +50,7 @@ public class VehicleSystem extends BaseComponentSystem implements UpdateSubscrib
     public void update(float delta) {
         for (EntityRef railVehicle : entityManager.getEntitiesWith(TrainComponent.class)) {
 
-            if (true) {
+            if (false) {
                 break;
             }
             TrainComponent railVehicleComponent = railVehicle.getComponent(TrainComponent.class);
