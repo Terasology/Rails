@@ -51,13 +51,13 @@ public class BuildDownTask implements Task {
         }
 
         if (trainRailComponent.pitch >= 0) {
-            commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, new Orientation(0,0,0), chunkKey, false, preview));
+            commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, orientation, chunkKey, false, preview));
         } else {
-            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0), chunkKey, false, preview));
+            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation, chunkKey, false, preview));
         }
 
         for (int i=0; i<7; i++) {
-            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0), chunkKey, false, preview));
+            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation, chunkKey, false, preview));
         }
 
         TaskResult taskResult = CommandHandler.getInstance().run(commands, selectedTrack, preview);

@@ -42,16 +42,22 @@ public class BuildUpTask implements Task {
         TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
         ArrayList<Command> commands = new ArrayList<>();
         LocationComponent location = selectedTrack.getComponent(LocationComponent.class);
-        String chunkKey = Railway.getInstance().createChunk(location.getWorldPosition());
+
+        String chunkKey = "";
+        if (preview) {
+            chunkKey = Railway.getInstance().createPreviewChunk();
+        } else {
+            chunkKey = Railway.getInstance().createChunk(location.getWorldPosition());
+        }
 
         if (trainRailComponent.pitch >= 0) {
-            commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, new Orientation(0,0,0), chunkKey, false, preview));
+            commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, orientation, chunkKey, false, preview));
         } else {
-            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0), chunkKey, false, preview));
+            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation, chunkKey, false, preview));
         }
 
         for (int i=0; i<7; i++) {
-            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, new Orientation(0,0,0), chunkKey, false, preview));
+            commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation, chunkKey, false, preview));
         }
 
         TaskResult taskResult = CommandHandler.getInstance().run(commands, selectedTrack, preview);

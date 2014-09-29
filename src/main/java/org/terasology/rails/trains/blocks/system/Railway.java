@@ -56,10 +56,10 @@ public class Railway {
 
     public void removeChunk(String key) {
         if (chunks.containsKey(key)) {
-            ArrayList<EntityRef> tracks = chunks.get(key);
-            for(EntityRef track : tracks) {
+            for(EntityRef track : chunks.get(key)){
                 track.destroy();
             }
+            chunks.remove(key);
         }
     }
 

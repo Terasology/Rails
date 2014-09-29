@@ -168,6 +168,7 @@ public class CommandHandler {
                         prevPosition = trainRailComponent.startPosition;
                     }
                 }
+                startPitch = trainRailComponent.pitch;
                 newTrack = true;
             }
         } else {
@@ -199,7 +200,7 @@ public class CommandHandler {
                     newOrientation = new Orientation(startYaw, startPitch + RailsSystem.STANDARD_PITCH_ANGLE_CHANGE, 0);
                 }
 
-                fixOrientation = new Orientation(270f, 0, 0);
+                fixOrientation = new Orientation(0f, 0, 0);
                 prefab = "rails:railBlock-up";
                 break;
             case DOWN:

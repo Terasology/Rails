@@ -33,5 +33,16 @@ public class Orientation {
         this.yaw += orientation.yaw;
         this.pitch += orientation.pitch;
         this.roll += orientation.roll;
+
+        if (this.yaw >= 360) {
+            this.yaw = 360 - this.yaw;
+        }
+        if (this.pitch >= 360) {
+            this.pitch = 360 - this.pitch;
+        }
+        if (this.roll >= 360) {
+            this.roll = 360 - this.roll;
+        }
+
     }
 }
