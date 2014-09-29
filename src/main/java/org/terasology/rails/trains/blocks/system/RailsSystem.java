@@ -113,8 +113,7 @@ public class RailsSystem extends BaseComponentSystem {
 
     private void createRail(EntityRef target, Vector3f direction, RailBuilderComponent.RailType type, boolean preview) {
         float yaw = 0;
-        Vector3f placementPos = null;
-        boolean reverse = false;
+        Vector3f placementPos = new Vector3f();
         EntityRef selectedTrack = EntityRef.NULL;
 
         if (railBuilder == null) {
@@ -127,40 +126,41 @@ public class RailsSystem extends BaseComponentSystem {
                 return;
             }
             selectedTrack = target;
+        }else{
+            placementPos = new Vector3i(target.getComponent(BlockComponent.class).getPosition()).toVector3f();
         }
 
-
-        if (selectedTrack.equals(EntityRef.NULL)) {
-            placementPos = new Vector3i(target.getComponent(BlockComponent.class).getPosition()).toVector3f();
-            placementPos.y += 0.65f;
-
-            direction.y = 0;
-            Direction dir = Direction.inDirection(direction);
-
-
-            switch (dir) {
-                case LEFT:
-                    yaw = 90;
-                    placementPos.x -= 0.5f;
-                    break;
-                case RIGHT:
-                    yaw = 270;
-                    placementPos.x += 0.5f;
-                    break;
-                case FORWARD:
-                    yaw = 0;
-                    placementPos.z -= 0.5f;
-                    break;
-                case BACKWARD:
-                    placementPos.z += 0.5f;
-                    yaw = 180;
-                    break;
-            }
-        }else if (selectedTrack.hasComponent(TrainRailComponent.class)) {
+        if (selectedTrack.hasComponent(TrainRailComponent.class)) {
             TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
             if (trainRailComponent.chunkKey.equals(Railway.GHOST_KEY)){
                 return;
             }
+        }
+
+
+        placementPos.y += 0.65f;
+
+        direction.y = 0;
+        Direction dir = Direction.inDirection(direction);
+
+
+        switch (dir) {
+            case LEFT:
+                yaw = 90;
+                placementPos.x -= 0.5f;
+                break;
+            case RIGHT:
+                yaw = 270;
+                placementPos.x += 0.5f;
+                break;
+            case FORWARD:
+                yaw = 0;
+                placementPos.z -= 0.5f;
+                break;
+            case BACKWARD:
+                placementPos.z += 0.5f;
+                yaw = 180;
+                break;
         }
 
         switch (type) {

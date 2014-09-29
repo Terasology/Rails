@@ -100,9 +100,9 @@ public class CommandHandler {
         Vector3f newPosition;
         Vector3f prevPosition = command.checkedPosition;
         boolean newTrack = false;
+        boolean findedNearestRail = false;
         float startYaw = 0;
         float startPitch = 0;
-        int revC = 1;
 
 
         if (selectedTrack.equals(EntityRef.NULL)) {
@@ -120,6 +120,7 @@ public class CommandHandler {
                             trainRailComponent.linkedTracks.size()<2
                            ) {
                             selectedTrack = checkEntity;
+                            findedNearestRail = true;
                             break;
                         }
                     }
@@ -129,9 +130,46 @@ public class CommandHandler {
 
         if (!selectedTrack.equals(EntityRef.NULL)) {
             TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
-            prevPosition = trainRailComponent.endPosition;
-            startYaw = trainRailComponent.yaw;
-            startPitch = trainRailComponent.pitch;
+            if (trainRailComponent.chunkKey.equals(command.chunkKey)){
+                prevPosition = trainRailComponent.endPosition;
+                startYaw = trainRailComponent.yaw;
+                startPitch = trainRailComponent.pitch;
+            }else{
+                if (findedNearestRail) {
+                    float firstSide, secondSide;
+                    Vector3f diff = new Vector3f(prevPosition);
+                    diff.sub(trainRailComponent.startPosition);
+                    firstSide = diff.lengthSquared();
+                    diff.set(prevPosition);
+                    diff.sub(trainRailComponent.endPosition);
+                    secondSide = diff.lengthSquared();
+
+                    if (firstSide > secondSide) {
+                        prevPosition = trainRailComponent.endPosition;
+                    }else{
+                        prevPosition = trainRailComponent.startPosition;
+                    }
+                } else {
+                    EntityRef linkedTrack =  trainRailComponent.linkedTracks.get(0);
+                    LocationComponent locationComponent = linkedTrack.getComponent(LocationComponent.class);
+                    prevPosition = locationComponent.getWorldPosition();
+
+                    float firstSide, secondSide;
+                    Vector3f diff = new Vector3f(prevPosition);
+                    diff.sub(trainRailComponent.startPosition);
+                    firstSide = diff.lengthSquared();
+                    diff.set(prevPosition);
+                    diff.sub(trainRailComponent.endPosition);
+                    secondSide = diff.lengthSquared();
+
+                    if (firstSide < secondSide) {
+                        prevPosition = trainRailComponent.endPosition;
+                    }else{
+                        prevPosition = trainRailComponent.startPosition;
+                    }
+                }
+                newTrack = true;
+            }
         } else {
             newTrack = true;
         }
@@ -187,9 +225,9 @@ public class CommandHandler {
         }
 
         newPosition = new Vector3f(
-                prevPosition.x + revC * (float)(Math.sin(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float) Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * RailsSystem.TRACK_LENGTH / 2f),
-                prevPosition.y + revC * (float)(Math.sin(TeraMath.DEG_TO_RAD * newOrientation.pitch) * RailsSystem.TRACK_LENGTH / 2),
-                prevPosition.z + revC * (float)(Math.cos(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float)Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * RailsSystem.TRACK_LENGTH / 2f)
+                prevPosition.x + (float)(Math.sin(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float) Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * RailsSystem.TRACK_LENGTH / 2f),
+                prevPosition.y + (float)(Math.sin(TeraMath.DEG_TO_RAD * newOrientation.pitch) * RailsSystem.TRACK_LENGTH / 2),
+                prevPosition.z + (float)(Math.cos(TeraMath.DEG_TO_RAD * newOrientation.yaw) * (float)Math.cos(TeraMath.DEG_TO_RAD * newOrientation.pitch) * RailsSystem.TRACK_LENGTH / 2f)
         );
 
         EntityRef track = createEntityInTheWorld(prefab, command, selectedTrack, newPosition, newOrientation, fixOrientation, preview);
@@ -244,9 +282,9 @@ public class CommandHandler {
         }
 
         if (!preview) {
-            for(int y = 0; y<10; y++) {
-                for(int z = -3; z<4; z++) {
-                    for(int x = -3; x<4; x++) {
+            for(int y = 0; y<5; y++) {
+                for(int z = -2; z<3; z++) {
+                    for(int x = -2; x<3; x++) {
                         EntityRef blockEntity = blockEntityRegistry.getBlockEntityAt(new Vector3f(position.x + x, position.y + y, position.z + z));
                         if (blockEntity!=null) {
                             blockEntity.send(new DoDamageEvent(1000, EngineDamageTypes.EXPLOSIVE.get()));
@@ -264,7 +302,7 @@ public class CommandHandler {
         trainRailComponent.yaw = newOrientation.yaw;
         trainRailComponent.roll = newOrientation.roll;
         trainRailComponent.type = command.type;
-        trainRailComponent.startPosition = calculateStartPosition(newOrientation);
+        trainRailComponent.startPosition = calculateStartPosition(newOrientation, position);
         trainRailComponent.endPosition = calculateEndPosition(newOrientation, position);
         trainRailComponent.chunkKey = command.chunkKey;
 
@@ -282,11 +320,11 @@ public class CommandHandler {
         return railBlock;
     }
 
-    private Vector3f calculateStartPosition(Orientation orientation) {
+    private Vector3f calculateStartPosition(Orientation orientation, Vector3f position) {
         return  new Vector3f(
-                (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.yaw) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * RailsSystem.TRACK_LENGTH / 2),
-                (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.pitch ) * RailsSystem.TRACK_LENGTH / 2),
-                (float)(Math.cos(TeraMath.DEG_TO_RAD * orientation.yaw ) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * RailsSystem.TRACK_LENGTH / 2)
+                position.x - (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.yaw) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * RailsSystem.TRACK_LENGTH / 2),
+                position.y - (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.pitch ) * RailsSystem.TRACK_LENGTH / 2),
+                position.z - (float)(Math.cos(TeraMath.DEG_TO_RAD * orientation.yaw ) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * RailsSystem.TRACK_LENGTH / 2)
         );
 
     }
