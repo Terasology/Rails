@@ -60,14 +60,9 @@ public class VehicleAction extends BaseComponentSystem {
     @ReceiveEvent
     public void onPlayerSpawn(OnPlayerSpawnedEvent event, EntityRef player, InventoryComponent inventory) {
         BlockItemFactory blockFactory = new BlockItemFactory(entityManager);
-        //inventoryManager.giveItem(player,player,entityManager.create("rails:minecart"));
-        inventoryManager.giveItem(player,player,entityManager.create("rails:trainCreater"));
         inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool"));
-        inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-left"));
-        inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-right"));
         inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-up"));
-        inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-down"));
-        //inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("rails:Rails"), 99));
+        inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("stone"), 99));
     }
 
     @ReceiveEvent(components = {TrainCreaterComponent.class, ItemComponent.class})

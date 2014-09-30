@@ -258,10 +258,6 @@ public class CommandHandler {
             }
         }
 
-        if (!preview) {
-            Railway.getInstance().createTunnel(position);
-        }
-
         LocationComponent locationComponent = railBlock.getComponent(LocationComponent.class);
         locationComponent.setWorldRotation(yawPitch);
 
@@ -275,6 +271,13 @@ public class CommandHandler {
         trainRailComponent.chunkKey = command.chunkKey;
 
         Railway.getInstance().getChunk(command.chunkKey).add(railBlock);
+
+        if (!preview) {
+            Vector3f dir = new Vector3f(position);
+            dir.sub(trainRailComponent.startPosition);
+            dir.normalize();
+            Railway.getInstance().createTunnel(position, dir, Railway.getInstance().getChunk(command.chunkKey).size()%2 != 0);
+        }
 
         if (!prevTrack.equals(EntityRef.NULL)&&!preview) {
             trainRailComponent.linkedTracks.add(prevTrack);

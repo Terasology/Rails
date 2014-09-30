@@ -21,6 +21,9 @@ import org.terasology.input.internal.BindableAxisImpl;
 import org.terasology.logic.health.DoDamageEvent;
 import org.terasology.logic.health.EngineDamageTypes;
 import org.terasology.math.TeraMath;
+import org.terasology.physics.HitResult;
+import org.terasology.physics.Physics;
+import org.terasology.physics.StandardCollisionGroup;
 import org.terasology.protobuf.EntityData;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.registry.CoreRegistry;
@@ -36,12 +39,14 @@ import java.util.Map;
 public class Railway {
     private Map<String, ArrayList<EntityRef>> chunks = Maps.newHashMap();
     private BlockEntityRegistry blockEntityRegistry;
+    private Physics physics;
     public static final String GHOST_KEY = "ghost";
 
     private static Railway instance;
 
     private Railway() {
         this.blockEntityRegistry = CoreRegistry.get(BlockEntityRegistry.class);
+        this.physics = CoreRegistry.get(Physics.class);
     }
 
     public static Railway getInstance() {
@@ -97,7 +102,7 @@ public class Railway {
         );
     }
 
-    public void createTunnel(Vector3f position) {
+    public void createTunnel(Vector3f position, Vector3f direction, boolean createTorch) {
         for(int y = 0; y<5; y++) {
             for(int z = -2; z<3; z++) {
                 for(int x = -2; x<3; x++) {
@@ -108,5 +113,16 @@ public class Railway {
                 }
             }
         }
+
+        if (createTorch) {
+            createTorch(position, direction);
+        }
+    }
+
+    private void createTorch(Vector3f centerPosition, Vector3f direction) {
+        float tx = direction.x;
+        direction.x = -direction.z;
+        direction.z = tx;
+        HitResult hit = physics.rayTrace(centerPosition, direction, 10f, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
     }
 }
