@@ -18,7 +18,6 @@ package org.terasology.rails.trains.blocks.system.Builder;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
-import org.terasology.rails.trains.blocks.system.Railway;
 import org.terasology.rails.trains.blocks.system.Tasks.Standart.*;
 import javax.vecmath.Vector3f;
 
@@ -45,7 +44,7 @@ public class Builder {
     }
 
     public boolean buildUp(Vector3f checkedPosition, EntityRef selectedTrack, Orientation orientation, boolean preview) {
-        return taskHandler.start(new BuildUpTask(),selectedTrack, checkedPosition, orientation, preview);
+        return taskHandler.start(new BuildSteepUpTask(),selectedTrack, checkedPosition, orientation, preview);
     }
 
     public boolean buildDown(Vector3f checkedPosition, EntityRef selectedTrack, Orientation orientation, boolean preview) {

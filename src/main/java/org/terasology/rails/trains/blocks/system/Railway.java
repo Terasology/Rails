@@ -18,7 +18,13 @@ package org.terasology.rails.trains.blocks.system;
 import com.google.common.collect.Maps;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.input.internal.BindableAxisImpl;
+import org.terasology.logic.health.DoDamageEvent;
+import org.terasology.logic.health.EngineDamageTypes;
+import org.terasology.math.TeraMath;
 import org.terasology.protobuf.EntityData;
+import org.terasology.rails.trains.blocks.system.Misc.Orientation;
+import org.terasology.registry.CoreRegistry;
+import org.terasology.world.BlockEntityRegistry;
 
 import javax.vecmath.Vector3f;
 import java.util.ArrayList;
@@ -29,13 +35,16 @@ import java.util.Map;
  */
 public class Railway {
     private Map<String, ArrayList<EntityRef>> chunks = Maps.newHashMap();
+    private BlockEntityRegistry blockEntityRegistry;
     public static final String GHOST_KEY = "ghost";
 
     private static Railway instance;
 
-    private Railway() {}
+    private Railway() {
+        this.blockEntityRegistry = CoreRegistry.get(BlockEntityRegistry.class);
+    }
 
-    public static Railway getInstance(){
+    public static Railway getInstance() {
         if (instance == null) {
             instance = new Railway();
         }
@@ -56,7 +65,7 @@ public class Railway {
 
     public void removeChunk(String key) {
         if (chunks.containsKey(key)) {
-            for(EntityRef track : chunks.get(key)){
+            for(EntityRef track : chunks.get(key)) {
                 track.destroy();
             }
             chunks.remove(key);
@@ -69,5 +78,35 @@ public class Railway {
         }
         chunks.put(GHOST_KEY, new ArrayList<EntityRef>());
         return GHOST_KEY;
+    }
+
+    public Vector3f calculateStartTrackPosition(Orientation orientation, Vector3f position) {
+        return  new Vector3f(
+                position.x - (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.yaw) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * RailsSystem.TRACK_LENGTH / 2),
+                position.y - (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.pitch ) * RailsSystem.TRACK_LENGTH / 2),
+                position.z - (float)(Math.cos(TeraMath.DEG_TO_RAD * orientation.yaw ) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * RailsSystem.TRACK_LENGTH / 2)
+        );
+
+    }
+
+    public Vector3f calculateEndTrackPosition(Orientation orientation, Vector3f position) {
+        return new Vector3f(
+                position.x + (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.yaw) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * RailsSystem.TRACK_LENGTH / 2),
+                position.y + (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.pitch ) * RailsSystem.TRACK_LENGTH / 2),
+                position.z + (float)(Math.cos(TeraMath.DEG_TO_RAD * orientation.yaw ) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * RailsSystem.TRACK_LENGTH / 2)
+        );
+    }
+
+    public void createTunnel(Vector3f position) {
+        for(int y = 0; y<5; y++) {
+            for(int z = -2; z<3; z++) {
+                for(int x = -2; x<3; x++) {
+                    EntityRef blockEntity = blockEntityRegistry.getBlockEntityAt(new Vector3f(position.x + x, position.y + y, position.z + z));
+                    if (blockEntity!=null) {
+                        blockEntity.send(new DoDamageEvent(1000, EngineDamageTypes.EXPLOSIVE.get()));
+                    }
+                }
+            }
+        }
     }
 }

@@ -43,6 +43,11 @@ public class BuildUpTask implements Task {
         ArrayList<Command> commands = new ArrayList<>();
         LocationComponent location = selectedTrack.getComponent(LocationComponent.class);
 
+        if (trainRailComponent.pitch < 0) {
+            Task buildStraightTask = new BuildStraightTask();
+            return buildStraightTask.run(selectedTrack, position, orientation, preview);
+        }
+
         String chunkKey = "";
         if (preview) {
             chunkKey = Railway.getInstance().createPreviewChunk();
@@ -50,7 +55,7 @@ public class BuildUpTask implements Task {
             chunkKey = Railway.getInstance().createChunk(location.getWorldPosition());
         }
 
-        if (trainRailComponent.pitch >= 0) {
+        if (trainRailComponent.pitch == 0) {
             commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, orientation, chunkKey, false, preview));
         } else {
             commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation, chunkKey, false, preview));

@@ -22,28 +22,29 @@ import org.terasology.rails.trains.blocks.system.Builder.Command;
 import org.terasology.rails.trains.blocks.system.Builder.CommandHandler;
 import org.terasology.rails.trains.blocks.system.Builder.TaskResult;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
+import org.terasology.rails.trains.blocks.system.RailsSystem;
 import org.terasology.rails.trains.blocks.system.Railway;
 import org.terasology.rails.trains.blocks.system.Tasks.Task;
+
 import javax.vecmath.Vector3f;
 import java.util.ArrayList;
 
 /**
  * Created by adeon on 10.09.14.
  */
-public class BuildDownTask implements Task {
+public class BuildSteepUpTask implements Task {
     @Override
     public boolean run(EntityRef selectedTrack, Vector3f position, Orientation orientation, boolean preview) {
-
-        ArrayList<Command> commands = new ArrayList<>();
 
         if (selectedTrack.equals(EntityRef.NULL)) {
             return false;
         }
 
         TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
+        ArrayList<Command> commands = new ArrayList<>();
         LocationComponent location = selectedTrack.getComponent(LocationComponent.class);
 
-        if (trainRailComponent.pitch > 0) {
+        if (trainRailComponent.pitch < 0) {
             Task buildStraightTask = new BuildStraightTask();
             return buildStraightTask.run(selectedTrack, position, orientation, preview);
         }
@@ -55,13 +56,14 @@ public class BuildDownTask implements Task {
             chunkKey = Railway.getInstance().createChunk(location.getWorldPosition());
         }
 
-        if (trainRailComponent.pitch >= 0) {
-            commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, orientation, chunkKey, false, preview));
+        if (trainRailComponent.pitch == 0) {
+            commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, orientation, chunkKey, false, preview));
+            commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, orientation, chunkKey, false, preview));
         } else {
             commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation, chunkKey, false, preview));
         }
 
-        for (int i=0; i<7; i++) {
+        for (int i=0; i<8; i++) {
             commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation, chunkKey, false, preview));
         }
 
@@ -69,4 +71,3 @@ public class BuildDownTask implements Task {
         return taskResult.success;
     }
 }
-

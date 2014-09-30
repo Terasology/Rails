@@ -24,13 +24,14 @@ import org.terasology.rails.trains.blocks.system.Builder.TaskResult;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.blocks.system.Railway;
 import org.terasology.rails.trains.blocks.system.Tasks.Task;
+
 import javax.vecmath.Vector3f;
 import java.util.ArrayList;
 
 /**
  * Created by adeon on 10.09.14.
  */
-public class BuildDownTask implements Task {
+public class BuildSteepDownTask implements Task {
     @Override
     public boolean run(EntityRef selectedTrack, Vector3f position, Orientation orientation, boolean preview) {
 
@@ -69,4 +70,3 @@ public class BuildDownTask implements Task {
         return taskResult.success;
     }
 }
-
