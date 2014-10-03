@@ -26,6 +26,7 @@ public class TrainComponent implements Component {
     Vector3f velocity = new Vector3f();
     float yaw = 0;
     float pitch = 0;
+    ArrayList<Vector3f> controlPoints = new ArrayList<>();
     //EntityRef wheelFront;
     //EntityRef wheelBack;
 }

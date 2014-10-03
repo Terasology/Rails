@@ -41,7 +41,7 @@ public class BuildRightTask implements Task {
         }
 
         TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
-        float count = 90/ RailsSystem.STANDARD_ANGLE_CHANGE;
+        float count = 90/ Railway.STANDARD_ANGLE_CHANGE;
         ArrayList<Command> commands = new ArrayList<>();
         LocationComponent location = selectedTrack.getComponent(LocationComponent.class);
 

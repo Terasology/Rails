@@ -41,6 +41,9 @@ public class Railway {
     private BlockEntityRegistry blockEntityRegistry;
     private Physics physics;
     public static final String GHOST_KEY = "ghost";
+    public static final float TRACK_LENGTH = 1f;
+    public static final float STANDARD_ANGLE_CHANGE = 7.5f;
+    public static final float STANDARD_PITCH_ANGLE_CHANGE = 7.5f;
 
     private static Railway instance;
 
@@ -87,18 +90,18 @@ public class Railway {
 
     public Vector3f calculateStartTrackPosition(Orientation orientation, Vector3f position) {
         return  new Vector3f(
-                position.x - (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.yaw) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * RailsSystem.TRACK_LENGTH / 2),
-                position.y - (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.pitch ) * RailsSystem.TRACK_LENGTH / 2),
-                position.z - (float)(Math.cos(TeraMath.DEG_TO_RAD * orientation.yaw ) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * RailsSystem.TRACK_LENGTH / 2)
+                position.x - (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.yaw) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * Railway.TRACK_LENGTH / 2),
+                position.y - (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.pitch ) * Railway.TRACK_LENGTH / 2),
+                position.z - (float)(Math.cos(TeraMath.DEG_TO_RAD * orientation.yaw ) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * Railway.TRACK_LENGTH / 2)
         );
 
     }
 
     public Vector3f calculateEndTrackPosition(Orientation orientation, Vector3f position) {
         return new Vector3f(
-                position.x + (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.yaw) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * RailsSystem.TRACK_LENGTH / 2),
-                position.y + (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.pitch ) * RailsSystem.TRACK_LENGTH / 2),
-                position.z + (float)(Math.cos(TeraMath.DEG_TO_RAD * orientation.yaw ) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * RailsSystem.TRACK_LENGTH / 2)
+                position.x + (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.yaw) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * Railway.TRACK_LENGTH / 2),
+                position.y + (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.pitch ) * Railway.TRACK_LENGTH / 2),
+                position.z + (float)(Math.cos(TeraMath.DEG_TO_RAD * orientation.yaw ) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * Railway .TRACK_LENGTH / 2)
         );
     }
 

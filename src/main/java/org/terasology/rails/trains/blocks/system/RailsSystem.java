@@ -53,10 +53,6 @@ import javax.vecmath.Vector3f;
 
 @RegisterSystem
 public class RailsSystem extends BaseComponentSystem {
-    public static final float TRACK_LENGTH = 1f;
-    public static final float STANDARD_ANGLE_CHANGE = 7.5f;
-    public static final float STANDARD_PITCH_ANGLE_CHANGE = 7.5f;
-
     @In
     private BlockManager blockManager;
     @In

@@ -35,6 +35,7 @@ import org.terasology.registry.In;
 
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
+import java.util.List;
 
 @RegisterSystem(RegisterMode.AUTHORITY)
 public class VehicleSystem extends BaseComponentSystem implements UpdateSubscriberSystem {

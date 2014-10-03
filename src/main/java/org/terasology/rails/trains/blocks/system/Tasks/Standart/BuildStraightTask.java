@@ -57,6 +57,8 @@ public class BuildStraightTask implements Task {
 
         if (pitch > 0) {
             commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, orientation, chunkKey, false, preview));
+            commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, orientation, chunkKey, false, preview));
+            commands.add(new Command(true, TrainRailComponent.TrackType.DOWN, position, orientation, chunkKey, false, preview));
         } else if(pitch < 0) {
             commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, orientation, chunkKey, false, preview));
         } else {

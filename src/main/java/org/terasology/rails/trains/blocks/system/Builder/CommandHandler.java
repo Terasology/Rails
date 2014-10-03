@@ -90,8 +90,7 @@ public class CommandHandler {
         boolean findedNearestRail = false;
         float startYaw = 0;
         float startPitch = 0;
-
-
+        logger.info("----------------------------------");
         if (selectedTrack.equals(EntityRef.NULL)) {
             AABB aabb = AABB.createCenterExtent(prevPosition,
                     new Vector3f(1.5f, 0.5f, 1.5f)
@@ -103,7 +102,7 @@ public class CommandHandler {
                     if (checkEntity.hasComponent(TrainRailComponent.class)) {
                         TrainRailComponent trainRailComponent = checkEntity.getComponent(TrainRailComponent.class);
                         if (Math.abs(trainRailComponent.yaw - command.orientation.yaw) <= 7.5 &&
-                            Math.abs(trainRailComponent.pitch - command.orientation.pitch) <= 7.5 &&
+                            Math.abs(trainRailComponent.pitch - command.orientation.pitch) <= 30 &&
                             trainRailComponent.linkedTracks.size() < 2
                            ) {
                             selectedTrack = checkEntity;
@@ -137,21 +136,23 @@ public class CommandHandler {
                         prevPosition = trainRailComponent.startPosition;
                     }
                 } else {
-                    EntityRef linkedTrack =  trainRailComponent.linkedTracks.get(0);
-                    LocationComponent locationComponent = linkedTrack.getComponent(LocationComponent.class);
-                    prevPosition = locationComponent.getWorldPosition();
-                    float firstSide, secondSide;
-                    Vector3f diff = new Vector3f(prevPosition);
-                    diff.sub(trainRailComponent.startPosition);
-                    firstSide = diff.lengthSquared();
-                    diff.set(prevPosition);
-                    diff.sub(trainRailComponent.endPosition);
-                    secondSide = diff.lengthSquared();
+                    if (trainRailComponent.linkedTracks.size() > 0) {
+                        EntityRef linkedTrack =  trainRailComponent.linkedTracks.get(0);
+                        LocationComponent locationComponent = linkedTrack.getComponent(LocationComponent.class);
+                        prevPosition = locationComponent.getWorldPosition();
+                        float firstSide, secondSide;
+                        Vector3f diff = new Vector3f(prevPosition);
+                        diff.sub(trainRailComponent.startPosition);
+                        firstSide = diff.lengthSquared();
+                        diff.set(prevPosition);
+                        diff.sub(trainRailComponent.endPosition);
+                        secondSide = diff.lengthSquared();
 
-                    if (firstSide < secondSide) {
-                        prevPosition = trainRailComponent.endPosition;
-                    } else {
-                        prevPosition = trainRailComponent.startPosition;
+                        if (firstSide < secondSide) {
+                            prevPosition = trainRailComponent.endPosition;
+                        } else {
+                            prevPosition = trainRailComponent.startPosition;
+                        }
                     }
                 }
                 startPitch = trainRailComponent.pitch;
@@ -176,19 +177,28 @@ public class CommandHandler {
                 } else {
                     fixOrientation = new Orientation(90f, 0, 0);
                 }
+                TrainRailComponent tr = selectedTrack.getComponent(TrainRailComponent.class);
+                if (tr != null && !command.chunkKey.equals(Railway.GHOST_KEY))
+                    logger.info("CREATE STRAIGHT: pitch - " + newOrientation.pitch + " key - " + command.chunkKey + " selected: " +  tr.chunkKey);
                 break;
             case UP:
-                float pitch = startPitch + RailsSystem.STANDARD_PITCH_ANGLE_CHANGE;
+                float pitch = startPitch + Railway.STANDARD_PITCH_ANGLE_CHANGE;
 
                 if (newTrack) {
                     newOrientation.add(command.orientation);
                 }
 
-                if (pitch > RailsSystem.STANDARD_ANGLE_CHANGE * 2) {
-                    pitch = RailsSystem.STANDARD_ANGLE_CHANGE * 2;
+                if (pitch > Railway.STANDARD_ANGLE_CHANGE * 3) {
+                    pitch = Railway.STANDARD_ANGLE_CHANGE * 3;
                     newOrientation.add(new Orientation(startYaw, pitch, 0));
                 } else {
-                    newOrientation.add(new Orientation(startYaw, startPitch + RailsSystem.STANDARD_PITCH_ANGLE_CHANGE, 0));
+                    newOrientation.add(new Orientation(startYaw, startPitch + Railway.STANDARD_PITCH_ANGLE_CHANGE, 0));
+                }
+
+                TrainRailComponent trd = selectedTrack.getComponent(TrainRailComponent.class);
+                if (!command.chunkKey.equals(Railway.GHOST_KEY)) {
+                    logger.info("CREATE UP: pitch - " + pitch + " key - " + command.chunkKey);
+                    logger.info("selected: " + trd.chunkKey);
                 }
 
                 fixOrientation = new Orientation(270f, 0, 0);
@@ -199,18 +209,18 @@ public class CommandHandler {
                     newOrientation.add(command.orientation);
                 }
 
-                newOrientation.add(new Orientation(startYaw, startPitch - RailsSystem.STANDARD_PITCH_ANGLE_CHANGE, 0));
+                newOrientation.add(new Orientation(startYaw, startPitch - Railway.STANDARD_PITCH_ANGLE_CHANGE, 0));
 
                 fixOrientation = new Orientation(270f, 0, 0);
                 prefab = "rails:railBlock-down";
                 break;
             case LEFT:
-                newOrientation = new Orientation(startYaw + RailsSystem.STANDARD_ANGLE_CHANGE, startPitch, 0);
+                newOrientation = new Orientation(startYaw + Railway.STANDARD_ANGLE_CHANGE, startPitch, 0);
                 fixOrientation = new Orientation(90f, 0, 0);
                 prefab = "rails:railBlock-left";
                 break;
             case RIGHT:
-                newOrientation = new Orientation(startYaw - RailsSystem.STANDARD_ANGLE_CHANGE, startPitch, 0);
+                newOrientation = new Orientation(startYaw - Railway.STANDARD_ANGLE_CHANGE, startPitch, 0);
                 logger.info("left -- " + newOrientation.yaw);
                 fixOrientation = new Orientation(90f, 0, 0);
                 prefab = "rails:railBlock-right";
@@ -223,6 +233,9 @@ public class CommandHandler {
 
         newPosition =  Railway.getInstance().calculateEndTrackPosition(newOrientation,prevPosition);
         EntityRef track = createEntityInTheWorld(prefab, command, selectedTrack, newPosition, newOrientation, fixOrientation, preview);
+        if (!command.chunkKey.equals(Railway.GHOST_KEY)) {
+            logger.info("New id is - " + track);
+        }
 
         return track;
     }
@@ -233,7 +246,7 @@ public class CommandHandler {
         EntityRef railBlock = entityManager.create(prefab, position);
 
         AABB aabb = AABB.createCenterExtent(position,
-                new Vector3f(1.2f, 0.5f, 1.2f)
+                new Vector3f(0.5f, 0.25f, 0.5f)
         );
         List<EntityRef> aroundList = physics.scanArea(aabb, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD, StandardCollisionGroup.KINEMATIC);
         if (!aroundList.isEmpty()) {
@@ -243,7 +256,13 @@ public class CommandHandler {
             } else {
                 for (EntityRef checkEntity : aroundList) {
                     if (checkEntity.hasComponent(TrainRailComponent.class)) {
-                        if (!checkEntity.equals(prevTrack)) {
+                        TrainRailComponent checkEntityTrainRailComponent = checkEntity.getComponent(TrainRailComponent.class);
+                        if (!checkEntity.equals(prevTrack) && !checkEntityTrainRailComponent.chunkKey.equals(command.chunkKey)) {
+                                logger.info("checkEntity:" + checkEntity.getId());
+                                logger.info("prevTrack:" + prevTrack.getId());
+                                logger.info("1:" + checkEntityTrainRailComponent.chunkKey);
+                                logger.info("2:" + command.chunkKey);
+                                logger.info("DELETE!!!!");
                                 Railway.getInstance().removeChunk(command.chunkKey);
                                 railBlock.destroy();
                                 return EntityRef.NULL;
