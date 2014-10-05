@@ -59,7 +59,10 @@ public class BuildLeftTask implements Task {
         }
 
         for (int i = 0; i<count; i++) {
-            commands.add(new Command(true, TrainRailComponent.TrackType.LEFT, position, new Orientation(0,0,0), chunkKey, false, preview));
+            if (i%4 == 0) {
+                commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation, chunkKey, false, preview));
+            }
+            commands.add(new Command(true, TrainRailComponent.TrackType.LEFT, position, orientation, chunkKey, false, preview));
         }
         TaskResult taskResult = CommandHandler.getInstance().run(commands, selectedTrack, preview);
         return taskResult.success;

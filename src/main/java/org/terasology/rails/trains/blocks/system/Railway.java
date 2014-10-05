@@ -101,7 +101,7 @@ public class Railway {
         return new Vector3f(
                 position.x + (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.yaw) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * Railway.TRACK_LENGTH / 2),
                 position.y + (float)(Math.sin(TeraMath.DEG_TO_RAD * orientation.pitch ) * Railway.TRACK_LENGTH / 2),
-                position.z + (float)(Math.cos(TeraMath.DEG_TO_RAD * orientation.yaw ) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * Railway .TRACK_LENGTH / 2)
+                position.z + (float)(Math.cos(TeraMath.DEG_TO_RAD * orientation.yaw ) * Math.cos(TeraMath.DEG_TO_RAD * orientation.pitch) * Railway .TRACK_LENGTH /2)
         );
     }
 

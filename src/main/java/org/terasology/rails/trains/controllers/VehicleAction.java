@@ -63,6 +63,8 @@ public class VehicleAction extends BaseComponentSystem {
         inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool"));
         inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-up"));
         inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-down"));
+        inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-left"));
+        inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-right"));
         inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("stone"), 99));
     }
 

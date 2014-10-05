@@ -59,6 +59,9 @@ public class BuildRightTask implements Task {
         }
 
         for (int i = 0; i<count; i++) {
+            if (i%4 == 0) {
+                commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation, chunkKey, false, preview));
+            }
             commands.add(new Command(true, TrainRailComponent.TrackType.RIGHT, position, new Orientation(0,0,0), chunkKey, false, preview));
         }
 

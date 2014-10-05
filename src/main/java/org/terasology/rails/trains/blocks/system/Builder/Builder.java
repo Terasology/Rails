@@ -44,7 +44,7 @@ public class Builder {
     }
 
     public boolean buildUp(Vector3f checkedPosition, EntityRef selectedTrack, Orientation orientation, boolean preview) {
-        return taskHandler.start(new BuildSteepUpTask(),selectedTrack, checkedPosition, orientation, preview);
+        return taskHandler.start(new BuildUpTask(),selectedTrack, checkedPosition, orientation, preview);
     }
 
     public boolean buildDown(Vector3f checkedPosition, EntityRef selectedTrack, Orientation orientation, boolean preview) {
