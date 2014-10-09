@@ -16,6 +16,7 @@
 package org.terasology.rails.trains.blocks.system.Tasks.Standart;
 
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.logic.location.Location;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Builder.Command;
@@ -66,6 +67,15 @@ public class BuildUpTask implements Task {
         }
 
         TaskResult taskResult = CommandHandler.getInstance().run(commands, selectedTrack, preview);
+
+        if ( taskResult.success && !preview) {
+            EntityRef lastTrack = taskResult.firstTrack;
+            TrainRailComponent trainRailComponentLT = lastTrack.getComponent(TrainRailComponent.class);
+            LocationComponent locationComponent = lastTrack.getComponent(LocationComponent.class);
+
+            Railway.getInstance().createSlope(locationComponent.getWorldPosition(), (int)trainRailComponentLT.yaw);
+        }
+
         return taskResult.success;
     }
 }

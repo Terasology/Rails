@@ -62,22 +62,24 @@ public class CommandHandler {
     }
 
     public TaskResult run(List<Command> commands, EntityRef selectedTrack, boolean preview) {
-        EntityRef track = null;
+        EntityRef firstTrack = EntityRef.NULL;
         for( Command command : commands ) {
             if (command.build) {
                 selectedTrack = buildTrack(selectedTrack, command, preview);
                 if (selectedTrack.equals(EntityRef.NULL)) {
-                    return new TaskResult(track, false);
+                    return new TaskResult(firstTrack, null, false);
                 }
-                track = selectedTrack;
+                if (firstTrack.equals(EntityRef.NULL)) {
+                    firstTrack = selectedTrack;
+                }
             } else {
                 boolean removeResult = false;
                 if (!removeResult) {
-                    return new TaskResult(null, false);
+                    return new TaskResult(EntityRef.NULL, EntityRef.NULL, false);
                 }
             }
         }
-        return new TaskResult(track, true);
+        return new TaskResult(firstTrack, selectedTrack, true);
     }
 
     private EntityRef buildTrack(EntityRef selectedTrack, Command command, boolean preview) {
@@ -90,7 +92,6 @@ public class CommandHandler {
         boolean findedNearestRail = false;
         float startYaw = 0;
         float startPitch = 0;
-        logger.info("----------------------------------");
         if (selectedTrack.equals(EntityRef.NULL)) {
             AABB aabb = AABB.createCenterExtent(prevPosition,
                     new Vector3f(1.5f, 0.5f, 1.5f)
@@ -178,8 +179,6 @@ public class CommandHandler {
                     fixOrientation = new Orientation(90f, 0, 0);
                 }
                 TrainRailComponent tr = selectedTrack.getComponent(TrainRailComponent.class);
-                if (tr != null && !command.chunkKey.equals(Railway.GHOST_KEY))
-                    logger.info("CREATE STRAIGHT: pitch - " + newOrientation.pitch + " key - " + command.chunkKey + " selected: " +  tr.chunkKey);
                 break;
             case UP:
                 float pitch = startPitch + Railway.STANDARD_PITCH_ANGLE_CHANGE;
@@ -196,10 +195,6 @@ public class CommandHandler {
                 }
 
                 TrainRailComponent trd = selectedTrack.getComponent(TrainRailComponent.class);
-                if (!command.chunkKey.equals(Railway.GHOST_KEY)) {
-                    logger.info("CREATE UP: pitch - " + pitch + " key - " + command.chunkKey);
-                    logger.info("selected: " + trd.chunkKey);
-                }
 
                 fixOrientation = new Orientation(270f, 0, 0);
                 prefab = "rails:railBlock-up";
@@ -221,7 +216,6 @@ public class CommandHandler {
                 break;
             case RIGHT:
                 newOrientation = new Orientation(startYaw - Railway.STANDARD_ANGLE_CHANGE, startPitch, 0);
-                logger.info("left -- " + newOrientation.yaw);
                 fixOrientation = new Orientation(90f, 0, 0);
                 prefab = "rails:railBlock-right";
                 break;
@@ -233,10 +227,6 @@ public class CommandHandler {
 
         newPosition =  Railway.getInstance().calculateEndTrackPosition(newOrientation,prevPosition);
         EntityRef track = createEntityInTheWorld(prefab, command, selectedTrack, newPosition, newOrientation, fixOrientation, preview);
-        if (!command.chunkKey.equals(Railway.GHOST_KEY)) {
-            logger.info("New id is - " + track);
-        }
-
         return track;
     }
 
@@ -258,11 +248,6 @@ public class CommandHandler {
                     if (checkEntity.hasComponent(TrainRailComponent.class)) {
                         TrainRailComponent checkEntityTrainRailComponent = checkEntity.getComponent(TrainRailComponent.class);
                         if (!checkEntity.equals(prevTrack) && !checkEntityTrainRailComponent.chunkKey.equals(command.chunkKey)) {
-                                logger.info("checkEntity:" + checkEntity.getId());
-                                logger.info("prevTrack:" + prevTrack.getId());
-                                logger.info("1:" + checkEntityTrainRailComponent.chunkKey);
-                                logger.info("2:" + command.chunkKey);
-                                logger.info("DELETE!!!!");
                                 Railway.getInstance().removeChunk(command.chunkKey);
                                 railBlock.destroy();
                                 return EntityRef.NULL;

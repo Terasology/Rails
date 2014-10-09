@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 MovingBlocks
+ * Copyright 2014 Benjamin Glatzel <benjamin.glatzel@me.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.trains.blocks.system.Builder;
 
-import org.terasology.entitySystem.entity.EntityRef;
-
-/**
- * Created by adeon on 10.09.14.
- */
-public class TaskResult {
-    public EntityRef lastTrack;
-    public EntityRef firstTrack;
-    public boolean success;
-
-    public TaskResult(EntityRef firstTrack, EntityRef lastTRack, boolean success) {
-        this.firstTrack = firstTrack;
-        this.lastTrack = lastTRack;
-        this.success = success;
-    }
+{
+    "rotation" : "horizontal",
+    "penetrable" : false,
+    "tile" : "Core:Stone",
+    "shadowCasting" : false,
+    "shape" : "Rails:block_8_8"
 }

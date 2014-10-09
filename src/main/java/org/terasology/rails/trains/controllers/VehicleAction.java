@@ -61,11 +61,19 @@ public class VehicleAction extends BaseComponentSystem {
     public void onPlayerSpawn(OnPlayerSpawnedEvent event, EntityRef player, InventoryComponent inventory) {
         BlockItemFactory blockFactory = new BlockItemFactory(entityManager);
         inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool"));
-        inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-up"));
+        inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-up"));   /*
         inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-down"));
         inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-left"));
         inventoryManager.giveItem(player,player,entityManager.create("rails:railBlockTool-right"));
-        inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("stone"), 99));
+        inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("rails:block_1_8"), 99));
+        inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("rails:block_2_8"), 99));
+        inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("rails:block_3_8"), 99));
+        inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("rails:block_4_8"), 99));
+        inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("rails:block_5_8"), 99));
+        inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("rails:block_6_8"), 99));
+        inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("rails:block_7_8"), 99));
+        inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("rails:block_8_8"), 99));
+        //inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("stone"), 99)); */
     }
 
     @ReceiveEvent(components = {TrainCreaterComponent.class, ItemComponent.class})

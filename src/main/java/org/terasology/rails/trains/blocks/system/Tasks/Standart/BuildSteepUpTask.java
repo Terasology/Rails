@@ -61,9 +61,9 @@ public class BuildSteepUpTask implements Task {
             //commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, orientation, chunkKey, false, preview));
             orientation.pitch = 22.5f;
            // commands.add(new Command(true, TrainRailComponent.TrackType.UP, position, orientation, chunkKey, false, preview));
-        } else {
+        }/* else {
             commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation, chunkKey, false, preview));
-        }
+        }  */
 
         for (int i=0; i<13; i++) {
             commands.add(new Command(true, TrainRailComponent.TrackType.STRAIGHT, position, orientation, chunkKey, false, preview));

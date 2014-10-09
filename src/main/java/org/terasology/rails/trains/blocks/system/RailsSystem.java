@@ -49,6 +49,7 @@ import org.terasology.registry.CoreRegistry;
 import org.terasology.registry.In;
 import org.terasology.world.block.BlockComponent;
 import org.terasology.world.block.BlockManager;
+
 import javax.vecmath.Vector3f;
 
 @RegisterSystem
@@ -122,13 +123,13 @@ public class RailsSystem extends BaseComponentSystem {
                 return;
             }
             selectedTrack = target;
-        }else{
+        } else {
             placementPos = new Vector3i(target.getComponent(BlockComponent.class).getPosition()).toVector3f();
         }
 
         if (selectedTrack.hasComponent(TrainRailComponent.class)) {
             TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
-            if (trainRailComponent.chunkKey.equals(Railway.GHOST_KEY)){
+            if (trainRailComponent.chunkKey.equals(Railway.GHOST_KEY)) {
                 return;
             }
         }
