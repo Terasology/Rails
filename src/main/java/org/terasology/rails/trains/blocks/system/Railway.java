@@ -151,21 +151,29 @@ public class Railway {
         switch (direction) {
             case 0:
                 secondaryDirection = Side.FRONT;
+                logger.info("FRONT!!!");
                 break;
             case 90:
                 secondaryDirection = Side.LEFT;
+                logger.info("LEFT!!!");
                 break;
             case 180:
                 secondaryDirection = Side.BACK;
+                logger.info("BACK!!!");
                 break;
             case 270:
                 secondaryDirection = Side.RIGHT;
+                logger.info("RIGHT!!!");
                 break;
         }
 
-        Vector3i dir = secondaryDirection.getVector3i();
+        Vector3i dir = new Vector3i(secondaryDirection.getVector3i());
         dir.negate();
-
+        position.x = Math.round(position.x);
+        position.y = (float)Math.floor(position.y);
+        position.z = Math.round(position.z);
+        logger.info("placementPos " + position);
+        logger.info("dir " + dir);
         for (int i = 0; i < 8; i++) {
             for (int j = -1; j <= 1; j++) {
                 EntityRef item = blockFactory.newInstance(blockManager.getBlockFamily("rails:block_" + (i + 1) +"_8"), 1);
@@ -173,7 +181,7 @@ public class Railway {
                 BlockFamily type = blockItem.blockFamily;
                 Vector3i placementPos = new Vector3i(position);
                 placementPos.x += i*dir.x + dir.z*j;
-                placementPos.y += i*dir.y  + 1;
+                placementPos.y += 1;
                 placementPos.z += i*dir.z + dir.x*j;
                 Block block = type.getBlockForPlacement(worldProvider, blockEntityRegistry, placementPos, surfaceSide, secondaryDirection);
                 PlaceBlocks placeBlocks = new PlaceBlocks(placementPos, block, EntityRef.NULL);
