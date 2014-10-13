@@ -41,6 +41,9 @@ public class BuildSteepUpTask implements Task {
         }
 
         TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
+
+        selectedTrack.saveComponent(trainRailComponent);
+
         ArrayList<Command> commands = new ArrayList<>();
         LocationComponent location = selectedTrack.getComponent(LocationComponent.class);
 

@@ -60,7 +60,7 @@ public class Railway {
     public static final String GHOST_KEY = "ghost";
     public static final float TRACK_LENGTH = 1f;
     public static final float STANDARD_ANGLE_CHANGE = 7.5f;
-    public static final float STANDARD_PITCH_ANGLE_CHANGE = 7.5f;
+    public static final float STANDARD_PITCH_ANGLE_CHANGE = 11.3f;
     private final Logger logger = LoggerFactory.getLogger(Railway.class);
 
     private static Railway instance;
@@ -169,8 +169,9 @@ public class Railway {
 
         Vector3i dir = new Vector3i(secondaryDirection.getVector3i());
         dir.negate();
+        logger.info("placementPos before" + position);
         position.x = Math.round(position.x);
-        position.y = (float)Math.floor(position.y);
+        position.y = (float)Math.round(position.y);
         position.z = Math.round(position.z);
         logger.info("placementPos " + position);
         logger.info("dir " + dir);
@@ -181,7 +182,7 @@ public class Railway {
                 BlockFamily type = blockItem.blockFamily;
                 Vector3i placementPos = new Vector3i(position);
                 placementPos.x += i*dir.x + dir.z*j;
-                placementPos.y += 1;
+                //placementPos.y -= 1;
                 placementPos.z += i*dir.z + dir.x*j;
                 Block block = type.getBlockForPlacement(worldProvider, blockEntityRegistry, placementPos, surfaceSide, secondaryDirection);
                 PlaceBlocks placeBlocks = new PlaceBlocks(placementPos, block, EntityRef.NULL);
