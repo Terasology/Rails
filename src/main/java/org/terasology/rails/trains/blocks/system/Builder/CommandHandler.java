@@ -118,7 +118,7 @@ public class CommandHandler {
         if (!selectedTrack.equals(EntityRef.NULL)) {
             TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
             if (trainRailComponent.chunkKey.equals(command.chunkKey)) {
-                prevPosition = trainRailComponent.endPosition;
+                prevPosition = new Vector3f(trainRailComponent.endPosition);
                 startYaw = trainRailComponent.yaw;
                 startPitch = trainRailComponent.pitch;
             } else {
@@ -132,9 +132,9 @@ public class CommandHandler {
                     secondSide = diff.lengthSquared();
 
                     if (firstSide > secondSide) {
-                        prevPosition = trainRailComponent.endPosition;
+                        prevPosition = new Vector3f(trainRailComponent.endPosition);
                     } else {
-                        prevPosition = trainRailComponent.startPosition;
+                        prevPosition = new Vector3f(trainRailComponent.startPosition);
                     }
                 } else {
                     if (trainRailComponent.linkedTracks.size() > 0) {
@@ -150,9 +150,9 @@ public class CommandHandler {
                         secondSide = diff.lengthSquared();
 
                         if (firstSide < secondSide) {
-                            prevPosition = trainRailComponent.endPosition;
+                            prevPosition = new Vector3f(trainRailComponent.endPosition);
                         } else {
-                            prevPosition = trainRailComponent.startPosition;
+                            prevPosition = new Vector3f(trainRailComponent.startPosition);
                         }
                     }
                 }
@@ -164,6 +164,32 @@ public class CommandHandler {
         }
 
         String prefab = "rails:railBlock";
+        if (newTrack && !selectedTrack.equals(EntityRef.NULL)) {
+            logger.info("BEFORE:   " + prevPosition);
+
+
+            prevPosition.y = Math.round(prevPosition.y) - 0.35f;
+            logger.info("AFTER1:   " + prevPosition);
+            switch ((int)command.orientation.yaw) {
+                case 90:
+                    prevPosition.x = (float)Math.ceil(prevPosition.x);
+                    prevPosition.x -= 0.5f;
+                    break;
+                case 270:
+                    prevPosition.x = (float)Math.floor(prevPosition.x);
+                    prevPosition.x += 0.5f;
+                    break;
+                case 0:
+                    prevPosition.z = (float)Math.ceil(prevPosition.z);
+                    prevPosition.z -= 0.5f;
+                    break;
+                case 180:
+                    prevPosition.z = (float)Math.floor(prevPosition.z);
+                    prevPosition.z += 0.5f;
+                    break;
+            }
+            logger.info("AFTER2:   " + prevPosition);
+        }
 
         switch(command.type) {
             case STRAIGHT:
@@ -179,6 +205,7 @@ public class CommandHandler {
                     fixOrientation = new Orientation(90f, 0, 0);
                 }
                 TrainRailComponent tr = selectedTrack.getComponent(TrainRailComponent.class);
+
                 break;
             case UP:
                 float pitch = startPitch + Railway.STANDARD_PITCH_ANGLE_CHANGE;

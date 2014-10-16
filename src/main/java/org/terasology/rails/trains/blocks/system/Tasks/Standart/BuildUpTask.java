@@ -15,6 +15,8 @@
  */
 package org.terasology.rails.trains.blocks.system.Tasks.Standart;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.location.Location;
 import org.terasology.logic.location.LocationComponent;
@@ -33,6 +35,7 @@ import java.util.ArrayList;
  * Created by adeon on 10.09.14.
  */
 public class BuildUpTask implements Task {
+    private final Logger logger = LoggerFactory.getLogger(BuildUpTask.class);
     @Override
     public boolean run(EntityRef selectedTrack, Vector3f position, Orientation orientation, boolean preview) {
 
@@ -41,6 +44,7 @@ public class BuildUpTask implements Task {
         }
 
         TrainRailComponent trainRailComponent = selectedTrack.getComponent(TrainRailComponent.class);
+
         ArrayList<Command> commands = new ArrayList<>();
         LocationComponent location = selectedTrack.getComponent(LocationComponent.class);
 

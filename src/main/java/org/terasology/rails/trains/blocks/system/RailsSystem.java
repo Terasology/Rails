@@ -140,7 +140,7 @@ public class RailsSystem extends BaseComponentSystem {
         direction.y = 0;
         Direction dir = Direction.inDirection(direction);
 
-
+        logger.info("2 dir " + dir);
         switch (dir) {
             case LEFT:
                 yaw = 90;
