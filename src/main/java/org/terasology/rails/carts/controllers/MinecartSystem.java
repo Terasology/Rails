@@ -30,6 +30,7 @@ import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.*;
 import org.terasology.input.binds.movement.ForwardsMovementAxis;
 import org.terasology.input.binds.movement.VerticalMovementAxis;
+import org.terasology.logic.characters.events.ActivationRequest;
 import org.terasology.logic.common.ActivateEvent;
 import org.terasology.logic.inventory.InventoryManager;
 import org.terasology.logic.location.LocationComponent;
@@ -259,7 +260,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
         LocationComponent location = clientComponent.character.getComponent(LocationComponent.class);
         if (!location.getParent().equals(EntityRef.NULL)&&location.getParent().hasComponent(RailVehicleComponent.class)) {
             EntityRef railVehicle = location.getParent();
-            railVehicle.send(new ActivateEvent(railVehicle,clientComponent.character));
+            railVehicle.send(new ActivateEvent(new ActivationRequest()));
             event.consume();
         }
     }
