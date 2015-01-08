@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.Side;
+import org.terasology.math.geom.BaseVector3f;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.rails.carts.components.RailVehicleComponent;
@@ -228,8 +229,7 @@ public class MoveDescriptor {
             } else if (dir.length() < 1.2f) {
                 RigidBodyComponent rb = railVehicleComponent.parentNode.getComponent(RigidBodyComponent.class);
                 railVehicleComponent.direction.set(Math.signum(dir.x), railVehicleComponent.direction.y, Math.signum(dir.z));
-                // TODO: Re-enable when TeraMath supports .negate or we provide a replacement
-                //railVehicleComponent.direction.negate();
+                railVehicleComponent.direction.negate();
                 velocity.set(1, velocity.y, 1);
                 velocity.scale(velocity.length() * (dir.length() - 0.8f));
             }
@@ -257,8 +257,7 @@ public class MoveDescriptor {
                 Vector3f drive = new Vector3f(railVehicleComponent.drive, railVehicleComponent.drive, railVehicleComponent.drive);
                 drive.x *= railVehicleComponent.direction.x;
                 drive.z *= railVehicleComponent.direction.z;
-                // TODO: Re-enable when TeraMath supports .negate or we provide a replacement
-                //velocity.interpolate(drive, 0.5f);
+                velocity.set(BaseVector3f.lerp(velocity, drive, 0.5f));
             }
         }
 
@@ -267,8 +266,7 @@ public class MoveDescriptor {
         }
 
         if (railVehicleComponent.needRevertVelocity > 0) {
-            // TODO: Re-enable when TeraMath supports .negate or we provide a replacement
-            //velocity.negate();
+            velocity.negate();
             velocity.scale(0.7f);
             railVehicleComponent.needRevertVelocity--;
         }

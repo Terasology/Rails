@@ -233,12 +233,10 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
 
             Vector3f distance = new Vector3f(position);
             distance.sub(motionState.prevPosition);
-            Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
             moveDescriptor.setYawOnPath(railVehicleComponent, motionState, blockInfo, distance);
             moveDescriptor.setPitchOnPath(railVehicleComponent, position, motionState, blockInfo);
 
-            // TODO: Commented out for compile fix - TeraMath vs TeraBullet: vecmath fight GO!
-            //QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * railVehicleComponent.yaw, TeraMath.DEG_TO_RAD * railVehicleComponent.pitch, 0);
+            Quat4f yawPitch = new Quat4f(TeraMath.DEG_TO_RAD * railVehicleComponent.yaw, TeraMath.DEG_TO_RAD * railVehicleComponent.pitch, 0);
 
             motionState.prevPosition.set(position);
 
@@ -362,8 +360,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             if (railVehicleComponent.drive != 0) {
                 particleEffectComponent.spawnCount = 20;
                 particleEffectComponent.targetVelocity.set(railVehicleComponent.direction);
-                // TODO: Re-enable when TeraMath supports .negate or we provide a replacement
-//                particleEffectComponent.targetVelocity.negate();
+                particleEffectComponent.targetVelocity.negate();
                 particleEffectComponent.targetVelocity.y = 0.7f;
                 particleEffectComponent.acceleration.set(railVehicleComponent.pathDirection);
                 particleEffectComponent.acceleration.y = 0.7f;
@@ -395,16 +392,14 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             }
 
             float angleSign = velocity.x >= 0 && velocity.z >= 0 ? 1 : -1;
-            // TODO: Commented out for compile fix - TeraMath vs TeraBullet: vecmath fight GO!
-            float angle = reverseSign * angleSign * (velocity.length() / MinecartHelper.TWO_PI); // + QuaternionUtil.getAngle(locationComponent.getLocalRotation());
+            float angle = reverseSign * angleSign * (velocity.length() / MinecartHelper.TWO_PI) + locationComponent.getLocalRotation().getAngle();
             if (angle > MinecartHelper.TWO_PI) {
                 angle = 0;
             } else if (angle < 0) {
                 angle = MinecartHelper.TWO_PI;
             }
 
-            // TODO: Commented out for compile fix - TeraMath vs TeraBullet: vecmath fight GO!
-            //QuaternionUtil.setRotation(rotate, new Vector3f(1, 0, 0), angle);
+            rotate.set(new Vector3f(1, 0, 0), angle);
             locationComponent.setLocalRotation(rotate);
             vehicle.saveComponent(locationComponent);
         }

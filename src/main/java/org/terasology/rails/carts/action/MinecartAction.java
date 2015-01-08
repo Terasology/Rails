@@ -282,8 +282,7 @@ public class MinecartAction extends BaseComponentSystem {
 
         Vector3f pathDirectionNegate = new Vector3f(pathDirection);
 
-        // TODO: Re-enable when TeraMath supports .negate or we provide a replacement
-        //pathDirectionNegate.negate(pathDirection);
+        pathDirectionNegate.negate();
         Vector3f[] directions = {pathDirection, pathDirectionNegate};
 
         for (Vector3f dir : directions) {
