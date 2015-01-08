@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 MovingBlocks
+ * Copyright 2015 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,9 @@ import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.asset.Assets;
-import org.terasology.audio.AudioManager;
 import org.terasology.audio.events.PlaySoundEvent;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.entitySystem.entity.lifecycleEvents.OnChangedComponent;
 import org.terasology.entitySystem.event.EventPriority;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.*;
@@ -39,6 +37,8 @@ import org.terasology.logic.players.LocalPlayer;
 import org.terasology.math.Side;
 import org.terasology.math.TeraMath;
 import org.terasology.math.Vector3i;
+import org.terasology.math.geom.Quat4f;
+import org.terasology.math.geom.Vector3f;
 import org.terasology.network.ClientComponent;
 import org.terasology.physics.HitResult;
 import org.terasology.physics.Physics;
@@ -46,17 +46,13 @@ import org.terasology.physics.StandardCollisionGroup;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.physics.events.ChangeVelocityEvent;
 import org.terasology.rails.blocks.ConnectsToRailsComponent;
-import org.terasology.rails.carts.components.LocomotiveComponent;
 import org.terasology.rails.carts.components.RailVehicleComponent;
-import org.terasology.rails.carts.components.WheelComponent;
 import org.terasology.rails.carts.utils.MinecartHelper;
 import org.terasology.registry.In;
 import org.terasology.rendering.logic.MeshComponent;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
 
-import javax.vecmath.Quat4f;
-import javax.vecmath.Vector3f;
 import java.util.Map;
 
 @RegisterSystem(RegisterMode.AUTHORITY)
@@ -182,11 +178,11 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                 correctPositionAndRotation(railVehicle, currentBlock);
                 railVehicle.send(new ChangeVelocityEvent(velocity));
             } else {
-                railVehicleComponent.direction.y=0;
+                railVehicleComponent.direction.y = 0;
                 motionState.setCurrentState(FREE_MOTION, railVehicleComponent.direction, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_GROUND);
             }
         } else {
-            railVehicleComponent.direction.y=0;
+            railVehicleComponent.direction.y = 0;
             motionState.setCurrentState(FREE_MOTION, railVehicleComponent.direction, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_AIR);
         }
 
@@ -197,13 +193,13 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
     private void playSound(EntityRef railVehicle, Vector3f velocity, float drive) {
 
         long currentTime = time.getGameTimeInMs();
-        if(!soundStack.containsKey(railVehicle)) {
+        if (!soundStack.containsKey(railVehicle)) {
             soundStack.put(railVehicle, currentTime);
         }
 
         long soundProgress = currentTime - soundStack.get(railVehicle);
 
-        if ((velocity.z > 0.1 || velocity.x > 0.1) && (soundProgress == 0f||soundProgress>1000)) {
+        if ((velocity.z > 0.1 || velocity.x > 0.1) && (soundProgress == 0f || soundProgress > 1000)) {
             Vector3f tv = new Vector3f(velocity);
             tv.y = 0;
             float p = drive * 0.01f;
@@ -241,7 +237,8 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             moveDescriptor.setYawOnPath(railVehicleComponent, motionState, blockInfo, distance);
             moveDescriptor.setPitchOnPath(railVehicleComponent, position, motionState, blockInfo);
 
-            QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * railVehicleComponent.yaw, TeraMath.DEG_TO_RAD * railVehicleComponent.pitch, 0);
+            // TODO: Commented out for compile fix - TeraMath vs TeraBullet: vecmath fight GO!
+            //QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * railVehicleComponent.yaw, TeraMath.DEG_TO_RAD * railVehicleComponent.pitch, 0);
 
             motionState.prevPosition.set(position);
 
@@ -258,7 +255,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
     public void updateVerticalMovement(VerticalMovementAxis event, EntityRef entity) {
         ClientComponent clientComponent = entity.getComponent(ClientComponent.class);
         LocationComponent location = clientComponent.character.getComponent(LocationComponent.class);
-        if (!location.getParent().equals(EntityRef.NULL)&&location.getParent().hasComponent(RailVehicleComponent.class)) {
+        if (!location.getParent().equals(EntityRef.NULL) && location.getParent().hasComponent(RailVehicleComponent.class)) {
             EntityRef railVehicle = location.getParent();
             railVehicle.send(new ActivateEvent(new ActivationRequest()));
             event.consume();
@@ -269,7 +266,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
     public void updateForwardsMovement(ForwardsMovementAxis event, EntityRef entity) {
         ClientComponent clientComponent = entity.getComponent(ClientComponent.class);
         LocationComponent location = clientComponent.character.getComponent(LocationComponent.class);
-        if (!location.getParent().equals(EntityRef.NULL)&&location.getParent().hasComponent(RailVehicleComponent.class)) {
+        if (!location.getParent().equals(EntityRef.NULL) && location.getParent().hasComponent(RailVehicleComponent.class)) {
 
             EntityRef railVehicle = location.getParent();
             RailVehicleComponent railVehicleComponent = railVehicle.getComponent(RailVehicleComponent.class);
@@ -306,7 +303,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
 
             if (railVehicleComponent.drive > railVehicleComponent.maxDrive)  {
                 railVehicleComponent.drive = railVehicleComponent.maxDrive;
-            } else if(railVehicleComponent.drive < 0) {
+            } else if (railVehicleComponent.drive < 0) {
                 railVehicleComponent.drive = 0;
             }
 
@@ -314,7 +311,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                 Vector3f velocity = new Vector3f(railVehicleComponent.drive, 0, railVehicleComponent.drive);
                 velocity.x *= railVehicleComponent.direction.x;
                 velocity.z *= railVehicleComponent.direction.z;
-                if ( velocity.length() > 0 ) {
+                if (velocity.length() > 0) {
                     railVehicle.send(new ChangeVelocityEvent(velocity));
                 }
             }
@@ -343,7 +340,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
         return new BlockInfo(block, blockPosition, blockEntity, railsComponent, hit.getHitPoint());
     }
 
-    private void setAngularAndLinearFactors (EntityRef entity, RigidBodyComponent rigidBodyComponent, Vector3f linearFactor, Vector3f angularFactor) {
+    private void setAngularAndLinearFactors(EntityRef entity, RigidBodyComponent rigidBodyComponent, Vector3f linearFactor, Vector3f angularFactor) {
         boolean needSave = false;
         if (!linearFactor.equals(rigidBodyComponent.linearFactor)) {
             rigidBodyComponent.linearFactor.set(linearFactor);
@@ -365,7 +362,8 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             if (railVehicleComponent.drive != 0) {
                 particleEffectComponent.spawnCount = 20;
                 particleEffectComponent.targetVelocity.set(railVehicleComponent.direction);
-                particleEffectComponent.targetVelocity.negate();
+                // TODO: Re-enable when TeraMath supports .negate or we provide a replacement
+//                particleEffectComponent.targetVelocity.negate();
                 particleEffectComponent.targetVelocity.y = 0.7f;
                 particleEffectComponent.acceleration.set(railVehicleComponent.pathDirection);
                 particleEffectComponent.acceleration.y = 0.7f;
@@ -373,7 +371,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                 particleEffectComponent.acceleration.scale(2.5f);
                 railVehicleComponent.pipe.saveComponent(particleEffectComponent);
             } else {
-                particleEffectComponent.targetVelocity.set(0,0,0);
+                particleEffectComponent.targetVelocity.set(0, 0, 0);
             }
         }
     }
@@ -390,21 +388,23 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             }
             Quat4f rotate = new Quat4f(0, 0, 0, 1);
 
-            float yawSide = Math.round(railVehicleComponent.yaw/90f);
+            float yawSide = Math.round(railVehicleComponent.yaw / 90f);
             float reverseSign = 1;
             if (yawSide > 1) {
                 reverseSign = -1;
             }
 
             float angleSign = velocity.x >= 0 && velocity.z >= 0 ? 1 : -1;
-            float angle = reverseSign*angleSign*(velocity.length()/MinecartHelper.TWO_PI) + QuaternionUtil.getAngle(locationComponent.getLocalRotation());
+            // TODO: Commented out for compile fix - TeraMath vs TeraBullet: vecmath fight GO!
+            float angle = reverseSign * angleSign * (velocity.length() / MinecartHelper.TWO_PI); // + QuaternionUtil.getAngle(locationComponent.getLocalRotation());
             if (angle > MinecartHelper.TWO_PI) {
                 angle = 0;
-            } else if ( angle < 0 ) {
+            } else if (angle < 0) {
                 angle = MinecartHelper.TWO_PI;
             }
 
-            QuaternionUtil.setRotation(rotate, new Vector3f(1, 0, 0), angle);
+            // TODO: Commented out for compile fix - TeraMath vs TeraBullet: vecmath fight GO!
+            //QuaternionUtil.setRotation(rotate, new Vector3f(1, 0, 0), angle);
             locationComponent.setLocalRotation(rotate);
             vehicle.saveComponent(locationComponent);
         }
@@ -420,7 +420,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             }
         }
 
-        fixedPosition.y = block.hitPoint().y + railVehicleMaxExtends.y/2 + 0.05f;
+        fixedPosition.y = block.hitPoint().y + railVehicleMaxExtends.y / 2 + 0.05f;
 
        // }
         /*if (!block.isSlope() && !motionState.nextBlockIsSlope) {
