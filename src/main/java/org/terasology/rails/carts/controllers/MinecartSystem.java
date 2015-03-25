@@ -15,7 +15,6 @@
  */
 package org.terasology.rails.carts.controllers;
 
-import com.bulletphysics.linearmath.QuaternionUtil;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +24,10 @@ import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.EventPriority;
 import org.terasology.entitySystem.event.ReceiveEvent;
-import org.terasology.entitySystem.systems.*;
+import org.terasology.entitySystem.systems.BaseComponentSystem;
+import org.terasology.entitySystem.systems.RegisterMode;
+import org.terasology.entitySystem.systems.RegisterSystem;
+import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
 import org.terasology.input.binds.movement.ForwardsMovementAxis;
 import org.terasology.input.binds.movement.VerticalMovementAxis;
 import org.terasology.logic.characters.events.ActivationRequest;
@@ -36,9 +38,9 @@ import org.terasology.logic.particles.BlockParticleEffectComponent;
 import org.terasology.logic.players.LocalPlayer;
 import org.terasology.math.Side;
 import org.terasology.math.TeraMath;
-import org.terasology.math.Vector3i;
 import org.terasology.math.geom.Quat4f;
 import org.terasology.math.geom.Vector3f;
+import org.terasology.math.geom.Vector3i;
 import org.terasology.network.ClientComponent;
 import org.terasology.physics.HitResult;
 import org.terasology.physics.Physics;
@@ -57,6 +59,10 @@ import java.util.Map;
 
 @RegisterSystem(RegisterMode.AUTHORITY)
 public class MinecartSystem extends BaseComponentSystem implements UpdateSubscriberSystem {
+    private static final Vector3f FREE_MOTION   = new Vector3f(1f, 1f, 1f);
+    private static final Vector3f LOCKED_MOTION = new Vector3f(0f, 0f, 0f);
+    private static final Vector3f UNDER_MINECART_DIRECTION = new Vector3f(0f, -1f, 0f);
+
     @In
     private EntityManager entityManager;
     @In
@@ -75,9 +81,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
     private Map<EntityRef, Long> soundStack = Maps.newHashMap();
     private Map<EntityRef, MotionState> moveStates = Maps.newHashMap();
     private final Logger logger = LoggerFactory.getLogger(MinecartSystem.class);
-    private static final Vector3f FREE_MOTION   = new Vector3f(1f, 1f, 1f);
-    private static final Vector3f LOCKED_MOTION = new Vector3f(0f, 0f, 0f);
-    private static final Vector3f UNDER_MINECART_DIRECTION = new Vector3f(0f, -1f, 0f);
+
 
     @Override
     public void initialise() {

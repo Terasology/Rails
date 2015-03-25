@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.math.Side;
 import org.terasology.math.SideBitFlag;
-import org.terasology.math.Vector3i;
+import org.terasology.math.geom.Vector3i;
 import org.terasology.world.BlockEntityRegistry;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
@@ -101,7 +101,7 @@ public class RailsUpdatesFamily extends AbstractBlockFamily {
         for (Side connectSide : SideBitFlag.getSides(connectionSides)) {
             if (connectionCondition.isConnectingTo(location, connectSide, worldProvider, blockEntityRegistry)) {
                 connections += SideBitFlag.getSide(connectSide);
-            } else if(hasTopBlock) {
+            } else if (hasTopBlock) {
                 block = worldProvider.getBlock(location);
                 if (block != BlockManager.getAir() && !block.isPenetrable() && block.isLiquid()) {
                     skipSides.add(connectSide);
@@ -133,7 +133,7 @@ public class RailsUpdatesFamily extends AbstractBlockFamily {
                 break;
             case 1:
                 EnumSet<Side> sides = SideBitFlag.getSides(connections);
-                Side connectSide = (Side)sides.toArray()[0];
+                Side connectSide = (Side) sides.toArray()[0];
                 connectSide = connectSide.reverse();
                 if (skipSides.contains(connectSide)) {
                     break;

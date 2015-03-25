@@ -15,7 +15,7 @@
  */
 package org.terasology.rails.carts.controllers;
 
-import org.terasology.math.Vector3i;
+import org.terasology.math.geom.Vector3i;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.rails.carts.components.RailVehicleComponent;
 

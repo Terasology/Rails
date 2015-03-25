@@ -16,7 +16,7 @@
 package org.terasology.rails.carts.controllers;
 
 import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.math.Vector3i;
+import org.terasology.math.geom.Vector3i;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.rails.blocks.ConnectsToRailsComponent;
 import org.terasology.world.block.Block;
@@ -67,10 +67,10 @@ public class BlockInfo {
     }
 
     public boolean isCorner() {
-        return  isRails() &&
-               (rails.type == ConnectsToRailsComponent.RAILS.CURVE ||
-                rails.type == ConnectsToRailsComponent.RAILS.TEE ||
-                rails.type == ConnectsToRailsComponent.RAILS.TEE_INVERSED);
+        return  isRails()
+                && (rails.type == ConnectsToRailsComponent.RAILS.CURVE
+                || rails.type == ConnectsToRailsComponent.RAILS.TEE
+                || rails.type == ConnectsToRailsComponent.RAILS.TEE_INVERSED);
     }
 
     public boolean isSlope() {

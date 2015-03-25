@@ -25,13 +25,16 @@ import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.math.Rotation;
 import org.terasology.math.Side;
 import org.terasology.math.SideBitFlag;
-import org.terasology.math.Vector3i;
+import org.terasology.math.geom.Vector3i;
 import org.terasology.world.BlockEntityRegistry;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
-import org.terasology.world.block.BlockComponent;
 import org.terasology.world.block.BlockUri;
-import org.terasology.world.block.family.*;
+import org.terasology.world.block.family.BlockBuilderHelper;
+import org.terasology.world.block.family.BlockFamily;
+import org.terasology.world.block.family.BlockFamilyFactory;
+import org.terasology.world.block.family.ConnectionCondition;
+import org.terasology.world.block.family.RegisterBlockFamilyFactory;
 import org.terasology.world.block.loader.BlockDefinition;
 
 import java.util.Collection;
@@ -95,8 +98,8 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
         // Now make sure we have all combinations based on the basic set (above) and rotations
         for (byte connections = 0; connections < 64; connections++) {
             // Only the allowed connections should be created
-            if (connections!=1 && (connections & connectionSides) == connections) {
-                Block block = constructBlockForConnections((byte)(connections), blockBuilder, blockDefUri, basicBlocks);
+            if (connections != 1 && (connections & connectionSides) == connections) {
+                Block block = constructBlockForConnections((byte) (connections), blockBuilder, blockDefUri, basicBlocks);
                 if (block != null) {
                     //throw new IllegalStateException("Unable to find correct block definition for connections: " + connections);
                     block.setUri(new BlockUri(blockUri, String.valueOf(connections)));
@@ -107,7 +110,7 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
 
         final Block archetypeBlock = blocksForConnections.get(SideBitFlag.getSides(Side.RIGHT, Side.LEFT));
         return new RailsUpdatesFamily(connectionCondition, blockUri, blockDefinition.categories,
-                archetypeBlock, blocksForConnections, (byte)(connectionSides&0b111110));
+                archetypeBlock, blocksForConnections, (byte) (connectionSides & 0b111110));
     }
 
     private void putBlockDefinition(TByteObjectMap<BlockDefinition> blockDefinitions, BlockBuilderHelper blockBuilder, JsonObject blockDefJson,
@@ -119,7 +122,7 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
     }
 
     private Rotation getRotationToAchieve(byte source, byte target) {
-        Collection<Side> originalSides = SideBitFlag.getSides((byte)(source&0b111110));
+        Collection<Side> originalSides = SideBitFlag.getSides((byte) (source & 0b111110));
 
         Iterable<Rotation> rotations = Rotation.horizontalRotations();
         for (Rotation rot : rotations) {
@@ -152,7 +155,7 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
             blockDefinitionIterator.advance();
             final byte originalConnections = blockDefinitionIterator.key();
             final BlockDefinition blockDefinition = blockDefinitionIterator.value();
-            Rotation rot = getRotationToAchieve(originalConnections, (byte)(connections&0b111110));
+            Rotation rot = getRotationToAchieve(originalConnections, (byte) (connections & 0b111110));
             if (rot != null) {
                 return blockBuilder.constructTransformedBlock(blockDefUri, blockDefinition, rot);
             }
