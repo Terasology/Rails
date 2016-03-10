@@ -267,10 +267,10 @@ public class MinecartAction extends BaseComponentSystem {
     private void setSelectMaterial(EntityRef railVehicle, String urlMaterial) {
         RailVehicleComponent railVehicleComponent = railVehicle.getComponent(RailVehicleComponent.class);
         MeshComponent mesh = railVehicle.getComponent(MeshComponent.class);
-        mesh.material = Assets.getMaterial(urlMaterial);
+        mesh.material = Assets.getMaterial(urlMaterial).get();
         for (EntityRef vehicle : railVehicleComponent.vehicles) {
             MeshComponent meshVehicle = vehicle.getComponent(MeshComponent.class);
-            meshVehicle.material = Assets.getMaterial(urlMaterial);
+            meshVehicle.material = Assets.getMaterial(urlMaterial).get();
             vehicle.saveComponent(meshVehicle);
         }
         railVehicle.saveComponent(mesh);

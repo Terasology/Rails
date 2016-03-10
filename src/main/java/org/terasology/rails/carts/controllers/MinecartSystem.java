@@ -211,7 +211,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
            // logger.info("timr: " + soundProgress);
            // logger.info("volume: " + volume);
             //audioManager.
-            railVehicle.send(new PlaySoundEvent(railVehicle, Assets.getSound("rails:vehicle"), 0.2f));
+            railVehicle.send(new PlaySoundEvent(railVehicle, Assets.getSound("rails:vehicle").get(), 0.2f));
             soundStack.put(railVehicle, currentTime);
         }
     }

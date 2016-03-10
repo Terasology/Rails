@@ -10,6 +10,7 @@
          "extents" : [1, 1, 1]
     },
     "RigidBody": {
+        "mass": "250f",
         "collisionGroup": "engine:static"
     }
 }

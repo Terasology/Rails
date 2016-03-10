@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.terasology.math.Side;
 import org.terasology.math.SideBitFlag;
 import org.terasology.math.geom.Vector3i;
+import org.terasology.registry.CoreRegistry;
 import org.terasology.world.BlockEntityRegistry;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
@@ -36,6 +37,7 @@ import java.util.List;
 public class RailsUpdatesFamily extends AbstractBlockFamily {
     private ConnectionCondition connectionCondition;
     private Block archetypeBlock;
+    private BlockManager blockManager;
     private TByteObjectMap<Block> blocks;
     private byte connectionSides;
     private final Logger logger = LoggerFactory.getLogger(RailsUpdatesFamily.class);
@@ -48,7 +50,7 @@ public class RailsUpdatesFamily extends AbstractBlockFamily {
         this.archetypeBlock = archetypeBlock;
         this.blocks = blocks;
         this.connectionSides = connectionSides;
-
+        this.blockManager = CoreRegistry.get(BlockManager.class);
         for (Block block : blocks.valueCollection()) {
             block.setBlockFamily(this);
         }
@@ -94,7 +96,7 @@ public class RailsUpdatesFamily extends AbstractBlockFamily {
         Vector3i upLocation = new Vector3i(location);
         upLocation.y += 1;
         Block block = worldProvider.getBlock(upLocation);
-        if (block != BlockManager.getAir() && !block.isPenetrable() && block.isLiquid()) {
+        if (block != blockManager.getBlock(BlockManager.AIR_ID) && !block.isPenetrable() && block.isLiquid()) {
             hasTopBlock = true;
         }
 
@@ -103,7 +105,7 @@ public class RailsUpdatesFamily extends AbstractBlockFamily {
                 connections += SideBitFlag.getSide(connectSide);
             } else if (hasTopBlock) {
                 block = worldProvider.getBlock(location);
-                if (block != BlockManager.getAir() && !block.isPenetrable() && block.isLiquid()) {
+                if (block != blockManager.getBlock(BlockManager.AIR_ID) && !block.isPenetrable() && block.isLiquid()) {
                     skipSides.add(connectSide);
                 }
             }
