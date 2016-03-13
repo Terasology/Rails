@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.terasology.math.Side;
 import org.terasology.math.SideBitFlag;
 import org.terasology.math.geom.Vector3i;
-import org.terasology.registry.CoreRegistry;
+import org.terasology.registry.In;
 import org.terasology.world.BlockEntityRegistry;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
@@ -37,6 +37,8 @@ import java.util.List;
 public class RailsUpdatesFamily extends AbstractBlockFamily {
     private ConnectionCondition connectionCondition;
     private Block archetypeBlock;
+
+    @In
     private BlockManager blockManager;
     private TByteObjectMap<Block> blocks;
     private byte connectionSides;
@@ -50,7 +52,6 @@ public class RailsUpdatesFamily extends AbstractBlockFamily {
         this.archetypeBlock = archetypeBlock;
         this.blocks = blocks;
         this.connectionSides = connectionSides;
-        this.blockManager = CoreRegistry.get(BlockManager.class);
         for (Block block : blocks.valueCollection()) {
             block.setBlockFamily(this);
         }
