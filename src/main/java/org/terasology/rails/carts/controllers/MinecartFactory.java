@@ -15,8 +15,6 @@
  */
 package org.terasology.rails.carts.controllers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.location.Location;
@@ -27,9 +25,6 @@ import org.terasology.rails.carts.components.RailVehicleComponent;
 import org.terasology.rails.carts.components.WheelComponent;
 
 public class MinecartFactory {
-
-    private final Logger logger = LoggerFactory.getLogger(MinecartFactory.class);
-
     private EntityManager entityManager;
 
     public EntityRef create(Vector3f position, RailVehicleComponent.Types type) {

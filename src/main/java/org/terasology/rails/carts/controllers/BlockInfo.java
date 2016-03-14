@@ -24,30 +24,22 @@ import org.terasology.world.block.Block;
 public class BlockInfo {
     private Block block;
     private Vector3i blockPosition = new Vector3i();
-    private EntityRef blockEntity = EntityRef.NULL;
     private ConnectsToRailsComponent rails;
     private Vector3f hitPoint;
 
     public BlockInfo(Block block, Vector3i blockPosition, EntityRef entity, ConnectsToRailsComponent component, Vector3f hitPoint) {
         this.block = block;
-        this.blockEntity = entity;
         this.rails = component;
         this.blockPosition = blockPosition;
         this.hitPoint = hitPoint;
     }
 
     public boolean isEmptyBlock() {
-        if (block != null) {
-            return false;
-        }
-        return true;
+        return block == null;
     }
 
     public boolean isRails() {
-        if (rails != null) {
-            return true;
-        }
-        return false;
+       return rails != null;
     }
 
     public ConnectsToRailsComponent.RAILS getType() {

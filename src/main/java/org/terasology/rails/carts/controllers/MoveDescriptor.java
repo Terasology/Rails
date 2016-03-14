@@ -15,8 +15,6 @@
  */
 package org.terasology.rails.carts.controllers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.Side;
 import org.terasology.math.geom.BaseVector3f;
@@ -26,9 +24,6 @@ import org.terasology.rails.carts.components.RailVehicleComponent;
 import org.terasology.rails.carts.utils.MinecartHelper;
 
 public class MoveDescriptor {
-
-    private final Logger logger = LoggerFactory.getLogger(MoveDescriptor.class);
-
     public void calculateDirection(Vector3f velocity, BlockInfo blockInfo, RailVehicleComponent railVehicleComponent,
                                    MotionState motionState, Vector3f position, int slopeFactor) {
         Side side = correctSide(blockInfo);
@@ -227,7 +222,6 @@ public class MoveDescriptor {
                 velocity.set(1, velocity.y, 1);
                 velocity.scale(rb.velocity.length() * (dir.length() - 0.8f) + velocity.length());
             } else if (dir.length() < 1.2f) {
-                RigidBodyComponent rb = railVehicleComponent.parentNode.getComponent(RigidBodyComponent.class);
                 railVehicleComponent.direction.set(Math.signum(dir.x), railVehicleComponent.direction.y, Math.signum(dir.z));
                 railVehicleComponent.direction.negate();
                 velocity.set(1, velocity.y, 1);

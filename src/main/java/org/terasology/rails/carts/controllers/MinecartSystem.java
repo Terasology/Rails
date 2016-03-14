@@ -16,8 +16,6 @@
 package org.terasology.rails.carts.controllers;
 
 import com.google.common.collect.Maps;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.terasology.audio.events.PlaySoundEvent;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
@@ -79,7 +77,6 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
     private MoveDescriptor moveDescriptor;
     private Map<EntityRef, Long> soundStack = Maps.newHashMap();
     private Map<EntityRef, MotionState> moveStates = Maps.newHashMap();
-    private final Logger logger = LoggerFactory.getLogger(MinecartSystem.class);
 
     @Override
     public void initialise() {

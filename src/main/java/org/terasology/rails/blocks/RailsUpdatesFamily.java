@@ -16,8 +16,6 @@
 package org.terasology.rails.blocks;
 
 import gnu.trove.map.TByteObjectMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.terasology.math.Side;
 import org.terasology.math.SideBitFlag;
 import org.terasology.math.geom.Vector3i;
@@ -42,7 +40,6 @@ public class RailsUpdatesFamily extends AbstractBlockFamily {
     private BlockManager blockManager;
     private TByteObjectMap<Block> blocks;
     private byte connectionSides;
-    private final Logger logger = LoggerFactory.getLogger(RailsUpdatesFamily.class);
 
     public RailsUpdatesFamily(ConnectionCondition connectionCondition, BlockUri blockUri,
                               List<String> categories, Block archetypeBlock, TByteObjectMap<Block> blocks, byte connectionSides) {
