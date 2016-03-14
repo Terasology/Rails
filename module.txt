@@ -7,5 +7,7 @@
     "description": {
         "en": "Module adds rails and carts"
     },
-    "dependencies": []
+    "dependencies": [
+        {"id" : "Core", "minVersion" : "1.0.0"}
+    ]
 }

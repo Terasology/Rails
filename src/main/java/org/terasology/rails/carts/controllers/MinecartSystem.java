@@ -76,12 +76,10 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
     @In
     private org.terasology.engine.Time time;
 
-
     private MoveDescriptor moveDescriptor;
     private Map<EntityRef, Long> soundStack = Maps.newHashMap();
     private Map<EntityRef, MotionState> moveStates = Maps.newHashMap();
     private final Logger logger = LoggerFactory.getLogger(MinecartSystem.class);
-
 
     @Override
     public void initialise() {
