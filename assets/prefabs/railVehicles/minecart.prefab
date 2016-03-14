@@ -1,7 +1,7 @@
 {
     "Item": {
         "name": "Minecart",
-        "icon": "Rails:minecart.minecart",
+        "icon": "Rails:minecart#minecart",
         "usage": "IN_DIRECTION"
     },
     "Location": {
