@@ -1,7 +1,7 @@
 {
     "Item": {
         "name": "Minecart",
-        "icon": "Rails:minecart.loco",
+        "icon": "Rails:minecart#loco",
         "usage": "IN_DIRECTION"
     },
     "Location": {
@@ -12,8 +12,7 @@
         "material": "Rails:loco"
     },
     "RigidBody": {
-        "mass": 250f,
-        /*"angularVelocity": [0,10,0],*/
+        "mass": 250,
         "collisionGroup": "engine:world",
         "collidesWith": [
             "engine:world",

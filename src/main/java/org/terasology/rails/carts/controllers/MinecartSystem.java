@@ -18,7 +18,6 @@ package org.terasology.rails.carts.controllers;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.terasology.asset.Assets;
 import org.terasology.audio.events.PlaySoundEvent;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
@@ -52,6 +51,7 @@ import org.terasology.rails.carts.components.RailVehicleComponent;
 import org.terasology.rails.carts.utils.MinecartHelper;
 import org.terasology.registry.In;
 import org.terasology.rendering.logic.MeshComponent;
+import org.terasology.utilities.Assets;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
 
@@ -211,7 +211,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
            // logger.info("timr: " + soundProgress);
            // logger.info("volume: " + volume);
             //audioManager.
-            railVehicle.send(new PlaySoundEvent(railVehicle, Assets.getSound("rails:vehicle"), 0.2f));
+            railVehicle.send(new PlaySoundEvent(railVehicle, Assets.getSound("rails:vehicle").get(), 0.2f));
             soundStack.put(railVehicle, currentTime);
         }
     }
