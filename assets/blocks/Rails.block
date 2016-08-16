@@ -21,36 +21,27 @@
     "penetrable" : false,
 
     "no_connections": {
-        "tile" : "Rails:TrainTrack",
         "shape": "engine:horizontalOffsetPlane",
         "tiles" : {
-           "sides" : "Rails:TrainTrackEmpty",
-           "top" : "Rails:TrainTrack",
-           "bottom" : "Rails:TrainTrackEmpty"
+           "center" : "Rails:TrainTrack"
         },
         "entity": {
-            "prefab": "rail"
+            "prefab": "Rails:rail"
         }
     },
     "one_connection": {
-        "tile" : "Rails:TrainTrack",
         "shape" : "engine:horizontalOffsetPlane",
         "tiles" : {
-          "sides" : "Rails:TrainTrackEmpty",
-          "top" : "Rails:TrainTrack",
-          "bottom" : "Rails:TrainTrackEmpty"
+          "center" : "Rails:TrainTrack"
         },
         "entity": {
             "prefab": "Rails:rail"
         }
     },
     "one_connection_slope": {
-        "tile" : "Rails:TrainTrackSlope",
-        "shape" : "engine:slope",
+        "shape" : "railSlope",
         "tiles" : {
-          "sides" : "Rails:TrainTrackEmpty",
-          "top" : "Rails:TrainTrackSlope",
-          "bottom" : "Rails:TrainTrackEmpty"
+          "center" : "Rails:TrainTrackSlope"
         },
         "entity": {
             "prefab": "Rails:railSlope"
@@ -60,21 +51,16 @@
         "tile" : "Rails:TrainTrack",
         "shape" : "engine:horizontalOffsetPlane",
         "tiles" : {
-          "sides" : "Rails:TrainTrackEmpty",
-          "top" : "Rails:TrainTrack",
-          "bottom" : "Rails:TrainTrackEmpty"
+          "center" : "Rails:TrainTrack"
         },
         "entity": {
             "prefab": "Rails:rail"
         }
     },
     "2d_corner": {
-        "tile" : "Rails:TrainTrackCurve",
         "shape" : "engine:horizontalOffsetPlane",
         "tiles" : {
-          "sides" : "Rails:TrainTrackEmpty",
-          "top" : "Rails:TrainTrackCurve",
-          "bottom" : "Rails:TrainTrackEmpty"
+          "center" : "Rails:TrainTrackCurve"
         },
         "entity": {
             "prefab": "Rails:railCurve"
@@ -84,21 +70,16 @@
         "tile" : "Rails:TrainTrackTee",
         "shape" : "engine:horizontalOffsetPlane",
         "tiles" : {
-          "sides" : "Rails:TrainTrackEmpty",
-          "top" : "Rails:TrainTrackTee",
-          "bottom" : "Rails:TrainTrackEmpty"
+          "center" : "Rails:TrainTrackTee"
         },
         "entity": {
             "prefab": "Rails:railTee"
         }
     },
     "cross": {
-        "tile" : "Rails:TrainTrackIntersection",
         "shape" : "engine:horizontalOffsetPlane",
         "tiles" : {
-          "sides" : "Rails:TrainTrackEmpty",
-          "top" : "Rails:TrainTrackIntersection",
-          "bottom" : "Rails:TrainTrackEmpty"
+          "center" : "Rails:TrainTrackIntersection"
         },
         "entity": {
             "prefab": "Rails:railintersection"
