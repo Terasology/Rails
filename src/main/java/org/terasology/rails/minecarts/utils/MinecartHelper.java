@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 MovingBlocks
+ * Copyright 2015 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,15 @@ package org.terasology.rails.minecarts.utils;
 
 import org.terasology.math.Side;
 import org.terasology.math.TeraMath;
+import org.terasology.math.geom.Vector3f;
 
-import javax.vecmath.Vector3f;
+public final class MinecartHelper {
 
-public class MinecartHelper {
+    public static final float TWO_PI = TeraMath.PI * 2;
 
-    public static final float TWO_PI = TeraMath.PI*2;
+    private MinecartHelper() {
+        // Utility class only
+    }
 
     public static void setVectorToDirection(Vector3f in, Vector3f direction) {
         in.x *= Math.signum(direction.x);

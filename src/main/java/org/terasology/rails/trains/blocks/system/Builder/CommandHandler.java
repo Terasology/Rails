@@ -17,26 +17,27 @@ package org.terasology.rails.trains.blocks.system.Builder;
 
 import com.bulletphysics.linearmath.QuaternionUtil;
 import com.google.common.collect.Lists;
+import org.lwjgl.util.vector.Quaternion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.terasology.asset.Assets;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.AABB;
 import org.terasology.math.TeraMath;
+import org.terasology.math.geom.Quat4f;
+import org.terasology.math.geom.Vector3f;
 import org.terasology.physics.CollisionGroup;
 import org.terasology.physics.Physics;
 import org.terasology.physics.StandardCollisionGroup;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
-import org.terasology.rails.trains.blocks.system.RailsSystem;
 import org.terasology.rails.trains.blocks.system.Railway;
 import org.terasology.registry.CoreRegistry;
 import org.terasology.rendering.logic.MeshComponent;
-import javax.vecmath.Quat4f;
-import javax.vecmath.Vector3f;
+import org.terasology.utilities.Assets;
+
 import java.util.List;
 
 /**
@@ -258,8 +259,9 @@ public class CommandHandler {
     }
 
     private EntityRef createEntityInTheWorld(String prefab, Command command, EntityRef prevTrack,  Vector3f position, Orientation newOrientation, Orientation fixOrientation, boolean preview) {
-        Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
-        QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * (newOrientation.yaw + fixOrientation.yaw), TeraMath.DEG_TO_RAD * (newOrientation.roll + fixOrientation.roll), TeraMath.DEG_TO_RAD * (newOrientation.pitch + fixOrientation.pitch));
+        Quat4f yawPitch =  new Quat4f(TeraMath.DEG_TO_RAD * (newOrientation.yaw + fixOrientation.yaw),TeraMath.DEG_TO_RAD * (newOrientation.roll + fixOrientation.roll),TeraMath.DEG_TO_RAD * (newOrientation.pitch + fixOrientation.pitch));
+
+
         EntityRef railBlock = entityManager.create(prefab, position);
 
         AABB aabb = AABB.createCenterExtent(position,
@@ -324,7 +326,7 @@ public class CommandHandler {
 
     private void changeMaterial(EntityRef entity, String material) {
         MeshComponent mesh = entity.getComponent(MeshComponent.class);
-        mesh.material = Assets.getMaterial(material);
+        mesh.material = Assets.getMaterial(material).get();
         entity.saveComponent(mesh);
     }
 

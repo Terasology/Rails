@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 MovingBlocks
+ * Copyright 2015 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import org.terasology.logic.health.DoDestroyEvent;
 import org.terasology.logic.health.EngineDamageTypes;
 import org.terasology.logic.inventory.ItemComponent;
 import org.terasology.math.Side;
-import org.terasology.math.Vector3i;
+import org.terasology.math.geom.Vector3i;
 import org.terasology.registry.In;
 import org.terasology.world.BlockEntityRegistry;
 import org.terasology.world.OnChangedBlock;
@@ -60,7 +60,7 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
 
     private int largeBlockUpdateCount;
     private Set<Vector3i> blocksUpdatedInLargeBlockUpdate = Sets.newHashSet();
-    private int[] checkOnHeight = {-1,0,1};
+    private int[] checkOnHeight = {-1, 0, 1};
 
     @ReceiveEvent
     public void largeBlockUpdateStarting(LargeBlockUpdateStarting event, EntityRef entity) {
@@ -103,7 +103,7 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
             BlockFamily type = blockManager.getBlockFamily("RailsTBlockInverted");
             Block targetBlock = worldProvider.getBlock(targetLocation);
             changeTBlock(event.getInstigator(), type, targetLocation, targetBlock.getDirection(), targetBlock.getDirection().yawClockwise(2));
-        }else if(connectsToRailsComponent.type == ConnectsToRailsComponent.RAILS.TEE_INVERSED) {
+        } else if (connectsToRailsComponent.type == ConnectsToRailsComponent.RAILS.TEE_INVERSED) {
             BlockFamily type = blockManager.getBlockFamily("rails:Rails");
             Block targetBlock = worldProvider.getBlock(targetLocation);
             changeTBlock(event.getInstigator(), type, targetLocation, targetBlock.getDirection(), targetBlock.getDirection().yawClockwise(2));
@@ -140,9 +140,9 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
         largeBlockUpdateCount--;
     }
 
-    private void changeTBlock( EntityRef instigrator, BlockFamily type, Vector3i targetLocation, Side attachmentSide, Side direction) {
+    private void changeTBlock(EntityRef instigator, BlockFamily type, Vector3i targetLocation, Side attachmentSide, Side direction) {
         Block block = type.getBlockForPlacement(worldProvider, blockEntityRegistry, targetLocation, attachmentSide, direction);
-        PlaceBlocks placeBlocks = new PlaceBlocks(targetLocation, block, instigrator);
+        PlaceBlocks placeBlocks = new PlaceBlocks(targetLocation, block, instigator);
         worldProvider.getWorldEntity().send(placeBlocks);
     }
 
@@ -165,7 +165,7 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
                 Block neighborBlock = worldProvider.getBlock(neighborLocation);
                 EntityRef blockEntity = blockEntityRegistry.getBlockEntityAt(neighborLocation);
                 if (blockEntity.hasComponent(ConnectsToRailsComponent.class)) {
-                    RailsUpdatesFamily railsFamily = (RailsUpdatesFamily)blockManager.getBlockFamily("rails:Rails");
+                    RailsUpdatesFamily railsFamily = (RailsUpdatesFamily) blockManager.getBlockFamily("rails:Rails");
                     Block neighborBlockAfterUpdate = railsFamily.getBlockForNeighborRailUpdate(worldProvider, blockEntityRegistry, neighborLocation, neighborBlock);
                     if (neighborBlock != neighborBlockAfterUpdate && neighborBlockAfterUpdate != null) {
                         worldProvider.setBlock(neighborLocation, neighborBlockAfterUpdate);

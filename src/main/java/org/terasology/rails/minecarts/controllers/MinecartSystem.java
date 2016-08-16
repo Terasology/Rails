@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 MovingBlocks
+ * Copyright 2015 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,17 @@
  */
 package org.terasology.rails.minecarts.controllers;
 
-import com.bulletphysics.linearmath.QuaternionUtil;
 import com.google.common.collect.Maps;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.terasology.asset.Assets;
+
 import org.terasology.audio.events.PlaySoundEvent;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.EventPriority;
 import org.terasology.entitySystem.event.ReceiveEvent;
-import org.terasology.entitySystem.systems.*;
+import org.terasology.entitySystem.systems.BaseComponentSystem;
+import org.terasology.entitySystem.systems.RegisterMode;
+import org.terasology.entitySystem.systems.RegisterSystem;
+import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
 import org.terasology.input.binds.movement.ForwardsMovementAxis;
 import org.terasology.input.binds.movement.VerticalMovementAxis;
 import org.terasology.logic.characters.events.ActivationRequest;
@@ -36,7 +36,9 @@ import org.terasology.logic.particles.BlockParticleEffectComponent;
 import org.terasology.logic.players.LocalPlayer;
 import org.terasology.math.Side;
 import org.terasology.math.TeraMath;
-import org.terasology.math.Vector3i;
+import org.terasology.math.geom.Quat4f;
+import org.terasology.math.geom.Vector3f;
+import org.terasology.math.geom.Vector3i;
 import org.terasology.network.ClientComponent;
 import org.terasology.physics.HitResult;
 import org.terasology.physics.Physics;
@@ -48,15 +50,18 @@ import org.terasology.rails.minecarts.components.RailVehicleComponent;
 import org.terasology.rails.minecarts.utils.MinecartHelper;
 import org.terasology.registry.In;
 import org.terasology.rendering.logic.MeshComponent;
+import org.terasology.utilities.Assets;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
 
-import javax.vecmath.Quat4f;
-import javax.vecmath.Vector3f;
 import java.util.Map;
 
 @RegisterSystem(RegisterMode.AUTHORITY)
 public class MinecartSystem extends BaseComponentSystem implements UpdateSubscriberSystem {
+    private static final Vector3f FREE_MOTION   = new Vector3f(1f, 1f, 1f);
+    private static final Vector3f LOCKED_MOTION = new Vector3f(0f, 0f, 0f);
+    private static final Vector3f UNDER_MINECART_DIRECTION = new Vector3f(0f, -1f, 0f);
+
     @In
     private EntityManager entityManager;
     @In
@@ -70,14 +75,9 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
     @In
     private org.terasology.engine.Time time;
 
-
     private MoveDescriptor moveDescriptor;
     private Map<EntityRef, Long> soundStack = Maps.newHashMap();
     private Map<EntityRef, MotionState> moveStates = Maps.newHashMap();
-    private final Logger logger = LoggerFactory.getLogger(MinecartSystem.class);
-    private static final Vector3f FREE_MOTION   = new Vector3f(1f, 1f, 1f);
-    private static final Vector3f LOCKED_MOTION = new Vector3f(0f, 0f, 0f);
-    private static final Vector3f UNDER_MINECART_DIRECTION = new Vector3f(0f, -1f, 0f);
 
     @Override
     public void initialise() {
@@ -178,11 +178,11 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                 correctPositionAndRotation(railVehicle, currentBlock);
                 railVehicle.send(new ChangeVelocityEvent(velocity));
             } else {
-                railVehicleComponent.direction.y=0;
+                railVehicleComponent.direction.y = 0;
                 motionState.setCurrentState(FREE_MOTION, railVehicleComponent.direction, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_GROUND);
             }
         } else {
-            railVehicleComponent.direction.y=0;
+            railVehicleComponent.direction.y = 0;
             motionState.setCurrentState(FREE_MOTION, railVehicleComponent.direction, FREE_MOTION, currentBlock.getBlockPosition(), MotionState.PositionStatus.ON_THE_AIR);
         }
 
@@ -193,13 +193,13 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
     private void playSound(EntityRef railVehicle, Vector3f velocity, float drive) {
 
         long currentTime = time.getGameTimeInMs();
-        if(!soundStack.containsKey(railVehicle)) {
+        if (!soundStack.containsKey(railVehicle)) {
             soundStack.put(railVehicle, currentTime);
         }
 
         long soundProgress = currentTime - soundStack.get(railVehicle);
 
-        if ((velocity.z > 0.1 || velocity.x > 0.1) && (soundProgress == 0f||soundProgress>1000)) {
+        if ((velocity.z > 0.1 || velocity.x > 0.1) && (soundProgress == 0f || soundProgress > 1000)) {
             Vector3f tv = new Vector3f(velocity);
             tv.y = 0;
             float p = drive * 0.01f;
@@ -207,7 +207,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
            // logger.info("timr: " + soundProgress);
            // logger.info("volume: " + volume);
             //audioManager.
-            railVehicle.send(new PlaySoundEvent(railVehicle, Assets.getSound("rails:vehicle"), 0.2f));
+            railVehicle.send(new PlaySoundEvent(railVehicle, Assets.getSound("rails:vehicle").get(), 0.2f));
             soundStack.put(railVehicle, currentTime);
         }
     }
@@ -233,11 +233,10 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
 
             Vector3f distance = new Vector3f(position);
             distance.sub(motionState.prevPosition);
-            Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
             moveDescriptor.setYawOnPath(railVehicleComponent, motionState, blockInfo, distance);
             moveDescriptor.setPitchOnPath(railVehicleComponent, position, motionState, blockInfo);
 
-            QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * railVehicleComponent.yaw, TeraMath.DEG_TO_RAD * railVehicleComponent.pitch, 0);
+            Quat4f yawPitch = new Quat4f(TeraMath.DEG_TO_RAD * railVehicleComponent.yaw, TeraMath.DEG_TO_RAD * railVehicleComponent.pitch, 0);
 
             motionState.prevPosition.set(position);
 
@@ -254,7 +253,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
     public void updateVerticalMovement(VerticalMovementAxis event, EntityRef entity) {
         ClientComponent clientComponent = entity.getComponent(ClientComponent.class);
         LocationComponent location = clientComponent.character.getComponent(LocationComponent.class);
-        if (!location.getParent().equals(EntityRef.NULL)&&location.getParent().hasComponent(RailVehicleComponent.class)) {
+        if (!location.getParent().equals(EntityRef.NULL) && location.getParent().hasComponent(RailVehicleComponent.class)) {
             EntityRef railVehicle = location.getParent();
             railVehicle.send(new ActivateEvent(new ActivationRequest()));
             event.consume();
@@ -265,7 +264,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
     public void updateForwardsMovement(ForwardsMovementAxis event, EntityRef entity) {
         ClientComponent clientComponent = entity.getComponent(ClientComponent.class);
         LocationComponent location = clientComponent.character.getComponent(LocationComponent.class);
-        if (!location.getParent().equals(EntityRef.NULL)&&location.getParent().hasComponent(RailVehicleComponent.class)) {
+        if (!location.getParent().equals(EntityRef.NULL) && location.getParent().hasComponent(RailVehicleComponent.class)) {
 
             EntityRef railVehicle = location.getParent();
             RailVehicleComponent railVehicleComponent = railVehicle.getComponent(RailVehicleComponent.class);
@@ -302,7 +301,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
 
             if (railVehicleComponent.drive > railVehicleComponent.maxDrive)  {
                 railVehicleComponent.drive = railVehicleComponent.maxDrive;
-            } else if(railVehicleComponent.drive < 0) {
+            } else if (railVehicleComponent.drive < 0) {
                 railVehicleComponent.drive = 0;
             }
 
@@ -310,7 +309,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                 Vector3f velocity = new Vector3f(railVehicleComponent.drive, 0, railVehicleComponent.drive);
                 velocity.x *= railVehicleComponent.direction.x;
                 velocity.z *= railVehicleComponent.direction.z;
-                if ( velocity.length() > 0 ) {
+                if (velocity.length() > 0) {
                     railVehicle.send(new ChangeVelocityEvent(velocity));
                 }
             }
@@ -339,7 +338,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
         return new BlockInfo(block, blockPosition, blockEntity, railsComponent, hit.getHitPoint());
     }
 
-    private void setAngularAndLinearFactors (EntityRef entity, RigidBodyComponent rigidBodyComponent, Vector3f linearFactor, Vector3f angularFactor) {
+    private void setAngularAndLinearFactors(EntityRef entity, RigidBodyComponent rigidBodyComponent, Vector3f linearFactor, Vector3f angularFactor) {
         boolean needSave = false;
         if (!linearFactor.equals(rigidBodyComponent.linearFactor)) {
             rigidBodyComponent.linearFactor.set(linearFactor);
@@ -369,7 +368,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
                 particleEffectComponent.acceleration.scale(2.5f);
                 railVehicleComponent.pipe.saveComponent(particleEffectComponent);
             } else {
-                particleEffectComponent.targetVelocity.set(0,0,0);
+                particleEffectComponent.targetVelocity.set(0, 0, 0);
             }
         }
     }
@@ -386,21 +385,21 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             }
             Quat4f rotate = new Quat4f(0, 0, 0, 1);
 
-            float yawSide = Math.round(railVehicleComponent.yaw/90f);
+            float yawSide = Math.round(railVehicleComponent.yaw / 90f);
             float reverseSign = 1;
             if (yawSide > 1) {
                 reverseSign = -1;
             }
 
             float angleSign = velocity.x >= 0 && velocity.z >= 0 ? 1 : -1;
-            float angle = reverseSign*angleSign*(velocity.length()/MinecartHelper.TWO_PI) + QuaternionUtil.getAngle(locationComponent.getLocalRotation());
+            float angle = reverseSign * angleSign * (velocity.length() / MinecartHelper.TWO_PI) + locationComponent.getLocalRotation().getAngle();
             if (angle > MinecartHelper.TWO_PI) {
                 angle = 0;
-            } else if ( angle < 0 ) {
+            } else if (angle < 0) {
                 angle = MinecartHelper.TWO_PI;
             }
 
-            QuaternionUtil.setRotation(rotate, new Vector3f(1, 0, 0), angle);
+            rotate.set(new Vector3f(1, 0, 0), angle);
             locationComponent.setLocalRotation(rotate);
             vehicle.saveComponent(locationComponent);
         }
@@ -416,7 +415,7 @@ public class MinecartSystem extends BaseComponentSystem implements UpdateSubscri
             }
         }
 
-        fixedPosition.y = block.hitPoint().y + railVehicleMaxExtends.y/2 + 0.05f;
+        fixedPosition.y = block.hitPoint().y + railVehicleMaxExtends.y / 2 + 0.05f;
 
        // }
         /*if (!block.isSlope() && !motionState.nextBlockIsSlope) {

@@ -26,6 +26,8 @@ import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.TeraMath;
+import org.terasology.math.geom.Quat4f;
+import org.terasology.math.geom.Vector3f;
 import org.terasology.physics.HitResult;
 import org.terasology.physics.Physics;
 import org.terasology.physics.StandardCollisionGroup;
@@ -33,8 +35,6 @@ import org.terasology.rails.trains.blocks.components.TrainComponent;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.registry.In;
 
-import javax.vecmath.Quat4f;
-import javax.vecmath.Vector3f;
 import java.util.List;
 
 @RegisterSystem(RegisterMode.AUTHORITY)
@@ -102,8 +102,7 @@ public class VehicleSystem extends BaseComponentSystem implements UpdateSubscrib
             //dir.y=0;
             position.add(dir);
 
-            Quat4f yawPitch = new Quat4f(0, 0, 0, 1);
-            QuaternionUtil.setEuler(yawPitch, TeraMath.DEG_TO_RAD * (railComponent.yaw + 90), TeraMath.DEG_TO_RAD * (railComponent.pitch!=0?180 - railComponent.pitch:0), 0);
+            Quat4f yawPitch = new Quat4f(TeraMath.DEG_TO_RAD * (railComponent.yaw + 90),TeraMath.DEG_TO_RAD * (railComponent.pitch!=0?180 - railComponent.pitch:0),0);
 
             location.setWorldPosition(position);
             location.setWorldRotation(yawPitch);

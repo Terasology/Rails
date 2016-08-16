@@ -29,7 +29,7 @@ import org.terasology.logic.inventory.InventoryManager;
 import org.terasology.logic.inventory.ItemComponent;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.logic.players.event.OnPlayerSpawnedEvent;
-import org.terasology.math.Vector3i;
+import org.terasology.math.geom.Vector3f;
 import org.terasology.physics.Physics;
 import org.terasology.rails.trains.blocks.components.TrainCreaterComponent;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
@@ -39,7 +39,6 @@ import org.terasology.world.block.BlockComponent;
 import org.terasology.world.block.BlockManager;
 import org.terasology.world.block.items.BlockItemFactory;
 
-import javax.vecmath.Vector3f;
 
 @RegisterSystem(RegisterMode.AUTHORITY)
 public class VehicleAction extends BaseComponentSystem {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 MovingBlocks
+ * Copyright 2015 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,19 @@
  */
 package org.terasology.rails.minecarts.controllers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.Side;
+import org.terasology.math.geom.BaseVector3f;
+import org.terasology.math.geom.Vector3f;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.rails.minecarts.components.RailVehicleComponent;
 import org.terasology.rails.minecarts.utils.MinecartHelper;
-import javax.vecmath.Vector3f;
+
+
 
 public class MoveDescriptor {
-
-    private final Logger logger = LoggerFactory.getLogger(MoveDescriptor.class);
-
-    public void calculateDirection(Vector3f velocity, BlockInfo blockInfo, RailVehicleComponent railVehicleComponent, MotionState motionState, Vector3f position, int slopeFactor) {
+    public void calculateDirection(Vector3f velocity, BlockInfo blockInfo, RailVehicleComponent railVehicleComponent,
+                                   MotionState motionState, Vector3f position, int slopeFactor) {
         Side side = correctSide(blockInfo);
 
         switch (blockInfo.getType()) {
@@ -84,8 +83,8 @@ public class MoveDescriptor {
             distanceMoved.y = 0;
             float percent = distanceMoved.length() / 0.01f;
             railVehicle.yaw += motionState.yawSign * 90f * percent / 100;
-            if ((motionState.yawSign > 0 && railVehicle.yaw > railVehicle.prevYaw + 90f) || (motionState.yawSign < 0 && railVehicle.yaw < railVehicle.prevYaw-90f)) {
-                railVehicle.yaw = railVehicle.prevYaw + motionState.yawSign*90f;
+            if ((motionState.yawSign > 0 && railVehicle.yaw > railVehicle.prevYaw + 90f) || (motionState.yawSign < 0 && railVehicle.yaw < railVehicle.prevYaw - 90f)) {
+                railVehicle.yaw = railVehicle.prevYaw + motionState.yawSign * 90f;
             }
 
             if (railVehicle.yaw < 0) {
@@ -231,6 +230,7 @@ public class MoveDescriptor {
                 velocity.set(1,velocity.y,1);
                 velocity.scale(velocity.length()*(dir.length() - 0.8f));
             }  */
+
         }
 
         MinecartHelper.setVectorToDirection(railVehicleComponent.direction, railVehicleComponent.pathDirection);
@@ -239,13 +239,13 @@ public class MoveDescriptor {
         float restoreLength = 0;
         if (railVehicleComponent.parentNode != null) {
             velocity.y = 0;
-            restoreLength = Math.abs(velocity.x) > Math.abs(velocity.z)?Math.abs(velocity.x):Math.abs(velocity.z);
+            restoreLength = Math.abs(velocity.x) > Math.abs(velocity.z) ? Math.abs(velocity.x) : Math.abs(velocity.z);
         }
 
         if (restoreLength == 0) {
             MinecartHelper.setVectorToDirection(velocity, railVehicleComponent.direction);
         } else {
-            velocity.set( railVehicleComponent.direction);
+            velocity.set(railVehicleComponent.direction);
             velocity.scale(restoreLength);
         }
 
@@ -255,7 +255,7 @@ public class MoveDescriptor {
                 Vector3f drive = new Vector3f(railVehicleComponent.drive, railVehicleComponent.drive, railVehicleComponent.drive);
                 drive.x *= railVehicleComponent.direction.x;
                 drive.z *= railVehicleComponent.direction.z;
-                velocity.interpolate(drive, 0.5f);
+                velocity.set(BaseVector3f.lerp(velocity, drive, 0.5f));
             }
         }
 
@@ -281,7 +281,7 @@ public class MoveDescriptor {
                 reverseSign = -1;
             }
 
-            float yawSide = Math.round(railVehicle.yaw/90f);
+            float yawSide = Math.round(railVehicle.yaw / 90f);
             if (yawSide > 1) {
                 reverseSign = -reverseSign;
             }
@@ -301,7 +301,7 @@ public class MoveDescriptor {
                 if (targetY > 1) {
                     targetY = 1;
                 }
-                float percent = 3.5f*(1 - targetY);
+                float percent = 3.5f * (1 - targetY);
 
                 if (percent > 1) {
                     percent = 1;

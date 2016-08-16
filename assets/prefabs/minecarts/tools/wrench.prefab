@@ -4,7 +4,7 @@
         "name" : "Wrench"
     },
     "Item" : {
-        "icon": "Rails:minecart.wrench",
+        "icon": "Rails:minecart#wrench",
         "usage": "IN_DIRECTION",
         "renderWithIcon" : true,
         "baseDamage" : 0

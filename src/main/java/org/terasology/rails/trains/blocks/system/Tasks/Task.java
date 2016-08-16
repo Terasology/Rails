@@ -16,9 +16,9 @@
 package org.terasology.rails.trains.blocks.system.Tasks;
 
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.math.geom.Vector3f;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 
-import javax.vecmath.Vector3f;
 
 /**
  * Created by adeon on 08.09.14.

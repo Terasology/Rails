@@ -16,11 +16,11 @@
 package org.terasology.rails.trains.blocks.system.Builder;
 
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.math.geom.Vector3f;
 import org.terasology.rails.trains.blocks.components.TrainRailComponent;
 import org.terasology.rails.trains.blocks.system.Misc.Orientation;
 import org.terasology.rails.trains.blocks.system.Tasks.Task;
 
-import javax.vecmath.Vector3f;
 
 /**
  * Created by adeon on 09.09.14.

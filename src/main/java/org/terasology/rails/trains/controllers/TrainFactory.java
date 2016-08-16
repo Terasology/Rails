@@ -19,13 +19,13 @@ import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.location.Location;
 import org.terasology.logic.location.LocationComponent;
+import org.terasology.math.geom.Quat4f;
+import org.terasology.math.geom.Vector3f;
 import org.terasology.rails.minecarts.components.RailVehicleComponent;
 import org.terasology.rails.minecarts.components.WheelComponent;
 import org.terasology.rails.trains.blocks.components.TrainComponent;
 import org.terasology.rails.trains.blocks.components.TrainCreaterComponent;
 
-import javax.vecmath.Quat4f;
-import javax.vecmath.Vector3f;
 
 /**
  * Created by adeon on 22.09.14.

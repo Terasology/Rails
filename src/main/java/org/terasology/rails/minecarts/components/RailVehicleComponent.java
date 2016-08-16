@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 MovingBlocks
+ * Copyright 2015 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ package org.terasology.rails.minecarts.components;
 import com.google.common.collect.Lists;
 import org.terasology.entitySystem.Component;
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.math.geom.Vector3f;
 import org.terasology.network.Replicate;
 
-import javax.vecmath.Vector3f;
 import java.util.List;
 
 public class RailVehicleComponent implements Component {
@@ -76,5 +76,5 @@ public class RailVehicleComponent implements Component {
     public Vector3f direction;
 
     @Replicate
-    public float needRevertVelocity = 0;
+    public float needRevertVelocity;
 }

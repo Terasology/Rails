@@ -1,11 +1,13 @@
 {
     "id": "Rails",
-     "version" : "0.1.0",
+     "version" : "0.1.1-SNAPSHOT",
     "displayName": {
         "en": "Rails"
     },
     "description": {
         "en": "Module adds rails and carts"
     },
-    "dependencies": []
+    "dependencies": [
+        {"id" : "Core", "minVersion" : "1.0.0"}
+    ]
 }

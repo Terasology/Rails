@@ -17,10 +17,10 @@ package org.terasology.rails.trains.blocks.components;
 
 import org.terasology.entitySystem.Component;
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.math.geom.Vector3f;
 import org.terasology.network.Replicate;
 import org.terasology.protobuf.EntityData;
 
-import javax.vecmath.Vector3f;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -15,7 +15,8 @@
  */
 package org.terasology.rails.trains.controllers;
 
-import javax.vecmath.Vector3f;
+import org.terasology.math.geom.Vector3f;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,7 +60,7 @@ public class CatmullRom {
         c2.sub(m1, m0);
         c2.scale(0.5f);
         factor.add(new Vector3f());
-        factor.get(0).add(c1, c2);
+        factor.get(0).add(c1).add(c2);
 
         c1.set(m1);
         c1.scale(0.5f);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 MovingBlocks
+ * Copyright 2015 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,49 +17,50 @@ package org.terasology.rails.minecarts.action;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.terasology.asset.Assets;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.EventPriority;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
+import org.terasology.entitySystem.systems.RegisterMode;
+import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.input.cameraTarget.CameraTargetChangedEvent;
 import org.terasology.logic.characters.CharacterComponent;
+import org.terasology.logic.characters.CharacterHeldItemComponent;
 import org.terasology.logic.characters.MovementMode;
 import org.terasology.logic.characters.events.SetMovementModeEvent;
+import org.terasology.logic.common.ActivateEvent;
 import org.terasology.logic.health.DestroyEvent;
-import org.terasology.logic.inventory.InventoryUtils;
+import org.terasology.logic.inventory.InventoryComponent;
+import org.terasology.logic.inventory.InventoryManager;
+import org.terasology.logic.inventory.ItemComponent;
 import org.terasology.logic.location.Location;
+import org.terasology.logic.location.LocationComponent;
+import org.terasology.logic.players.event.OnPlayerSpawnedEvent;
 import org.terasology.math.Side;
+import org.terasology.math.geom.Quat4f;
+import org.terasology.math.geom.Vector3f;
+import org.terasology.math.geom.Vector3i;
 import org.terasology.physics.HitResult;
 import org.terasology.physics.Physics;
 import org.terasology.physics.StandardCollisionGroup;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.physics.events.CollideEvent;
 import org.terasology.physics.events.ImpulseEvent;
+
 import org.terasology.rails.minecarts.blocks.ConnectsToRailsComponent;
 import org.terasology.rails.minecarts.components.LocomotiveComponent;
+import org.terasology.rails.minecarts.components.RailVehicleComponent;
 import org.terasology.rails.minecarts.components.WrenchComponent;
+import org.terasology.rails.minecarts.controllers.MinecartFactory;
 import org.terasology.rails.minecarts.utils.MinecartHelper;
 import org.terasology.registry.In;
-import org.terasology.entitySystem.systems.RegisterMode;
-import org.terasology.entitySystem.systems.RegisterSystem;
-import org.terasology.logic.common.ActivateEvent;
-import org.terasology.logic.inventory.InventoryComponent;
-import org.terasology.logic.inventory.InventoryManager;
-import org.terasology.logic.inventory.ItemComponent;
-import org.terasology.logic.location.LocationComponent;
-import org.terasology.logic.players.event.OnPlayerSpawnedEvent;
-import org.terasology.math.Vector3i;
-import org.terasology.rails.minecarts.components.RailVehicleComponent;
-import org.terasology.rails.minecarts.controllers.MinecartFactory;
 import org.terasology.rendering.logic.MeshComponent;
+import org.terasology.utilities.Assets;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.BlockComponent;
 import org.terasology.world.block.BlockManager;
 import org.terasology.world.block.items.BlockItemFactory;
-import javax.vecmath.Quat4f;
-import javax.vecmath.Vector3f;
 
 @RegisterSystem(RegisterMode.AUTHORITY)
 public class MinecartAction extends BaseComponentSystem {
@@ -90,7 +91,7 @@ public class MinecartAction extends BaseComponentSystem {
             return;
         }
 
-        if (railVehicle == null || (railVehicle.characterInsideCart != null && railVehicle.characterInsideCart.equals(event.getOtherEntity()))) {
+        if (railVehicle.characterInsideCart != null && railVehicle.characterInsideCart.equals(event.getOtherEntity())) {
             return;
         }
 
@@ -107,10 +108,10 @@ public class MinecartAction extends BaseComponentSystem {
     @ReceiveEvent
     public void onPlayerSpawn(OnPlayerSpawnedEvent event, EntityRef player, InventoryComponent inventory) {
         BlockItemFactory blockFactory = new BlockItemFactory(entityManager);
-        //inventoryManager.giveItem(player,player,entityManager.create("rails:minecart"));
-        //inventoryManager.giveItem(player,player,entityManager.create("rails:loco"));
-        //inventoryManager.giveItem(player,player,entityManager.create("rails:wrench"));
-        //inventoryManager.giveItem(player,player,blockFactory.newInstance(blockManager.getBlockFamily("rails:Rails"), 99));
+        inventoryManager.giveItem(player, player, entityManager.create("rails:minecart"));
+        inventoryManager.giveItem(player, player, entityManager.create("rails:loco"));
+        inventoryManager.giveItem(player, player, entityManager.create("rails:wrench"));
+        inventoryManager.giveItem(player, player, blockFactory.newInstance(blockManager.getBlockFamily("rails:Rails"), 99));
     }
 
     @ReceiveEvent(components = {RailVehicleComponent.class, LocationComponent.class}, priority = EventPriority.PRIORITY_HIGH)
@@ -122,7 +123,7 @@ public class MinecartAction extends BaseComponentSystem {
             case locomotive:
                 LocomotiveComponent locomotiveComponent = entity.getComponent(LocomotiveComponent.class);
 
-                for(EntityRef minecart: locomotiveComponent.childs) {
+                for (EntityRef minecart : locomotiveComponent.childs) {
                     RailVehicleComponent childRailVehicleComponent = minecart.getComponent(RailVehicleComponent.class);
                     childRailVehicleComponent.locomotiveRef = null;
                     childRailVehicleComponent.parentNode = null;
@@ -208,13 +209,14 @@ public class MinecartAction extends BaseComponentSystem {
                         railVehicleComponent.parentNode = null;
                         railVehicleComponent.locomotiveRef = null;
                     }
-                }else {
+                } else {
                     EntityRef parent = checkMineCartJoin(railVehicleComponent, location.getWorldPosition());
                     if (parent != null) {
                         RailVehicleComponent parentRailVehicleComponent = parent.getComponent(RailVehicleComponent.class);
                         if (parentRailVehicleComponent.locomotiveRef != null || parentRailVehicleComponent.type.equals(RailVehicleComponent.Types.locomotive)) {
                             railVehicleComponent.parentNode = parent;
-                            railVehicleComponent.locomotiveRef = parentRailVehicleComponent.type.equals(RailVehicleComponent.Types.locomotive)?parent:parentRailVehicleComponent.locomotiveRef;
+                            railVehicleComponent.locomotiveRef = parentRailVehicleComponent.type.equals(RailVehicleComponent.Types.locomotive)
+                                    ? parent : parentRailVehicleComponent.locomotiveRef;
                             LocomotiveComponent loco = railVehicleComponent.locomotiveRef.getComponent(LocomotiveComponent.class);
                             if (loco == null) {
                                 return;
@@ -235,8 +237,8 @@ public class MinecartAction extends BaseComponentSystem {
     public void onCamTargetChanged(CameraTargetChangedEvent event, EntityRef entity) {
         EntityRef oldTarget = event.getOldTarget();
         EntityRef newTarget = event.getNewTarget();
-        CharacterComponent characterComponent = entity.getComponent(CharacterComponent.class);
-        EntityRef heldItem = InventoryUtils.getItemAt(entity, characterComponent.selectedItem);
+        CharacterHeldItemComponent characterComponent = entity.getComponent(CharacterHeldItemComponent.class);
+        EntityRef heldItem = characterComponent.selectedItem;
 
         if (!heldItem.hasComponent(WrenchComponent.class)) {
             return;
@@ -255,7 +257,7 @@ public class MinecartAction extends BaseComponentSystem {
                 LocationComponent location = newTarget.getComponent(LocationComponent.class);
                 if (railVehicleComponent.parentNode != null) {
                     setSelectMaterial(newTarget, "rails:minecart-unjoin");
-                }else if (checkMineCartJoin(railVehicleComponent, location.getWorldPosition()) != null) {
+                } else if (checkMineCartJoin(railVehicleComponent, location.getWorldPosition()) != null) {
                     setSelectMaterial(newTarget, "rails:minecart-join");
                 }
             }
@@ -265,10 +267,10 @@ public class MinecartAction extends BaseComponentSystem {
     private void setSelectMaterial(EntityRef railVehicle, String urlMaterial) {
         RailVehicleComponent railVehicleComponent = railVehicle.getComponent(RailVehicleComponent.class);
         MeshComponent mesh = railVehicle.getComponent(MeshComponent.class);
-        mesh.material = Assets.getMaterial(urlMaterial);
+        mesh.material = Assets.getMaterial(urlMaterial).get();
         for (EntityRef vehicle : railVehicleComponent.vehicles) {
             MeshComponent meshVehicle = vehicle.getComponent(MeshComponent.class);
-            meshVehicle.material = Assets.getMaterial(urlMaterial);
+            meshVehicle.material = Assets.getMaterial(urlMaterial).get();
             vehicle.saveComponent(meshVehicle);
         }
         railVehicle.saveComponent(mesh);
@@ -279,7 +281,8 @@ public class MinecartAction extends BaseComponentSystem {
         pathDirection.y = 0;
 
         Vector3f pathDirectionNegate = new Vector3f(pathDirection);
-        pathDirectionNegate.negate(pathDirection);
+
+        pathDirectionNegate.negate();
         Vector3f[] directions = {pathDirection, pathDirectionNegate};
 
         for (Vector3f dir : directions) {
@@ -316,7 +319,7 @@ public class MinecartAction extends BaseComponentSystem {
                 if (railVehicleComponent.characterInsideCart == null && (railVehicleComponent.pathDirection.x == 0 || railVehicleComponent.pathDirection.z == 0)) {
                    event.getInstigator().send(new SetMovementModeEvent(MovementMode.NONE));
                     railVehicleComponent.characterInsideCart = event.getInstigator();
-                    Location.attachChild(railVehicleEntity, railVehicleComponent.characterInsideCart, new Vector3f(0,1.5f,0), new Quat4f());
+                    Location.attachChild(railVehicleEntity, railVehicleComponent.characterInsideCart, new Vector3f(0, 1.5f, 0), new Quat4f());
                     railVehicleRigidBody.collidesWith.remove(StandardCollisionGroup.CHARACTER);
                     railVehicleRigidBody.collidesWith.remove(StandardCollisionGroup.DEFAULT);
                     railVehicleComponent.drive = 0;
@@ -366,7 +369,7 @@ public class MinecartAction extends BaseComponentSystem {
         LocationComponent location = entity.getComponent(LocationComponent.class);
         RailVehicleComponent railVehicleComponent = railVehicle.getComponent(RailVehicleComponent.class);
 
-        if ( railVehicleComponent.parentNode != null ) {
+        if (railVehicleComponent.parentNode != null) {
             return;
         }
 

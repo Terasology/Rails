@@ -17,8 +17,8 @@ package org.terasology.rails.trains.components;
 
 import org.terasology.entitySystem.Component;
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.math.geom.Vector3f;
 
-import javax.vecmath.Vector3f;
 import java.util.ArrayList;
 
 

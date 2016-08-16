@@ -1,0 +1,14 @@
+{
+    "parent": "engine:iconItem",
+    "DisplayName": {
+        "name": "Steam Engine"
+    },
+    "Item": {
+        "name": "Minecart",
+        "icon": "Rails:minecart#loco",
+        "usage": "IN_DIRECTION"
+    },
+    "RailVehicle": {
+        "type": "locomotive"
+    }
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 MovingBlocks
+ * Copyright 2015 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,39 +16,30 @@
 package org.terasology.rails.minecarts.controllers;
 
 import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.math.Vector3i;
+import org.terasology.math.geom.Vector3f;
+import org.terasology.math.geom.Vector3i;
 import org.terasology.rails.minecarts.blocks.ConnectsToRailsComponent;
 import org.terasology.world.block.Block;
 
-import javax.vecmath.Vector3f;
-
 public class BlockInfo {
-    private Block block = null;
+    private Block block;
     private Vector3i blockPosition = new Vector3i();
-    private EntityRef blockEntity = EntityRef.NULL;
-    private ConnectsToRailsComponent rails = null;
-    private Vector3f hitPoint = null;
+    private ConnectsToRailsComponent rails;
+    private Vector3f hitPoint;
 
     public BlockInfo(Block block, Vector3i blockPosition, EntityRef entity, ConnectsToRailsComponent component, Vector3f hitPoint) {
         this.block = block;
-        this.blockEntity = entity;
         this.rails = component;
         this.blockPosition = blockPosition;
         this.hitPoint = hitPoint;
     }
 
     public boolean isEmptyBlock() {
-        if (block != null) {
-            return false;
-        }
-        return true;
+        return block == null;
     }
 
     public boolean isRails() {
-        if (rails != null) {
-            return true;
-        }
-        return false;
+       return rails != null;
     }
 
     public ConnectsToRailsComponent.RAILS getType() {
@@ -68,10 +59,10 @@ public class BlockInfo {
     }
 
     public boolean isCorner() {
-        return  isRails() &&
-               (rails.type == ConnectsToRailsComponent.RAILS.CURVE ||
-                rails.type == ConnectsToRailsComponent.RAILS.TEE ||
-                rails.type == ConnectsToRailsComponent.RAILS.TEE_INVERSED);
+        return  isRails()
+                && (rails.type == ConnectsToRailsComponent.RAILS.CURVE
+                || rails.type == ConnectsToRailsComponent.RAILS.TEE
+                || rails.type == ConnectsToRailsComponent.RAILS.TEE_INVERSED);
     }
 
     public boolean isSlope() {

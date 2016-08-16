@@ -1,0 +1,12 @@
+{
+    "parent": "engine:iconItem",
+    "DisplayName": {
+        "name": "Minecart"
+    },
+    "Item": {
+        "name": "Minecart",
+        "icon": "Rails:minecart#minecart",
+        "usage": "IN_DIRECTION"
+    },
+    "RailVehicle": {}
+}

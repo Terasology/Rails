@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 MovingBlocks
+ * Copyright 2015 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,35 +15,37 @@
  */
 package org.terasology.rails.minecarts.controllers;
 
-import org.terasology.math.Vector3i;
+import org.terasology.math.geom.Vector3f;
+import org.terasology.math.geom.Vector3i;
 import org.terasology.rails.minecarts.components.RailVehicleComponent;
 
-import javax.vecmath.Vector3f;
 
 public class MotionState {
-    public Vector3f prevPosition    = new Vector3f();
+    public Vector3f prevPosition = new Vector3f();
     public Vector3f currentBlockPosition = new Vector3f();
     public Vector3f prevBlockPosition = new Vector3f();
     public Vector3f angularFactor = new Vector3f();
-    public RailVehicleComponent railVehicleComponent = null;
+    public RailVehicleComponent railVehicleComponent;
     public int yawSign = 1;
     public int pitchSign = 1;
-    public boolean nextBlockIsSlope = false;
+    public boolean nextBlockIsSlope;
     public PositionStatus currentPositionStatus = PositionStatus.ON_THE_AIR;
-    public static enum PositionStatus {ON_THE_AIR, ON_THE_GROUND, ON_THE_PATH, ON_THE_LIQUID};
+    public static enum PositionStatus { ON_THE_AIR, ON_THE_GROUND, ON_THE_PATH, ON_THE_LIQUID };
 
-    public void setCurrentState(Vector3f pathDirection, Vector3f minecartDirection,  Vector3f angularFactor, Vector3i newBlockPosition, PositionStatus currentPositionStatus) {
-        this.angularFactor = angularFactor;
+    public void setCurrentState(Vector3f pathDirection, Vector3f minecartDirection, Vector3f newAngularFactor,
+                                Vector3i newBlockPosition, PositionStatus newPositionStatus) {
+        angularFactor = newAngularFactor;
         this.railVehicleComponent.pathDirection.set(pathDirection);
         this.railVehicleComponent.direction.set(minecartDirection);
-        this.currentPositionStatus = currentPositionStatus;
+        currentPositionStatus = newPositionStatus;
         if (newBlockPosition != null) {
             setCurrentBlockPosition(newBlockPosition.toVector3f());
         }
     }
 
     public void setCurrentBlockPosition(Vector3f currentBlockPosition) {
-        if (this.currentBlockPosition.x != currentBlockPosition.x || this.currentBlockPosition.y != currentBlockPosition.y || this.currentBlockPosition.z != currentBlockPosition.z) {
+        if (this.currentBlockPosition.x != currentBlockPosition.x || this.currentBlockPosition.y != currentBlockPosition.y
+                || this.currentBlockPosition.z != currentBlockPosition.z) {
             this.prevBlockPosition = this.currentBlockPosition;
             this.currentBlockPosition = currentBlockPosition;
         }
