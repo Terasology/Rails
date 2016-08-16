@@ -16,6 +16,7 @@
 package org.terasology.rails.blocks;
 
 import gnu.trove.map.TByteObjectMap;
+import org.terasology.assets.ResourceUrn;
 import org.terasology.math.Side;
 import org.terasology.math.SideBitFlag;
 import org.terasology.math.geom.Vector3i;
@@ -36,15 +37,14 @@ public class RailsUpdatesFamily extends AbstractBlockFamily {
     private ConnectionCondition connectionCondition;
     private Block archetypeBlock;
 
-    @In
-    private BlockManager blockManager;
+
     private TByteObjectMap<Block> blocks;
     private byte connectionSides;
 
     public RailsUpdatesFamily(ConnectionCondition connectionCondition, BlockUri blockUri,
                               List<String> categories, Block archetypeBlock, TByteObjectMap<Block> blocks, byte connectionSides) {
-        super(blockUri, categories);
 
+        super(blockUri, categories);
         this.connectionCondition = connectionCondition;
         this.archetypeBlock = archetypeBlock;
         this.blocks = blocks;
@@ -94,7 +94,8 @@ public class RailsUpdatesFamily extends AbstractBlockFamily {
         Vector3i upLocation = new Vector3i(location);
         upLocation.y += 1;
         Block block = worldProvider.getBlock(upLocation);
-        if (block != blockManager.getBlock(BlockManager.AIR_ID) && !block.isPenetrable() && block.isLiquid()) {
+
+        if (block.getURI() != BlockManager.AIR_ID && !block.isPenetrable() && block.isLiquid()) {
             hasTopBlock = true;
         }
 
@@ -103,7 +104,7 @@ public class RailsUpdatesFamily extends AbstractBlockFamily {
                 connections += SideBitFlag.getSide(connectSide);
             } else if (hasTopBlock) {
                 block = worldProvider.getBlock(location);
-                if (block != blockManager.getBlock(BlockManager.AIR_ID) && !block.isPenetrable() && block.isLiquid()) {
+                if (block.getURI() != BlockManager.AIR_ID && !block.isPenetrable() && block.isLiquid()) {
                     skipSides.add(connectSide);
                 }
             }

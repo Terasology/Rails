@@ -15,6 +15,7 @@
  */
 package org.terasology.rails.blocks;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import gnu.trove.iterator.TByteObjectIterator;
 import gnu.trove.map.TByteObjectMap;
@@ -25,10 +26,12 @@ import org.terasology.math.Side;
 import org.terasology.math.SideBitFlag;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.naming.Name;
+import org.terasology.registry.In;
 import org.terasology.world.BlockEntityRegistry;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
 import org.terasology.world.block.BlockBuilderHelper;
+import org.terasology.world.block.BlockManager;
 import org.terasology.world.block.BlockUri;
 import org.terasology.world.block.family.BlockFamily;
 import org.terasology.world.block.family.BlockFamilyFactory;
@@ -40,6 +43,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @RegisterBlockFamilyFactory(value = "Rails:rails")
@@ -67,7 +71,21 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
 
     public RailsFamilyFactory() {
         connectionCondition = new RailsConnectionCondition();
-        connectionSides = 0b110111;
+        connectionSides = SideBitFlag.getSides(Side.BACK,Side.FRONT,Side.RIGHT,Side.LEFT,Side.TOP);
+    }
+
+    @Override
+    public Set<String> getSectionNames() {
+
+        return ImmutableSet.<String>builder()
+                .add(NO_CONNECTIONS)
+                .add(ONE_CONNECTION)
+                .add(ONE_CONNECTIONS_SLOPE)
+                .add(TWO_CONNECTIONS_LINE)
+                .add(TWO_CONNECTIONS_CORNER)
+                .add(THREE_CONNECTIONS_T)
+                .add(FOUR_CONNECTIONS_CROSS)
+                .build();
     }
 
     @Override
@@ -90,11 +108,10 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
             // Only the allowed connections should be created
             if ((connections & connectionSides) == connections) {
                 Block block = constructBlockForConnections(connections, blockBuilder, definition, basicBlocks);
-                if (block == null) {
-                    throw new IllegalStateException("Unable to find correct block definition for connections: " + connections);
+                if (block != null) {
+                    block.setUri(new BlockUri(blockUri, new Name(String.valueOf(connections))));
+                    blocksForConnections.put(connections, block);
                 }
-                block.setUri(new BlockUri(blockUri, new Name(String.valueOf(connections))));
-                blocksForConnections.put(connections, block);
             }
         }
 
@@ -103,7 +120,7 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
                 archetypeBlock, blocksForConnections, (byte) (connectionSides & 0b111110));
     }
 
-    private void addConnections(TByteObjectMap<String>[] basicBlocks, int index, String connections) {
+    protected void addConnections(TByteObjectMap<String>[] basicBlocks, int index, String connections) {
         if (basicBlocks[index] == null) {
             basicBlocks[index] = new TByteObjectHashMap<>();
         }
@@ -113,26 +130,8 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
         }
     }
 
-    private Rotation getRotationToAchieve(byte source, byte target) {
-        Collection<Side> originalSides = SideBitFlag.getSides((byte) (source & 0b111110));
-
-        Iterable<Rotation> rotations = Rotation.horizontalRotations();
-        for (Rotation rot : rotations) {
-            Set<Side> transformedSides = Sets.newHashSet();
-            for (Side originalSide : originalSides) {
-                transformedSides.add(rot.rotate(originalSide));
-            }
-
-            byte transformedSide = SideBitFlag.getSides(transformedSides);
-            if (transformedSide == target) {
-                return rot;
-            }
-        }
-        return null;
-    }
-
-    private Block constructBlockForConnections(final byte connections, final BlockBuilderHelper blockBuilder,
-                                               BlockFamilyDefinition definition, TByteObjectMap<String>[] basicBlocks) {
+    protected Block constructBlockForConnections(final byte connections, final BlockBuilderHelper blockBuilder,
+                                                 BlockFamilyDefinition definition, TByteObjectMap<String>[] basicBlocks) {
         int connectionCount = SideBitFlag.getSides(connections).size();
         TByteObjectMap<String> possibleBlockDefinitions = basicBlocks[connectionCount];
         final TByteObjectIterator<String> blockDefinitionIterator = possibleBlockDefinitions.iterator();
@@ -143,6 +142,22 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
             Rotation rot = getRotationToAchieve(originalConnections, connections);
             if (rot != null) {
                 return blockBuilder.constructTransformedBlock(definition, section, rot);
+            }
+        }
+        return null;
+    }
+
+    protected Rotation getRotationToAchieve(byte source, byte target) {
+        Collection<Side> originalSides = SideBitFlag.getSides(source);
+
+        Iterable<Rotation> rotations =  Rotation.horizontalRotations() ;
+        for (Rotation rot : rotations) {
+            Set<Side> transformedSides = Sets.newHashSet();
+            transformedSides.addAll(originalSides.stream().map(rot::rotate).collect(Collectors.toList()));
+
+            byte transformedSide = SideBitFlag.getSides(transformedSides);
+            if (transformedSide == target) {
+                return rot;
             }
         }
         return null;
