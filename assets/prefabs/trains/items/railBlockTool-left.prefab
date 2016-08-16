@@ -7,7 +7,7 @@
         "type": "LEFT"
     },
     "Item" : {
-        "icon": "Rails:minecart.railLeft",
+        "icon": "Rails:minecart#railLeft",
         "usage": "IN_DIRECTION",
         "renderWithIcon" : true,
         "baseDamage" : 0

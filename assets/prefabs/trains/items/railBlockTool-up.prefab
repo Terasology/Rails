@@ -7,7 +7,7 @@
         "type": "UP"
     },
     "Item" : {
-        "icon": "Rails:minecart.railUp",
+        "icon": "Rails:minecart#railUp",
         "usage": "IN_DIRECTION",
         "renderWithIcon" : true,
         "baseDamage" : 0

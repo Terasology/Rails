@@ -7,7 +7,7 @@
         "type": "DOWN"
     },
     "Item" : {
-        "icon": "Rails:minecart.railDown",
+        "icon": "Rails:minecart#railDown",
         "usage": "IN_DIRECTION",
         "renderWithIcon" : true,
         "baseDamage" : 0

@@ -60,7 +60,7 @@ public class Railway {
     public static final String GHOST_KEY = "ghost";
     public static final float TRACK_LENGTH = 1f;
     public static final float STANDARD_ANGLE_CHANGE = 7.5f;
-    public static final float STANDARD_PITCH_ANGLE_CHANGE = 11.3f;
+    public static final float STANDARD_PITCH_ANGLE_CHANGE = 7.5f;
     private final Logger logger = LoggerFactory.getLogger(Railway.class);
 
     private static Railway instance;

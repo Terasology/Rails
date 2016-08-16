@@ -7,7 +7,7 @@
         "type": "RIGHT"
     },
     "Item" : {
-        "icon": "Rails:minecart.railRight",
+        "icon": "Rails:minecart#railRight",
         "usage": "IN_DIRECTION",
         "renderWithIcon" : true,
         "baseDamage" : 0

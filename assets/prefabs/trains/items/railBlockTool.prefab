@@ -7,7 +7,7 @@
         "type": "STRAIGHT"
     },
     "Item" : {
-        "icon": "Rails:minecart.railStraight",
+        "icon": "Rails:minecart#railStraight",
         "usage": "IN_DIRECTION",
         "renderWithIcon" : true,
         "baseDamage" : 0

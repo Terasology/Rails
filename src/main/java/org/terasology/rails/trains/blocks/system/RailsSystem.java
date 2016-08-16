@@ -89,8 +89,10 @@ public class RailsSystem extends BaseComponentSystem {
             return;
         }
 
+
+
         RailBuilderComponent railBuilderComponent = heldItem.getComponent(RailBuilderComponent.class);
-        createRail(ct.getTarget(), head.getLocalDirection(), railBuilderComponent.type, true);
+        createRail(ct.getTarget(), head.getWorldDirection(), railBuilderComponent.type, true);
     }
 
     @ReceiveEvent(components = {LocationComponent.class}, priority = EventPriority.PRIORITY_HIGH)
@@ -104,8 +106,10 @@ public class RailsSystem extends BaseComponentSystem {
         }
         LocationComponent head =  GazeAuthoritySystem.getGazeEntityForCharacter(entity).getComponent(LocationComponent.class);
 
+        logger.error(head.getLocalDirection().toString());
+
         RailBuilderComponent railBuilderComponent = heldItem.getComponent(RailBuilderComponent.class);
-        createRail(newTarget, head.getLocalDirection(), railBuilderComponent.type, true);
+        createRail(newTarget, head.getWorldDirection(), railBuilderComponent.type, true);
     }
 
     private void createRail(EntityRef target, Vector3f direction, RailBuilderComponent.RailType type, boolean preview) {
