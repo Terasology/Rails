@@ -1,7 +1,7 @@
 {
     "id": "Rails",
      "version" : "0.1.1-SNAPSHOT",
-    "author" : "small-jeeper";
+    "author" : "small-jeeper, SkySom, Cervator, pollend, msteiger";
     "displayName": {
         "en": "Rails"
     },
