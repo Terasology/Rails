@@ -27,31 +27,31 @@ Straight Track
 -------
 You can make this kind of track by placing more than one rails in a straight line.
 
-![Straight](https://github.com/jellysnake/Test-asology/wiki/Straight.gif)
+![Straight](https://github.com/Terasology/Rails/wiki/images/Straight.gif)
 
 Sloped Track
 -------
 You can make this kind of track by placing more than one rails in a straight line, but with an elevation of **1 block**.
 
-![Sloped](https://github.com/jellysnake/Test-asology/wiki/Slope.gif)
+![Sloped](https://github.com/Terasology/Rails/wiki/images/Slope.gif)
 
 Corner Joint
 -------
 You can make this joint by placing 3 rails in an elbow (90 degree) bend.
 
-![Corner](https://github.com/jellysnake/Test-asology/wiki/Corner.gif)
+![Corner](https://github.com/Terasology/Rails/wiki/images/Corner.gif)
 
 Tee Joint
 -------
 You can make this joint by placing 4 rails in a T-shape.
 
-![Tee](https://github.com/jellysnake/Test-asology/wiki/T.gif)
+![Tee](https://github.com/Terasology/Rails/wiki/images/T.gif)
 
 Changing The Direction of A Tee Joint
 -------
 You can change the direction of a tee joint by pressing `e` while facing the intersection rail in a tee joint.
 
-![Changing](https://github.com/jellysnake/Test-asology/wiki/Invert%20T.gif)
+![Changing](https://github.com/Terasology/Rails/wiki/images/InvertT.gif)
 
 
 Linking Locomotive-Minecart
