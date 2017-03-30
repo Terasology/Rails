@@ -17,7 +17,6 @@ package org.terasology.rails.minecarts.controllers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.terasology.entitySystem.Component;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.location.Location;
@@ -61,9 +60,9 @@ public class MinecartFactory {
         if (minecartLocation != null) {
             RailVehicleComponent railVehicle = entity.getComponent(RailVehicleComponent.class);
             railVehicle.isCreated = true;
-            railVehicle.drive = 0;
-            railVehicle.pathDirection = new Vector3f();
-            railVehicle.direction = new Vector3f(1f, 1f, 1f);
+            //railVehicle.drive = 0;
+            //railVehicle.pathDirection = new Vector3f();
+            //railVehicle.direction = new Vector3f(1f, 1f, 1f);
             attachVehicle(entity, new Vector3f(-0.125f, -1.5f, 0.55f), 1f);
             attachVehicle(entity, new Vector3f(-0.125f, -1.5f, -0.55f), 1f);
             entity.saveComponent(railVehicle);
@@ -81,9 +80,9 @@ public class MinecartFactory {
         if (minecartLocation != null) {
             RailVehicleComponent railVehicle = entity.getComponent(RailVehicleComponent.class);
             railVehicle.isCreated = true;
-            railVehicle.drive = 0;
-            railVehicle.pathDirection = new Vector3f();
-            railVehicle.direction = new Vector3f(1f, 1f, 1f);
+            //railVehicle.drive = 0;
+           // railVehicle.pathDirection = new Vector3f();
+            //railVehicle.direction = new Vector3f(1f, 1f, 1f);
             attachVehicle(entity, new Vector3f(-0.125f, -1.2f, 0.55f), 0.75f);
             attachVehicle(entity, new Vector3f(-0.125f, -1.2f, 0), 0.75f);
             attachVehicle(entity, new Vector3f(-0.125f, -1.2f, -0.55f), 0.75f);

@@ -21,6 +21,7 @@
     "penetrable" : false,
 
     "no_connections": {
+         "tile" : "Rails:TrainTrack",
         "shape": "engine:horizontalOffsetPlane",
         "tiles" : {
            "center" : "Rails:TrainTrack"
@@ -30,6 +31,7 @@
         }
     },
     "one_connection": {
+         "tile" : "Rails:TrainTrack",
         "shape" : "engine:horizontalOffsetPlane",
         "tiles" : {
           "center" : "Rails:TrainTrack"
@@ -39,6 +41,7 @@
         }
     },
     "one_connection_slope": {
+        "tile" : "Rails:TrainTrack",
         "shape" : "railSlope",
         "tiles" : {
           "center" : "Rails:TrainTrackSlope"
@@ -58,6 +61,7 @@
         }
     },
     "2d_corner": {
+        "tile" : "Rails:TrainTrack",
         "shape" : "engine:horizontalOffsetPlane",
         "tiles" : {
           "center" : "Rails:TrainTrackCurve"
@@ -77,6 +81,7 @@
         }
     },
     "cross": {
+         "tile" : "Rails:TrainTrack",
         "shape" : "engine:horizontalOffsetPlane",
         "tiles" : {
           "center" : "Rails:TrainTrackIntersection"

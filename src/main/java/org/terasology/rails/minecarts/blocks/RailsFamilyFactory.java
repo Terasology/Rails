@@ -26,7 +26,6 @@ import org.terasology.math.Side;
 import org.terasology.math.SideBitFlag;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.naming.Name;
-import org.terasology.registry.In;
 import org.terasology.world.BlockEntityRegistry;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
@@ -68,6 +67,8 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
     private ConnectionCondition connectionCondition;
     private byte connectionSides;
 
+    TByteObjectMap<Rotation> rotations = new TByteObjectHashMap<>();
+
     public RailsFamilyFactory() {
         connectionCondition = new RailsConnectionCondition();
         connectionSides = SideBitFlag.getSides(Side.BACK,Side.FRONT,Side.RIGHT,Side.LEFT,Side.TOP);
@@ -103,10 +104,10 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
         BlockUri blockUri = new BlockUri(definition.getUrn());
 
         // Now make sure we have all combinations based on the basic set (above) and rotations
-        for (byte connections = 0; connections < 54; connections++) {
+        for (byte connections = 0; connections < 60; connections++) {
             // Only the allowed connections should be created
             if ((connections & connectionSides) == connections) {
-                Block block = constructBlockForConnections(connections, blockBuilder, definition, basicBlocks);
+                Block block = constructBlockForConnections(connections,blockUri, blockBuilder, definition, basicBlocks);
                 if (block != null) {
                     block.setUri(new BlockUri(blockUri, new Name(String.valueOf(connections))));
                     blocksForConnections.put(connections, block);
@@ -116,7 +117,7 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
 
         final Block archetypeBlock = blocksForConnections.get(SideBitFlag.getSides(Side.RIGHT, Side.LEFT));
         return new RailsUpdatesFamily(connectionCondition, blockUri, definition.getCategories(),
-                archetypeBlock, blocksForConnections, (byte) (connectionSides & 0b111110));
+                archetypeBlock, blocksForConnections, (byte) (connectionSides & 0b111110),rotations);
     }
 
     protected void addConnections(TByteObjectMap<String>[] basicBlocks, int index, String connections) {
@@ -129,9 +130,11 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
         }
     }
 
-    protected Block constructBlockForConnections(final byte connections, final BlockBuilderHelper blockBuilder,
+    protected Block constructBlockForConnections(final byte connections,BlockUri uri, final BlockBuilderHelper blockBuilder,
                                                  BlockFamilyDefinition definition, TByteObjectMap<String>[] basicBlocks) {
         int connectionCount = SideBitFlag.getSides(connections).size();
+        if(connectionCount >  basicBlocks.length -1 )
+            return  null;
         TByteObjectMap<String> possibleBlockDefinitions = basicBlocks[connectionCount];
         final TByteObjectIterator<String> blockDefinitionIterator = possibleBlockDefinitions.iterator();
         while (blockDefinitionIterator.hasNext()) {
@@ -140,6 +143,8 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
             final String section = blockDefinitionIterator.value();
             Rotation rot = getRotationToAchieve(originalConnections, connections);
             if (rot != null) {
+
+                rotations.put(connections,rot);
                 return blockBuilder.constructTransformedBlock(definition, section, rot);
             }
         }
@@ -174,7 +179,7 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
         }
 
         private boolean connectsToNeighbor(EntityRef neighborEntity, Side side) {
-            return neighborEntity.hasComponent(ConnectsToRailsComponent.class);
+            return neighborEntity.hasComponent(RailComponent.class);
         }
     }
 }

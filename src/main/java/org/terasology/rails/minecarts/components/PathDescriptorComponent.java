@@ -16,21 +16,43 @@
 package org.terasology.rails.minecarts.components;
 
 import org.terasology.entitySystem.Component;
+import org.terasology.math.Side;
+import org.terasology.math.geom.Vector3f;
+import org.terasology.network.Replicate;
+import org.terasology.rails.tracks.CubicBezier;
 import org.terasology.reflection.MappedContainer;
+import org.terasology.rendering.nui.properties.OneOf;
 
+import java.util.List;
 import java.util.Set;
 
 /**
  * Created by michaelpollind on 8/15/16.
  */
 public class PathDescriptorComponent implements Component {
-    public Set<PathNode> nodes;
+    @Replicate
+    public List<Descriptor> descriptors;
+
 
     @MappedContainer
-    public  static  class  PathNode{
-        float p1;
-        float p2;
-        float p3;
+    public static class Descriptor
+    {
+        @Replicate
+        public List<CubicBezier> path;
+        @Replicate
+        public byte mask;
+        @Replicate
+        public  Side start;
+        @Replicate
+        public Side end;
+
+        @Replicate
+        public Vector3f startingBinormal;
+
+        @Replicate
+        public  float rotation;
+
     }
+
 
 }

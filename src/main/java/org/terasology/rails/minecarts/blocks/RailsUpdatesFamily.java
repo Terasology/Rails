@@ -16,11 +16,10 @@
 package org.terasology.rails.minecarts.blocks;
 
 import gnu.trove.map.TByteObjectMap;
-import org.terasology.assets.ResourceUrn;
+import org.terasology.math.Rotation;
 import org.terasology.math.Side;
 import org.terasology.math.SideBitFlag;
 import org.terasology.math.geom.Vector3i;
-import org.terasology.registry.In;
 import org.terasology.world.BlockEntityRegistry;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
@@ -39,16 +38,19 @@ public class RailsUpdatesFamily extends AbstractBlockFamily {
 
 
     private TByteObjectMap<Block> blocks;
+    private TByteObjectMap<Rotation> rotation;
     private byte connectionSides;
 
     public RailsUpdatesFamily(ConnectionCondition connectionCondition, BlockUri blockUri,
-                              List<String> categories, Block archetypeBlock, TByteObjectMap<Block> blocks, byte connectionSides) {
+                              List<String> categories, Block archetypeBlock, TByteObjectMap<Block> blocks, byte connectionSides, TByteObjectMap<Rotation> rotation) {
 
         super(blockUri, categories);
         this.connectionCondition = connectionCondition;
         this.archetypeBlock = archetypeBlock;
         this.blocks = blocks;
         this.connectionSides = connectionSides;
+        this.rotation = rotation;
+
         for (Block block : blocks.valueCollection()) {
             block.setBlockFamily(this);
         }
@@ -68,6 +70,20 @@ public class RailsUpdatesFamily extends AbstractBlockFamily {
         return blocks.get(getByteConnections(worldProvider, blockEntityRegistry, location));
     }
 
+
+    public Rotation getRotationFor(BlockUri blockUri)
+    {
+        if (getURI().equals(blockUri.getFamilyUri())) {
+            try {
+                byte connections = Byte.parseByte(blockUri.getIdentifier().toString());
+                return rotation.get(connections);
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
     @Override
     public Block getBlockFor(BlockUri blockUri) {
         if (getURI().equals(blockUri.getFamilyUri())) {
@@ -85,6 +101,8 @@ public class RailsUpdatesFamily extends AbstractBlockFamily {
     public Iterable<Block> getBlocks() {
         return blocks.valueCollection();
     }
+
+
 
     private byte getByteConnections(WorldProvider worldProvider, BlockEntityRegistry blockEntityRegistry, Vector3i location) {
         byte connections = 0;

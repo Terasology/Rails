@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 MovingBlocks
+ * Copyright 2016 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.trains.blocks.system.Tasks;
-
-import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.math.geom.Vector3f;
-import org.terasology.rails.trains.blocks.system.Misc.Orientation;
-
+package org.terasology.rails.systems;
 
 /**
- * Created by adeon on 08.09.14.
+ * Created by michaelpollind on 8/16/16.
  */
-public interface Task {
-    public boolean run(EntityRef selectedTrack, Vector3f position, Orientation orientation, boolean preview);
+public class CurveCache {
 }

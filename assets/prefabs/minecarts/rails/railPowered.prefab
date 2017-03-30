@@ -1,5 +1,4 @@
 {
-    "ConnectsToRails": {
-        "type": "POWERED"
+    "Rail": {
     }
 }

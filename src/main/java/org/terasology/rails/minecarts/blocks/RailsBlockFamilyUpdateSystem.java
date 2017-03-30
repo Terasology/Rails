@@ -90,7 +90,7 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
             blockEntityRegistry.getEntityAt(upBlock).send(new DoDamageEvent(1000, EngineDamageTypes.DIRECT.get()));
         }
     }
-
+/*
     @ReceiveEvent(components = {ConnectsToRailsComponent.class}, netFilter = RegisterMode.AUTHORITY)
     public void onActivate(ActivateEvent event, EntityRef entity) {
         ConnectsToRailsComponent connectsToRailsComponent = entity.getComponent(ConnectsToRailsComponent.class);
@@ -108,7 +108,7 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
             Block targetBlock = worldProvider.getBlock(targetLocation);
             changeTBlock(event.getInstigator(), type, targetLocation, targetBlock.getDirection(), targetBlock.getDirection().yawClockwise(2));
         }
-    }
+    }*/
 
     @ReceiveEvent(components = {BlockItemComponent.class, ItemComponent.class}, priority = EventPriority.PRIORITY_HIGH)
     public void onPlaceBlock(ActivateEvent event, EntityRef item) {
@@ -164,10 +164,11 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
                 neighborLocation.y += height;
                 Block neighborBlock = worldProvider.getBlock(neighborLocation);
                 EntityRef blockEntity = blockEntityRegistry.getBlockEntityAt(neighborLocation);
-                if (blockEntity.hasComponent(ConnectsToRailsComponent.class)) {
+                if (blockEntity.hasComponent(RailComponent.class)) {
                     RailsUpdatesFamily railsFamily = (RailsUpdatesFamily) blockManager.getBlockFamily("rails:Rails");
                     Block neighborBlockAfterUpdate = railsFamily.getBlockForNeighborRailUpdate(worldProvider, blockEntityRegistry, neighborLocation, neighborBlock);
                     if (neighborBlock != neighborBlockAfterUpdate && neighborBlockAfterUpdate != null) {
+
                         worldProvider.setBlock(neighborLocation, neighborBlockAfterUpdate);
                     }
                 }
