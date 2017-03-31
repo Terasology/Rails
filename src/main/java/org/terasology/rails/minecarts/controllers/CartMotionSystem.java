@@ -60,7 +60,7 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
     private static final Logger logger = LoggerFactory.getLogger(CartMotionSystem.class);
     public  static  final  float GRAVITY = 4.9f;
     public  static  final  float FRICTION_COFF = .1f;
-    public  static  final  float BAUMGARTE_COFF = .1f;
+    public  static  final  float BAUMGARTE_COFF = .2f;
     public  static  final  float SLOP_COFF = .01f;
     @In
     private Time time;
@@ -240,27 +240,35 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
             Vector3f v1n = v1.trackSegment.getTangent(v1.t,v1.trackSegment.getRotation().getQuat4f(),v1.currentSegment);
             Vector3f v2n = v2.trackSegment.getTangent(v2.t,v2.trackSegment.getRotation().getQuat4f(),v2.currentSegment);
 
+
+
             Vector3f halfNormal = new Vector3f(v1n);
             if(v1n.dot(v2n) < 0)
                 halfNormal.invert();
             halfNormal.add(v2n).normalize();
 
-            float jv = ((halfNormal.x * v1.velocity.x) + (halfNormal.y * v1.velocity.y) +(halfNormal.z * v1.velocity.z))-
-                    ((halfNormal.x * v2.velocity.x) + (halfNormal.y * v2.velocity.y) + (halfNormal.z * v2.velocity.z));
+            Vector3f normal = event.getNormal();
 
-            float b = -(BAUMGARTE_COFF/time.getGameDelta())* event.getPenetration();
+            float jv = ((normal.x * v1.velocity.x) + (normal.y * v1.velocity.y) +(normal.z * v1.velocity.z))-
+                    ((normal.x * v2.velocity.x) + (normal.y * v2.velocity.y) + (normal.z * v2.velocity.z));
 
-            if(jv <= 0)
+
+            float b =  - Math.abs(BAUMGARTE_COFF/time.getGameDelta()* Math.max(Math.abs(event.getPenetration())-SLOP_COFF,0));
+
+            //if(event.getNormal().dot(halfNormal) < 0)
+             //   b*= -1.0f;
+
+            if(jv +b  <= 0)
                 return;
 
             float effectiveMass = 1.0f / r1.mass + 1.0f / r2.mass;
 
-            float lambda = (jv)/ effectiveMass;
+            float lambda = -(jv+b)/ effectiveMass;
 
-            Vector3f r1v = new Vector3f(halfNormal.x / r1.mass, halfNormal.y / r1.mass, halfNormal.z / r1.mass).mul(lambda);
-            Vector3f r2v = new Vector3f(halfNormal.x / r2.mass, halfNormal.y / r2.mass, halfNormal.z / r2.mass).mul(lambda);
+            Vector3f r1v = new Vector3f(normal.x / r1.mass, normal.y / r1.mass, normal.z / r1.mass).mul( lambda);
+            Vector3f r2v = new Vector3f(normal.x / r2.mass, normal.y / r2.mass, normal.z / r2.mass).mul(lambda).invert();
 
-            v1.velocity.add(r1v.invert());
+            v1.velocity.add(r1v);
             v2.velocity.add(r2v);
 
 
