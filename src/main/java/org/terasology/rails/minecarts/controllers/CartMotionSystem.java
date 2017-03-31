@@ -61,8 +61,8 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
     private static final Logger logger = LoggerFactory.getLogger(CartMotionSystem.class);
     public  static  final  float GRAVITY = 4.9f;
     public  static  final  float FRICTION_COFF = .1f;
-    public  static  final  float BAUMGARTE_COFF = .2f;
-    public  static  final  float SLOP_COFF = .01f;
+    public  static  final  float BAUMGARTE_COFF = .1f;
+    public  static  final  float SLOP_COFF = .007f;
     @In
     private Time time;
     @In
@@ -256,7 +256,8 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
 
             Vector3f df =  new Vector3f(v2l.getWorldPosition()).sub(v1l.getWorldPosition()).normalize();
 
-            float b =  -df.dot(halfNormal) * Math.abs(BAUMGARTE_COFF/time.getGameDelta()) * event.getPenetration();
+
+            float b =  -df.dot(halfNormal) * Math.signum(event.getPenetration()) * Math.abs(BAUMGARTE_COFF/time.getGameDelta()) * Math.max(Math.abs(event.getPenetration())- SLOP_COFF,0);
 
 
             if(jv +b  <= 0)
