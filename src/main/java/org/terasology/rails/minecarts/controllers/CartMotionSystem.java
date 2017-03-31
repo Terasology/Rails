@@ -28,6 +28,7 @@ import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
 import org.terasology.logic.characters.CharacterComponent;
 import org.terasology.logic.inventory.InventoryManager;
+import org.terasology.logic.location.Location;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.logic.players.LocalPlayer;
 import org.terasology.math.geom.Quat4f;
@@ -240,6 +241,8 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
             Vector3f v1n = v1.trackSegment.getTangent(v1.t,v1.trackSegment.getRotation().getQuat4f(),v1.currentSegment);
             Vector3f v2n = v2.trackSegment.getTangent(v2.t,v2.trackSegment.getRotation().getQuat4f(),v2.currentSegment);
 
+            LocationComponent v1l = entity.getComponent(LocationComponent.class);
+            LocationComponent v2l = event.getOtherEntity().getComponent(LocationComponent.class);
 
 
             Vector3f halfNormal = new Vector3f(v1n);
@@ -247,26 +250,24 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
                 halfNormal.invert();
             halfNormal.add(v2n).normalize();
 
-            Vector3f normal = event.getNormal();
-
-            float jv = ((normal.x * v1.velocity.x) + (normal.y * v1.velocity.y) +(normal.z * v1.velocity.z))-
-                    ((normal.x * v2.velocity.x) + (normal.y * v2.velocity.y) + (normal.z * v2.velocity.z));
+            float jv = ((halfNormal.x * v1.velocity.x) + (halfNormal.y * v1.velocity.y) +(halfNormal.z * v1.velocity.z))-
+                    ((halfNormal.x * v2.velocity.x) + (halfNormal.y * v2.velocity.y) + (halfNormal.z * v2.velocity.z));
 
 
-            float b =  - Math.abs(BAUMGARTE_COFF/time.getGameDelta()* Math.max(Math.abs(event.getPenetration())-SLOP_COFF,0));
+            Vector3f df =  new Vector3f(v2l.getWorldPosition()).sub(v1l.getWorldPosition()).normalize();
 
-            //if(event.getNormal().dot(halfNormal) < 0)
-             //   b*= -1.0f;
+            float b =  -df.dot(halfNormal) * Math.abs(BAUMGARTE_COFF/time.getGameDelta()) * event.getPenetration();
+
 
             if(jv +b  <= 0)
                 return;
 
-            float effectiveMass = 1.0f / r1.mass + 1.0f / r2.mass;
+            float effectiveMass = (1.0f / r1.mass) + (1.0f / r2.mass);
 
             float lambda = -(jv+b)/ effectiveMass;
 
-            Vector3f r1v = new Vector3f(normal.x / r1.mass, normal.y / r1.mass, normal.z / r1.mass).mul( lambda);
-            Vector3f r2v = new Vector3f(normal.x / r2.mass, normal.y / r2.mass, normal.z / r2.mass).mul(lambda).invert();
+            Vector3f r1v = new Vector3f(halfNormal.x / r1.mass, halfNormal.y / r1.mass, halfNormal.z / r1.mass).mul(lambda);
+            Vector3f r2v = new Vector3f(halfNormal.x / r2.mass, halfNormal.y / r2.mass, halfNormal.z / r2.mass).mul(lambda).invert();
 
             v1.velocity.add(r1v);
             v2.velocity.add(r2v);
