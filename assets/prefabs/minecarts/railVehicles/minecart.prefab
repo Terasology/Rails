@@ -13,7 +13,6 @@
     },
     "RigidBody": {
         "mass": 250f,
-        /*"angularVelocity": [0,10,0],*/
         "collisionGroup": "engine:world",
         "collidesWith": [
             "engine:world",
@@ -35,8 +34,6 @@
         "destroyEntityOnNoHealth" : true
 
     },
-
-    "RailVehicle": {},
     "Trigger": {
         "detectGroups": [
             "engine:world",

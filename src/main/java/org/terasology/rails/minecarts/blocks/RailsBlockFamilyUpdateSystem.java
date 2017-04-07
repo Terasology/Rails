@@ -31,6 +31,7 @@ import org.terasology.logic.health.DoDestroyEvent;
 import org.terasology.logic.health.EngineDamageTypes;
 import org.terasology.logic.inventory.ItemComponent;
 import org.terasology.math.Side;
+import org.terasology.math.SideBitFlag;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.registry.In;
 import org.terasology.world.BlockEntityRegistry;
@@ -44,6 +45,7 @@ import org.terasology.world.block.entity.neighbourUpdate.LargeBlockUpdateStartin
 import org.terasology.world.block.entity.placement.PlaceBlocks;
 import org.terasology.world.block.family.BlockFamily;
 import org.terasology.world.block.items.BlockItemComponent;
+import org.terasology.world.block.items.OnBlockItemPlaced;
 
 import java.util.Set;
 
@@ -80,48 +82,46 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
         }
     }
 
-    @ReceiveEvent(priority = EventPriority.PRIORITY_NORMAL)
+    @ReceiveEvent()
     public void doDestroy(DoDestroyEvent event, EntityRef entity, BlockComponent blockComponent) {
         Vector3i upBlock = new Vector3i(blockComponent.getPosition());
         upBlock.y += 1;
         Block block = worldProvider.getBlock(upBlock);
 
-        if (block.getBlockFamily() instanceof RailsUpdatesFamily) {
+        if (block.getBlockFamily() instanceof RailsUpdateFamily) {
             blockEntityRegistry.getEntityAt(upBlock).send(new DoDamageEvent(1000, EngineDamageTypes.DIRECT.get()));
         }
     }
-/*
-    @ReceiveEvent(components = {ConnectsToRailsComponent.class}, netFilter = RegisterMode.AUTHORITY)
-    public void onActivate(ActivateEvent event, EntityRef entity) {
-        ConnectsToRailsComponent connectsToRailsComponent = entity.getComponent(ConnectsToRailsComponent.class);
-        BlockComponent blockComponent = entity.getComponent(BlockComponent.class);
-        if (blockComponent == null) {
-            return;
-        }
-        Vector3i targetLocation = blockComponent.getPosition();
-        if (connectsToRailsComponent.type == ConnectsToRailsComponent.RAILS.TEE) {
-            BlockFamily type = blockManager.getBlockFamily("RailsTBlockInverted");
-            Block targetBlock = worldProvider.getBlock(targetLocation);
-            changeTBlock(event.getInstigator(), type, targetLocation, targetBlock.getDirection(), targetBlock.getDirection().yawClockwise(2));
-        } else if (connectsToRailsComponent.type == ConnectsToRailsComponent.RAILS.TEE_INVERSED) {
-            BlockFamily type = blockManager.getBlockFamily("rails:Rails");
-            Block targetBlock = worldProvider.getBlock(targetLocation);
-            changeTBlock(event.getInstigator(), type, targetLocation, targetBlock.getDirection(), targetBlock.getDirection().yawClockwise(2));
-        }
-    }*/
 
+    //prevents rails from being stacked on top of each other.
     @ReceiveEvent(components = {BlockItemComponent.class, ItemComponent.class}, priority = EventPriority.PRIORITY_HIGH)
-    public void onPlaceBlock(ActivateEvent event, EntityRef item) {
+    public void onBlockActivated(ActivateEvent event, EntityRef item) {
         BlockComponent blockComponent = event.getTarget().getComponent(BlockComponent.class);
-        if (blockComponent == null) {
+        if (blockComponent == null)
             return;
-        }
+
         Vector3i targetBlock = blockComponent.getPosition();
         Block centerBlock = worldProvider.getBlock(targetBlock.x, targetBlock.y, targetBlock.z);
 
-        if (centerBlock.getBlockFamily() instanceof RailsUpdatesFamily) {
+        if (centerBlock.getBlockFamily() instanceof RailsUpdateFamily) {
             event.consume();
         }
+    }
+
+    @ReceiveEvent(components = {BlockItemComponent.class, ItemComponent.class})
+    public void onPlaceBlock(OnBlockItemPlaced event, EntityRef entity)
+    {
+        BlockComponent blockComponent = event.getPlacedBlock().getComponent(BlockComponent.class);
+        if(blockComponent == null)
+            return;
+
+        Vector3i targetBlock = blockComponent.getPosition();
+        Block centerBlock = worldProvider.getBlock(targetBlock.x, targetBlock.y, targetBlock.z);
+
+        if (centerBlock.getBlockFamily() instanceof RailsUpdateFamily) {
+            processUpdateForBlockLocation(targetBlock);
+        }
+
     }
 
     private void notifyNeighboursOfChangedBlocks() {
@@ -138,12 +138,6 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
             }
         }
         largeBlockUpdateCount--;
-    }
-
-    private void changeTBlock(EntityRef instigator, BlockFamily type, Vector3i targetLocation, Side attachmentSide, Side direction) {
-        Block block = type.getBlockForPlacement(worldProvider, blockEntityRegistry, targetLocation, attachmentSide, direction);
-        PlaceBlocks placeBlocks = new PlaceBlocks(targetLocation, block, instigator);
-        worldProvider.getWorldEntity().send(placeBlocks);
     }
 
     @ReceiveEvent(components = {BlockComponent.class})
@@ -165,11 +159,13 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
                 Block neighborBlock = worldProvider.getBlock(neighborLocation);
                 EntityRef blockEntity = blockEntityRegistry.getBlockEntityAt(neighborLocation);
                 if (blockEntity.hasComponent(RailComponent.class)) {
-                    RailsUpdatesFamily railsFamily = (RailsUpdatesFamily) blockManager.getBlockFamily("rails:Rails");
+                    RailsUpdateFamily railsFamily = (RailsUpdateFamily) blockManager.getBlockFamily("rails:Rails");
                     Block neighborBlockAfterUpdate = railsFamily.getBlockForNeighborRailUpdate(worldProvider, blockEntityRegistry, neighborLocation, neighborBlock);
                     if (neighborBlock != neighborBlockAfterUpdate && neighborBlockAfterUpdate != null) {
-
-                        worldProvider.setBlock(neighborLocation, neighborBlockAfterUpdate);
+                        byte connections = Byte.parseByte(neighborBlockAfterUpdate.getURI().getIdentifier().toString());
+                        //only add segment with two connections
+                        if(SideBitFlag.getSides(connections).size() <= 2)
+                            worldProvider.setBlock(neighborLocation, neighborBlockAfterUpdate);
                     }
                 }
             }

@@ -1,13 +1,13 @@
 {
     "id": "Rails",
-     "version" : "0.1.1-SNAPSHOT",
-    "displayName": {
-        "en": "Rails"
-    },
-    "description": {
-        "en": "Module adds rails and carts"
-    },
+    "version" : "0.3.0-SNAPSHOT",
+    "author": "small-jeeper, SkySom, Cervator, pollend, msteiger",
+    "displayName": "Rails",
+    "description": "A module that adds rails and carts.",
     "dependencies": [
-        {"id" : "Core", "minVersion" : "1.0.0"}
+        {
+            "id": "Core",
+            "minVersion": "1.0.0"
+        }
     ]
 }

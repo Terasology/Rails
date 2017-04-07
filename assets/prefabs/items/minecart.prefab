@@ -8,5 +8,5 @@
         "icon": "Rails:minecart#minecart",
         "usage": "IN_DIRECTION"
     },
-    "RailVehicle": {}
+    "CartDefinition": {}
 }

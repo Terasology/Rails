@@ -8,7 +8,6 @@
         "icon": "Rails:minecart#loco",
         "usage": "IN_DIRECTION"
     },
-    "RailVehicle": {
-        "type": "locomotive"
+    "CartDefinition": {
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 MovingBlocks
+ * Copyright 2017 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.systems;
+package org.terasology.rails.minecarts.blocks;
+
+import org.terasology.math.Rotation;
+import org.terasology.world.block.BlockUri;
 
 /**
- * Created by michaelpollind on 8/16/16.
+ * Created by michaelpollind on 4/5/17.
  */
-public class CurveCache {
+public interface PathFamily {
+    Rotation getRotationFor(BlockUri blockUri);
 }

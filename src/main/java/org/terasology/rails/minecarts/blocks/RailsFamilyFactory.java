@@ -116,7 +116,7 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
         }
 
         final Block archetypeBlock = blocksForConnections.get(SideBitFlag.getSides(Side.RIGHT, Side.LEFT));
-        return new RailsUpdatesFamily(connectionCondition, blockUri, definition.getCategories(),
+        return new RailsUpdateFamily(connectionCondition, blockUri, definition.getCategories(),
                 archetypeBlock, blocksForConnections, (byte) (connectionSides & 0b111110),rotations);
     }
 
@@ -130,6 +130,15 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
         }
     }
 
+    /**
+     *  find a block to fill the set of connections
+     * @param connections
+     * @param uri
+     * @param blockBuilder
+     * @param definition
+     * @param basicBlocks
+     * @return
+     */
     protected Block constructBlockForConnections(final byte connections,BlockUri uri, final BlockBuilderHelper blockBuilder,
                                                  BlockFamilyDefinition definition, TByteObjectMap<String>[] basicBlocks) {
         int connectionCount = SideBitFlag.getSides(connections).size();
@@ -143,7 +152,6 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
             final String section = blockDefinitionIterator.value();
             Rotation rot = getRotationToAchieve(originalConnections, connections);
             if (rot != null) {
-
                 rotations.put(connections,rot);
                 return blockBuilder.constructTransformedBlock(definition, section, rot);
             }
@@ -151,6 +159,12 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
         return null;
     }
 
+    /**
+     *  attempt to find rotation to satisfy block
+     * @param source
+     * @param target
+     * @return
+     */
     protected Rotation getRotationToAchieve(byte source, byte target) {
         Collection<Side> originalSides = SideBitFlag.getSides(source);
 

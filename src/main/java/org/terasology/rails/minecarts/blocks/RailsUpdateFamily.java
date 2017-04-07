@@ -16,6 +16,8 @@
 package org.terasology.rails.minecarts.blocks;
 
 import gnu.trove.map.TByteObjectMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.terasology.math.Rotation;
 import org.terasology.math.Side;
 import org.terasology.math.SideBitFlag;
@@ -32,17 +34,18 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-public class RailsUpdatesFamily extends AbstractBlockFamily {
+public class RailsUpdateFamily extends AbstractBlockFamily implements PathFamily {
+    private static final Logger logger = LoggerFactory.getLogger(RailsUpdateFamily.class);
+
     private ConnectionCondition connectionCondition;
     private Block archetypeBlock;
-
 
     private TByteObjectMap<Block> blocks;
     private TByteObjectMap<Rotation> rotation;
     private byte connectionSides;
 
-    public RailsUpdatesFamily(ConnectionCondition connectionCondition, BlockUri blockUri,
-                              List<String> categories, Block archetypeBlock, TByteObjectMap<Block> blocks, byte connectionSides, TByteObjectMap<Rotation> rotation) {
+    public RailsUpdateFamily(ConnectionCondition connectionCondition, BlockUri blockUri,
+                             List<String> categories, Block archetypeBlock, TByteObjectMap<Block> blocks, byte connectionSides, TByteObjectMap<Rotation> rotation) {
 
         super(blockUri, categories);
         this.connectionCondition = connectionCondition;
@@ -101,8 +104,6 @@ public class RailsUpdatesFamily extends AbstractBlockFamily {
     public Iterable<Block> getBlocks() {
         return blocks.valueCollection();
     }
-
-
 
     private byte getByteConnections(WorldProvider worldProvider, BlockEntityRegistry blockEntityRegistry, Vector3i location) {
         byte connections = 0;

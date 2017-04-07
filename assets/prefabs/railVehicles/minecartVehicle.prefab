@@ -29,7 +29,7 @@
         "destroyEntityOnNoHealth" : true
 
     },
-
+    "CartRidable" : {},
     "RailVehicle": {},
     "Trigger": {
         "detectGroups": [

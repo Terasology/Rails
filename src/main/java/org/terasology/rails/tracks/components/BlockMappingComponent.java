@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 MovingBlocks
+ * Copyright 2017 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.rails.minecarts.components;
+package org.terasology.rails.tracks.components;
 
-import com.google.common.collect.Lists;
 import org.terasology.entitySystem.Component;
-import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.math.Side;
 
-import java.util.List;
-
-public class LocomotiveComponent implements Component {
-    public List<EntityRef> childs = Lists.newArrayList();
+/**
+ * Created by michaelpollind on 4/3/17.
+ */
+public class BlockMappingComponent implements Component{
+    public Side s1;
+    public Side s2;
 }

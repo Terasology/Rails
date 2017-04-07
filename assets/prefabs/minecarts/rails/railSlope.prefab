@@ -1,25 +1,7 @@
 {
-    "Rail": {
-    },
-    "PathDescriptor" :
-    {
-        "descriptors" :
-        [
-            {
-                "path" : [
-                    {
-                        "f1": [0,-0.468750,-0.5],
-                        "f2": [0,0,0],
-                        "f3": [0,0,0],
-                        "f4": [0,0.468750,0.5]
-                    }
-
-                ],
-              "start" : "FRONT",
-              "end" : "TOP",
-                 "startingBinormal": [-1,0,0],
-                 "rotation" : 0
-            }
-        ]
+    "Rail": {},
+    "GeneralBlockRail" : {},
+    "PathDescriptor":{
+       "descriptors" : ["Rails:slopePath"]
     }
 }

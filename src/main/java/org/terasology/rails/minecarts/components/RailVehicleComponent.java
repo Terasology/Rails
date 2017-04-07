@@ -22,32 +22,10 @@ import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.network.Replicate;
 import org.terasology.protobuf.EntityData;
-import org.terasology.rails.minecarts.blocks.RailBlockTrackSegment;
 
 import java.util.List;
 
 public class RailVehicleComponent implements Component {
     @Replicate
-    public Types type = Types.minecart;
-
-    @Replicate
-    public List<EntityRef> vehicles = Lists.newArrayList();
-
-    public EntityRef pipe = null;
-    public enum Types { locomotive, minecart };
-
-    @Replicate(initialOnly = true)
     public  Vector3f velocity = new Vector3f();
-
-    public EntityRef currentSegment;
-    public RailBlockTrackSegment trackSegment;
-
-    @Replicate(initialOnly = true)
-    public  float t = 0;
-
-    public EntityRef characterInsideCart;
-
-    public  boolean isCreated;
-
-
 }

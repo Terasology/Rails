@@ -23,25 +23,15 @@ import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
-import org.terasology.logic.characters.MovementMode;
-import org.terasology.logic.characters.events.SetMovementModeEvent;
 import org.terasology.logic.common.ActivateEvent;
 import org.terasology.logic.inventory.InventoryComponent;
 import org.terasology.logic.inventory.InventoryManager;
 import org.terasology.logic.inventory.ItemComponent;
-import org.terasology.logic.location.Location;
-import org.terasology.logic.location.LocationComponent;
 import org.terasology.logic.players.event.OnPlayerSpawnedEvent;
-import org.terasology.math.geom.Quat4f;
-import org.terasology.math.geom.Vector3f;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.physics.Physics;
-import org.terasology.physics.StandardCollisionGroup;
-import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.rails.minecarts.blocks.RailComponent;
-import org.terasology.rails.minecarts.components.RailVehicleComponent;
-import org.terasology.rails.minecarts.components.WrenchComponent;
-import org.terasology.rails.minecarts.controllers.MinecartFactory;
+import org.terasology.rails.minecarts.components.CartDefinitionComponent;
 import org.terasology.registry.In;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.BlockComponent;
@@ -61,13 +51,10 @@ public class MinecartAction extends BaseComponentSystem {
     @In
     private Physics physics;
 
-    private MinecartFactory railVehicleFactory;
     private final Logger logger = LoggerFactory.getLogger(MinecartAction.class);
 
     @Override
     public void initialise() {
-        railVehicleFactory = new MinecartFactory();
-        railVehicleFactory.setEntityManager(entityManager);
     }
 
 
@@ -80,66 +67,21 @@ public class MinecartAction extends BaseComponentSystem {
         inventoryManager.giveItem(player, player, blockFactory.newInstance(blockManager.getBlockFamily("rails:Rails"), 99));
     }
 
-    @ReceiveEvent(components = {RailVehicleComponent.class, ItemComponent.class})
+    @ReceiveEvent(components = {CartDefinitionComponent.class, ItemComponent.class})
     public void onPlaceFunctional(ActivateEvent event, EntityRef item) {
-
-        if (item.hasComponent(WrenchComponent.class)) {
-            return;
-        }
-
-        RailVehicleComponent functionalItem = item.getComponent(RailVehicleComponent.class);
-
         EntityRef targetEntity = event.getTarget();
-        BlockComponent blockComponent = targetEntity.getComponent(BlockComponent.class);
-        if (!targetEntity.hasComponent(RailComponent.class))
+        if(!targetEntity.hasComponent(RailComponent.class))
             return;
 
-        if (blockComponent == null) {
-            return;
-        }
+        CartDefinitionComponent cartDefinition =  item.getComponent(CartDefinitionComponent.class);
 
-        Vector3i placementPos = new Vector3i(event.getTarget().getComponent(BlockComponent.class).getPosition());
+        Vector3i placementPos = new Vector3i(targetEntity.getComponent(BlockComponent.class).getPosition());
         placementPos.y += 0.2f;
 
         logger.info("Created vehicle at {}", placementPos);
 
-        EntityRef entity = railVehicleFactory.create(placementPos.toVector3f(), functionalItem.type);
+        entityManager.create(cartDefinition.prefab, placementPos.toVector3f());
         event.consume();
-    }
-
-    @ReceiveEvent(components = {RailVehicleComponent.class, LocationComponent.class})
-    public void onUseFunctional(ActivateEvent event, EntityRef railVehicleEntity) {
-        RailVehicleComponent railVehicleComponent = railVehicleEntity.getComponent(RailVehicleComponent.class);
-        RigidBodyComponent railVehicleRigidBody = railVehicleEntity.getComponent(RigidBodyComponent.class);
-        if (railVehicleComponent.type.equals(RailVehicleComponent.Types.minecart)) {
-            if (railVehicleComponent.isCreated) {
-                if (railVehicleComponent.characterInsideCart == null) {
-                    event.getInstigator().send(new SetMovementModeEvent(MovementMode.NONE));
-                    railVehicleComponent.characterInsideCart = event.getInstigator();
-                    Location.attachChild(railVehicleEntity, railVehicleComponent.characterInsideCart, new Vector3f(0, 1.5f, 0), new Quat4f());
-                    railVehicleRigidBody.collidesWith.remove(StandardCollisionGroup.CHARACTER);
-                    railVehicleRigidBody.collidesWith.remove(StandardCollisionGroup.DEFAULT);
-                } else {
-                    event.getInstigator().send(new SetMovementModeEvent(MovementMode.WALKING));
-                    Location.removeChild(railVehicleEntity, railVehicleComponent.characterInsideCart);
-                    railVehicleComponent.characterInsideCart = null;
-                    railVehicleRigidBody.collidesWith.add(StandardCollisionGroup.CHARACTER);
-                    railVehicleRigidBody.collidesWith.add(StandardCollisionGroup.DEFAULT);
-                }
-                railVehicleEntity.saveComponent(railVehicleComponent);
-                railVehicleEntity.saveComponent(railVehicleRigidBody);
-            }
-        } else {
-            if (railVehicleComponent.isCreated) {
-                /*if (railVehicleComponent.drive > 0) {
-                    railVehicleComponent.drive = 0;
-                } else {
-                    railVehicleComponent.drive = 5;
-                }*/
-                railVehicleEntity.saveComponent(railVehicleComponent);
-            }
-
-        }
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 MovingBlocks
+ * Copyright 2017 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,11 @@
  */
 package org.terasology.rails.minecarts.components;
 
-
 import org.terasology.entitySystem.Component;
-import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.math.geom.Vector3f;
-import org.terasology.network.Replicate;
 
-public class WheelComponent implements Component {
-    @Replicate
-    public EntityRef parent;
-    @Replicate
-    public Vector3f position;
-    @Replicate
-    public float scale;
+/**
+ * Created by michaelpollind on 3/31/17.
+ */
+public class CartDefinitionComponent implements Component {
+    public String prefab = "rails:minecartVehicle";
 }
