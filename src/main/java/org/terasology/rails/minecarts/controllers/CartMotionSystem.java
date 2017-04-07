@@ -34,6 +34,7 @@ import org.terasology.logic.players.LocalPlayer;
 import org.terasology.math.TeraMath;
 import org.terasology.math.geom.Quat4f;
 import org.terasology.math.geom.Vector3f;
+import org.terasology.math.geom.Vector3i;
 import org.terasology.physics.HitResult;
 import org.terasology.physics.Physics;
 import org.terasology.physics.StandardCollisionGroup;
@@ -228,6 +229,9 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
             if(v1n.dot(v2n) < 0)
                 halfNormal.invert();
             halfNormal.add(v2n).normalize();
+
+            if(!(new Vector3f(v1l.getWorldPosition()).sub(v2l.getWorldPosition()).normalize().dot(halfNormal) < 0))
+                halfNormal.invert();
 
             float jv = ((halfNormal.x * v1.velocity.x) + (halfNormal.y * v1.velocity.y) +(halfNormal.z * v1.velocity.z))-
                     ((halfNormal.x * v2.velocity.x) + (halfNormal.y * v2.velocity.y) + (halfNormal.z * v2.velocity.z));
