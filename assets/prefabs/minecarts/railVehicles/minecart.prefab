@@ -1,4 +1,9 @@
 {
+    "Item": {
+        "name": "Minecart",
+        "icon": "Rails:minecart.minecart",
+        "usage": "IN_DIRECTION"
+    },
     "Location": {
         "scale": 0.32
     },
@@ -7,7 +12,7 @@
         "material": "Rails:minecart"
     },
     "RigidBody": {
-        "mass": 250,
+        "mass": 250f,
         "collisionGroup": "engine:world",
         "collidesWith": [
             "engine:world",
@@ -29,8 +34,6 @@
         "destroyEntityOnNoHealth" : true
 
     },
-    "CartRidable" : {},
-    "RailVehicle": {},
     "Trigger": {
         "detectGroups": [
             "engine:world",
