@@ -1,3 +1,5 @@
+[![Build Status](http://jenkins.terasology.org/view/Modules/job/Rails/badge/icon)](http://jenkins.terasology.org/view/Modules/job/Rails/)
+
 Rails
 =====
 **Rails** is a Terasology module that adds rail transport into the game. It helps the player to travel far distances faster and easier than ever before.
