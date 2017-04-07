@@ -17,12 +17,7 @@ package org.terasology.rails.tracks.controllers;
 
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.prefab.Prefab;
-import org.terasology.math.VecMath;
-import org.terasology.math.geom.Quat4f;
-import org.terasology.math.geom.Vector3f;
 import org.terasology.rails.minecarts.components.SegmentVehicleComponent;
-import org.terasology.rails.tracks.Segment;
-import org.terasology.rails.tracks.components.PathDescriptorComponent;
 
 /**
  * Created by michaelpollind on 4/5/17.

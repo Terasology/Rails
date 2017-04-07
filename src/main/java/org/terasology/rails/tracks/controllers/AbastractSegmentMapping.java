@@ -35,23 +35,21 @@ import org.terasology.world.block.family.BlockFamily;
  * Created by michaelpollind on 4/5/17.
  */
 public class AbastractSegmentMapping implements SegmentMapping {
-    private  SegmentSystem segmentSystem;
-    private  SegmentCacheSystem segmentCacheSystem;
+    private SegmentSystem segmentSystem;
+    private SegmentCacheSystem segmentCacheSystem;
     private BlockEntityRegistry blockEntityRegistry;
 
-    public AbastractSegmentMapping(BlockEntityRegistry blockEntityRegistry, SegmentSystem segmentSystem, SegmentCacheSystem segmentCacheSystem)
-    {
-        this.blockEntityRegistry = blockEntityRegistry ;
+    public AbastractSegmentMapping(BlockEntityRegistry blockEntityRegistry, SegmentSystem segmentSystem, SegmentCacheSystem segmentCacheSystem) {
+        this.blockEntityRegistry = blockEntityRegistry;
         this.segmentSystem = segmentSystem;
         this.segmentCacheSystem = segmentCacheSystem;
     }
 
 
-
     @Override
-    public SegmentPair nextSegment(SegmentVehicleComponent vehicle, SegmentEnd ends){
+    public SegmentPair nextSegment(SegmentVehicleComponent vehicle, SegmentEnd ends) {
         BlockComponent blockComponent = vehicle.segmentEntity.getComponent(BlockComponent.class);
-        BlockFamily blockFamily= blockComponent.getBlock().getBlockFamily();
+        BlockFamily blockFamily = blockComponent.getBlock().getBlockFamily();
 
         Vector3f v1 = segmentSystem.segmentPosition(vehicle.segmentEntity);
         Quat4f q1 = segmentSystem.segmentRotation(vehicle.segmentEntity);
@@ -60,15 +58,15 @@ public class AbastractSegmentMapping implements SegmentMapping {
 
 
         BlockMappingComponent blockMappingComponent = vehicle.descriptor.getComponent(BlockMappingComponent.class);
-        if(blockFamily instanceof PathFamily) {
+        if (blockFamily instanceof PathFamily) {
 
             Rotation rotation = ((PathFamily) blockFamily).getRotationFor(blockComponent.getBlock().getURI());
             switch (ends) {
                 case S1: {
-                    Vector3i segment = findOffset(blockComponent.getPosition(),blockMappingComponent.s1,blockMappingComponent.s2,rotation);//rotation.rotate(blockMappingComponent.s1).getVector3i());
+                    Vector3i segment = findOffset(blockComponent.getPosition(), blockMappingComponent.s1, blockMappingComponent.s2, rotation);//rotation.rotate(blockMappingComponent.s1).getVector3i());
                     EntityRef blockEntity = blockEntityRegistry.getBlockEntityAt(segment);
                     PathDescriptorComponent pathDescriptor = blockEntity.getComponent(PathDescriptorComponent.class);
-                    if(pathDescriptor == null)
+                    if (pathDescriptor == null)
                         return null;
 
                     Vector3f v2 = segmentSystem.segmentPosition(blockEntity);
@@ -84,10 +82,10 @@ public class AbastractSegmentMapping implements SegmentMapping {
                 }
                 break;
                 case S2: {
-                    Vector3i segment = findOffset(blockComponent.getPosition(),blockMappingComponent.s2,blockMappingComponent.s1,rotation);//rotation.rotate(blockMappingComponent.s2).getVector3i());
+                    Vector3i segment = findOffset(blockComponent.getPosition(), blockMappingComponent.s2, blockMappingComponent.s1, rotation);//rotation.rotate(blockMappingComponent.s2).getVector3i());
                     EntityRef blockEntity = blockEntityRegistry.getBlockEntityAt(segment);
                     PathDescriptorComponent pathDescriptor = blockEntity.getComponent(PathDescriptorComponent.class);
-                    if(pathDescriptor == null)
+                    if (pathDescriptor == null)
                         return null;
 
                     Vector3f v2 = segmentSystem.segmentPosition(blockEntity);
@@ -108,21 +106,15 @@ public class AbastractSegmentMapping implements SegmentMapping {
         return null;
     }
 
-    private Vector3i findOffset(Vector3i loc,Side main, Side influence, Rotation r)
-    {
-        if(main == Side.TOP)
-            return new Vector3i(r.rotate(main).getVector3i()).add(r.rotate(influence.reverse()).getVector3i());
+    private Vector3i findOffset(Vector3i loc, Side main, Side influence, Rotation r) {
+        if (main == Side.TOP)
+            return new Vector3i(loc).add(r.rotate(main).getVector3i()).add(new Vector3i(r.rotate(influence).getVector3i()).invert());
 
-        if(influence == Side.TOP)
-        {
-            Vector3i side = new Vector3i(loc).add(r.rotate(main).getVector3i());
-            BlockComponent  blockComponent = blockEntityRegistry.getBlockEntityAt(side).getComponent(BlockComponent.class);
-            if(blockComponent.getBlock().getBlockFamily() instanceof PathFamily)
-            {
-                return side;
-            }
-            return side.add(influence.reverse().getVector3i());
-        }
-        return new Vector3i(loc).add(r.rotate(main).getVector3i());
+        Vector3i current = new Vector3i(loc).add(r.rotate(main).getVector3i());
+        EntityRef entity = blockEntityRegistry.getBlockEntityAt(current);
+        BlockComponent blockComponent = entity.getComponent(BlockComponent.class);
+        if (!(blockComponent.getBlock().getBlockFamily() instanceof PathFamily))
+            current.add(Vector3i.down());
+        return current;
     }
 }

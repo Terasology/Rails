@@ -17,7 +17,6 @@ package org.terasology.rails.tracks.components;
 
 import org.terasology.entitySystem.Component;
 import org.terasology.math.geom.Vector3f;
-import org.terasology.network.Replicate;
 import org.terasology.reflection.MappedContainer;
 
 import java.util.List;
@@ -25,10 +24,10 @@ import java.util.List;
 /**
  * Created by michaelpollind on 4/3/17.
  */
-public class PathComponent implements Component{
+public class PathComponent implements Component {
     public List<PathComponent.CubicBezier> path;
     public Vector3f startingBinormal;
-    public  float rotation;
+    public float rotation;
 
     @MappedContainer
     public static class CubicBezier {

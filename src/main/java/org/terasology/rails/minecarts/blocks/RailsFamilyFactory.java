@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 
 
 @RegisterBlockFamilyFactory(value = "Rails:rails")
-public class RailsFamilyFactory implements BlockFamilyFactory  {
+public class RailsFamilyFactory implements BlockFamilyFactory {
     public static final String NO_CONNECTIONS = "no_connections";
     public static final String ONE_CONNECTION = "one_connection";
     public static final String ONE_CONNECTIONS_SLOPE = "one_connection_slope";
@@ -54,15 +54,17 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
     public static final String THREE_CONNECTIONS_T = "2d_t";
     public static final String FOUR_CONNECTIONS_CROSS = "cross";
     private static final Map<String, Byte> RAILS_MAPPING =
-            new HashMap<String, Byte>() { {
-                put(NO_CONNECTIONS, (byte) 0);
-                put(ONE_CONNECTION, SideBitFlag.getSides(Side.RIGHT));
-                put(ONE_CONNECTIONS_SLOPE, SideBitFlag.getSides(Side.BACK, Side.TOP));
-                put(TWO_CONNECTIONS_LINE, SideBitFlag.getSides(Side.LEFT, Side.RIGHT));
-                put(TWO_CONNECTIONS_CORNER, SideBitFlag.getSides(Side.LEFT, Side.FRONT));
-                put(THREE_CONNECTIONS_T, SideBitFlag.getSides(Side.LEFT, Side.RIGHT, Side.FRONT));
-                put(FOUR_CONNECTIONS_CROSS, SideBitFlag.getSides(Side.RIGHT, Side.LEFT, Side.BACK, Side.FRONT));
-            } };
+            new HashMap<String, Byte>() {
+                {
+                    put(NO_CONNECTIONS, (byte) 0);
+                    put(ONE_CONNECTION, SideBitFlag.getSides(Side.RIGHT));
+                    put(ONE_CONNECTIONS_SLOPE, SideBitFlag.getSides(Side.BACK, Side.TOP));
+                    put(TWO_CONNECTIONS_LINE, SideBitFlag.getSides(Side.LEFT, Side.RIGHT));
+                    put(TWO_CONNECTIONS_CORNER, SideBitFlag.getSides(Side.LEFT, Side.FRONT));
+                    put(THREE_CONNECTIONS_T, SideBitFlag.getSides(Side.LEFT, Side.RIGHT, Side.FRONT));
+                    put(FOUR_CONNECTIONS_CROSS, SideBitFlag.getSides(Side.RIGHT, Side.LEFT, Side.BACK, Side.FRONT));
+                }
+            };
 
     private ConnectionCondition connectionCondition;
     private byte connectionSides;
@@ -71,7 +73,7 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
 
     public RailsFamilyFactory() {
         connectionCondition = new RailsConnectionCondition();
-        connectionSides = SideBitFlag.getSides(Side.BACK,Side.FRONT,Side.RIGHT,Side.LEFT,Side.TOP);
+        connectionSides = SideBitFlag.getSides(Side.BACK, Side.FRONT, Side.RIGHT, Side.LEFT, Side.TOP);
     }
 
     @Override
@@ -107,7 +109,7 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
         for (byte connections = 0; connections < 60; connections++) {
             // Only the allowed connections should be created
             if ((connections & connectionSides) == connections) {
-                Block block = constructBlockForConnections(connections,blockUri, blockBuilder, definition, basicBlocks);
+                Block block = constructBlockForConnections(connections, blockUri, blockBuilder, definition, basicBlocks);
                 if (block != null) {
                     block.setUri(new BlockUri(blockUri, new Name(String.valueOf(connections))));
                     blocksForConnections.put(connections, block);
@@ -117,7 +119,7 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
 
         final Block archetypeBlock = blocksForConnections.get(SideBitFlag.getSides(Side.RIGHT, Side.LEFT));
         return new RailsUpdateFamily(connectionCondition, blockUri, definition.getCategories(),
-                archetypeBlock, blocksForConnections, (byte) (connectionSides & 0b111110),rotations);
+                archetypeBlock, blocksForConnections, (byte) (connectionSides & 0b111110), rotations);
     }
 
     protected void addConnections(TByteObjectMap<String>[] basicBlocks, int index, String connections) {
@@ -131,7 +133,8 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
     }
 
     /**
-     *  find a block to fill the set of connections
+     * find a block to fill the set of connections
+     *
      * @param connections
      * @param uri
      * @param blockBuilder
@@ -139,11 +142,11 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
      * @param basicBlocks
      * @return
      */
-    protected Block constructBlockForConnections(final byte connections,BlockUri uri, final BlockBuilderHelper blockBuilder,
+    protected Block constructBlockForConnections(final byte connections, BlockUri uri, final BlockBuilderHelper blockBuilder,
                                                  BlockFamilyDefinition definition, TByteObjectMap<String>[] basicBlocks) {
         int connectionCount = SideBitFlag.getSides(connections).size();
-        if(connectionCount >  basicBlocks.length -1 )
-            return  null;
+        if (connectionCount > basicBlocks.length - 1)
+            return null;
         TByteObjectMap<String> possibleBlockDefinitions = basicBlocks[connectionCount];
         final TByteObjectIterator<String> blockDefinitionIterator = possibleBlockDefinitions.iterator();
         while (blockDefinitionIterator.hasNext()) {
@@ -152,7 +155,7 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
             final String section = blockDefinitionIterator.value();
             Rotation rot = getRotationToAchieve(originalConnections, connections);
             if (rot != null) {
-                rotations.put(connections,rot);
+                rotations.put(connections, rot);
                 return blockBuilder.constructTransformedBlock(definition, section, rot);
             }
         }
@@ -160,7 +163,8 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
     }
 
     /**
-     *  attempt to find rotation to satisfy block
+     * attempt to find rotation to satisfy block
+     *
      * @param source
      * @param target
      * @return
@@ -168,7 +172,7 @@ public class RailsFamilyFactory implements BlockFamilyFactory  {
     protected Rotation getRotationToAchieve(byte source, byte target) {
         Collection<Side> originalSides = SideBitFlag.getSides(source);
 
-        Iterable<Rotation> rotations =  Rotation.horizontalRotations() ;
+        Iterable<Rotation> rotations = Rotation.horizontalRotations();
         for (Rotation rot : rotations) {
             Set<Side> transformedSides = Sets.newHashSet();
             transformedSides.addAll(originalSides.stream().map(rot::rotate).collect(Collectors.toList()));

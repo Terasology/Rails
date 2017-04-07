@@ -24,7 +24,6 @@ import org.terasology.logic.characters.MovementMode;
 import org.terasology.logic.characters.events.SetMovementModeEvent;
 import org.terasology.logic.common.ActivateEvent;
 import org.terasology.logic.health.BeforeDestroyEvent;
-import org.terasology.logic.health.DestroyEvent;
 import org.terasology.logic.location.Location;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.geom.Quat4f;
@@ -40,7 +39,7 @@ import org.terasology.rails.minecarts.components.RailVehicleComponent;
 @RegisterSystem(RegisterMode.AUTHORITY)
 public class CartRidableAction extends BaseComponentSystem {
 
-    @ReceiveEvent(components = {RailVehicleComponent.class,CartRidableComponent.class, LocationComponent.class})
+    @ReceiveEvent(components = {RailVehicleComponent.class, CartRidableComponent.class, LocationComponent.class})
     public void onUseFunctional(ActivateEvent event, EntityRef railVehicleEntity) {
         RailVehicleComponent railVehicleComponent = railVehicleEntity.getComponent(RailVehicleComponent.class);
         RigidBodyComponent railVehicleRigidBody = railVehicleEntity.getComponent(RigidBodyComponent.class);
@@ -64,9 +63,8 @@ public class CartRidableAction extends BaseComponentSystem {
         railVehicleEntity.saveComponent(railVehicleRigidBody);
     }
 
-    @ReceiveEvent(components = {RailVehicleComponent.class,CartRidableComponent.class, LocationComponent.class})
-    public void onCartDestroyed(BeforeDestroyEvent event, EntityRef railVehicleEntity)
-    {
+    @ReceiveEvent(components = {RailVehicleComponent.class, CartRidableComponent.class, LocationComponent.class})
+    public void onCartDestroyed(BeforeDestroyEvent event, EntityRef railVehicleEntity) {
         RailVehicleComponent railVehicleComponent = railVehicleEntity.getComponent(RailVehicleComponent.class);
         RigidBodyComponent railVehicleRigidBody = railVehicleEntity.getComponent(RigidBodyComponent.class);
         CartRidableComponent cartRidableComponent = railVehicleEntity.getComponent(CartRidableComponent.class);

@@ -62,18 +62,18 @@ public class MinecartAction extends BaseComponentSystem {
     public void onPlayerSpawn(OnPlayerSpawnedEvent event, EntityRef player, InventoryComponent inventory) {
         BlockItemFactory blockFactory = new BlockItemFactory(entityManager);
         inventoryManager.giveItem(player, player, entityManager.create("rails:minecart"));
-        inventoryManager.giveItem(player, player, entityManager.create("rails:loco"));
         inventoryManager.giveItem(player, player, entityManager.create("rails:wrench"));
         inventoryManager.giveItem(player, player, blockFactory.newInstance(blockManager.getBlockFamily("rails:Rails"), 99));
     }
 
     @ReceiveEvent(components = {CartDefinitionComponent.class, ItemComponent.class})
     public void onPlaceFunctional(ActivateEvent event, EntityRef item) {
+
         EntityRef targetEntity = event.getTarget();
-        if(!targetEntity.hasComponent(RailComponent.class))
+        if (!targetEntity.hasComponent(RailComponent.class))
             return;
 
-        CartDefinitionComponent cartDefinition =  item.getComponent(CartDefinitionComponent.class);
+        CartDefinitionComponent cartDefinition = item.getComponent(CartDefinitionComponent.class);
 
         Vector3i placementPos = new Vector3i(targetEntity.getComponent(BlockComponent.class).getPosition());
         placementPos.y += 0.2f;

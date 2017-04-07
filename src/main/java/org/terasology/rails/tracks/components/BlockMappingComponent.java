@@ -21,7 +21,7 @@ import org.terasology.math.Side;
 /**
  * Created by michaelpollind on 4/3/17.
  */
-public class BlockMappingComponent implements Component{
+public class BlockMappingComponent implements Component {
     public Side s1;
     public Side s2;
 }
