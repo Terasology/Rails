@@ -99,14 +99,12 @@ public class Segment {
         float closest = Float.MAX_VALUE;
 
         float tvalue = 0f;
-        Vector3f previous = point(0, 0);// curves[0].getPoint(0);
+        Vector3f previous = point(0, 0,position,rotation);// curves[0].getPoint(0);
         for (int x = 0; x < curves.length; x++) {
             for (int y = 0; y <= ARC_SEGMENT_ITERATIONS; y++) {
-                Vector3f current = point(x, y / ARC_SEGMENT_ITERATIONS);
+                Vector3f current = point(x, y / ARC_SEGMENT_ITERATIONS,position,rotation);
                 tvalue += current.distance(previous);
                 previous = current;
-
-                current = rotation.rotate(current).add(position);
 
                 float distance = current.distance(pos);
                 if (distance < closest) {
