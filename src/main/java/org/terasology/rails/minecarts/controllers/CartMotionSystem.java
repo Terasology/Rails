@@ -125,6 +125,8 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
                 segmentVehicleComponent.heading = segmentSystem.vehicleTangent(railVehicle);
                 rigidBodyComponent.collidesWith.remove(StandardCollisionGroup.WORLD);
 
+                railVehicleComponent.velocity = new Vector3f(project(rigidBodyComponent.velocity, segmentVehicleComponent.heading));
+
                 railVehicle.addOrSaveComponent(segmentVehicleComponent);
 
             }
@@ -132,48 +134,60 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
             if (railVehicleComponent.velocity.length() > VELOCITY_CAP)
                 railVehicleComponent.velocity.normalize().mul(VELOCITY_CAP);
 
-            Vector3f position = segmentSystem.vehiclePoint(railVehicle);
-            if (position == null)
-                return;
+            if (segmentSystem.isvehicleValid(railVehicle)) {
 
-            MeshComponent mesh = railVehicle.getComponent(MeshComponent.class);
-            position.y = mesh.mesh.getAABB().getMax().y / 2.0f + position.y + .01f;
+                Vector3f position = segmentSystem.vehiclePoint(railVehicle);
+                MeshComponent mesh = railVehicle.getComponent(MeshComponent.class);
+                position.y = mesh.mesh.getAABB().getMax().y / 2.0f + position.y + .01f;
 
-            Vector3f normal = segmentSystem.vehicleNormal(railVehicle);
-            Vector3f tangent = segmentSystem.vehicleTangent(railVehicle);
+                Vector3f normal = segmentSystem.vehicleNormal(railVehicle);
+                Vector3f tangent = segmentSystem.vehicleTangent(railVehicle);
 
-            Vector3f gravity = Vector3f.down().mul(GRAVITY).mul(delta);
-            railVehicleComponent.velocity.add(project(gravity, tangent));
+                Vector3f gravity = Vector3f.down().mul(GRAVITY).mul(delta);
+                railVehicleComponent.velocity.add(project(gravity, tangent));
 
-            Vector3f friction = project(gravity, normal).invert().mul(FRICTION_COFF);
+                Vector3f friction = project(gravity, normal).invert().mul(FRICTION_COFF);
 
-            float mag = railVehicleComponent.velocity.length() - friction.length();
-            if (mag < 0)
-                mag = railVehicleComponent.velocity.length();
+                float mag = railVehicleComponent.velocity.length() - friction.length();
+                if (mag < 0)
+                    mag = railVehicleComponent.velocity.length();
 
-            railVehicleComponent.velocity = project(railVehicleComponent.velocity, segmentVehicleComponent.heading).normalize().mul(mag);
+                railVehicleComponent.velocity = project(railVehicleComponent.velocity, segmentVehicleComponent.heading).normalize().mul(mag);
 
-            bound(railVehicleComponent.velocity);
-            if (segmentSystem.move(railVehicle, Math.signum(segmentVehicleComponent.heading.dot(railVehicleComponent.velocity)) * mag * delta, segmentMapping)) {
+                bound(railVehicleComponent.velocity);
+                if (segmentSystem.move(railVehicle, Math.signum(segmentVehicleComponent.heading.dot(railVehicleComponent.velocity)) * mag * delta, segmentMapping)) {
 
-                Quat4f horizontalRotation = Quat4f.shortestArcQuat(Vector3f.north(), new Vector3f(segmentVehicleComponent.heading).setY(0).normalize());
-                Quat4f verticalRotation = Quat4f.shortestArcQuat(new Vector3f(segmentVehicleComponent.heading).setY(0).normalize(), new Vector3f(segmentVehicleComponent.heading));
-                verticalRotation.mul(horizontalRotation);
-                location.setLocalRotation(verticalRotation);
-                location.setWorldPosition(position);
-
-                rigidBodyComponent.kinematic = true;
+                    Quat4f horizontalRotation = Quat4f.shortestArcQuat(Vector3f.north(), new Vector3f(segmentVehicleComponent.heading).setY(0).normalize());
+                    Quat4f verticalRotation = Quat4f.shortestArcQuat(new Vector3f(segmentVehicleComponent.heading).setY(0).normalize(), new Vector3f(segmentVehicleComponent.heading));
+                    verticalRotation.mul(horizontalRotation);
+                    location.setLocalRotation(verticalRotation);
+                    location.setWorldPosition(position);
+                    rigidBodyComponent.kinematic = true;
+                } else {
+                    detachFromRail(railVehicle);
+                }
             } else {
-                rigidBodyComponent.kinematic = false;
-                railVehicle.removeComponent(SegmentVehicleComponent.class);
-                rigidBodyComponent.velocity = new Vector3f(railVehicleComponent.velocity);
-                rigidBodyComponent.collidesWith.add(StandardCollisionGroup.WORLD);
+                detachFromRail(railVehicle);
             }
 
+            railVehicle.saveComponent(location);
             railVehicle.saveComponent(railVehicleComponent);
             railVehicle.saveComponent(rigidBodyComponent);
-            railVehicle.saveComponent(location);
+
         }
+    }
+
+    private void detachFromRail(EntityRef vehicle) {
+        RigidBodyComponent rigidBodyComponent = vehicle.getComponent(RigidBodyComponent.class);
+        RailVehicleComponent railVehicleComponent = vehicle.getComponent(RailVehicleComponent.class);
+
+        rigidBodyComponent.kinematic = false;
+        vehicle.removeComponent(SegmentVehicleComponent.class);
+        rigidBodyComponent.velocity = new Vector3f(railVehicleComponent.velocity);
+        rigidBodyComponent.collidesWith.add(StandardCollisionGroup.WORLD);
+
+        vehicle.saveComponent(railVehicleComponent);
+        vehicle.saveComponent(rigidBodyComponent);
     }
 
 
@@ -191,7 +205,7 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
             bumpForce.normalize();
             bumpForce.scale(15f);
 
-            Vector3f tangent = segmentSystem.vehicleTangent(entity);// v1.trackSegment.getTangent(v1.t,v1.trackSegment.getRotation().getQuat4f(),v1.currentSegment);
+            Vector3f tangent = segmentSystem.vehicleTangent(entity);
             bumpForce = project(bumpForce, tangent);
             v1.velocity.add(bumpForce.div(r1.mass));
             entity.saveComponent(v1);

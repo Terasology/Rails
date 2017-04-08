@@ -111,6 +111,17 @@ public class SegmentSystem extends BaseComponentSystem {
         return vehicleSegment.normal(index, vehicleSegment.t(index, vehicle.t), rotation);
     }
 
+    public boolean isvehicleValid(EntityRef vehicleEntity) {
+        SegmentVehicleComponent vehicle = vehicleEntity.getComponent(SegmentVehicleComponent.class);
+        if (vehicle == null)
+            return false;
+        if (vehicle.segmentEntity == null)
+            return false;
+        if (!vehicle.segmentEntity.exists())
+            return false;
+        return true;
+    }
+
     public boolean move(EntityRef vehicleEntity, float tDelta, SegmentMapping mapping) {
         if (tDelta == 0)
             return true;
