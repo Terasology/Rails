@@ -42,8 +42,6 @@ import org.terasology.world.block.BlockComponent;
 import org.terasology.world.block.BlockManager;
 import org.terasology.world.block.entity.neighbourUpdate.LargeBlockUpdateFinished;
 import org.terasology.world.block.entity.neighbourUpdate.LargeBlockUpdateStarting;
-import org.terasology.world.block.entity.placement.PlaceBlocks;
-import org.terasology.world.block.family.BlockFamily;
 import org.terasology.world.block.items.BlockItemComponent;
 import org.terasology.world.block.items.OnBlockItemPlaced;
 
@@ -109,10 +107,9 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
     }
 
     @ReceiveEvent(components = {BlockItemComponent.class, ItemComponent.class})
-    public void onPlaceBlock(OnBlockItemPlaced event, EntityRef entity)
-    {
+    public void onPlaceBlock(OnBlockItemPlaced event, EntityRef entity) {
         BlockComponent blockComponent = event.getPlacedBlock().getComponent(BlockComponent.class);
-        if(blockComponent == null)
+        if (blockComponent == null)
             return;
 
         Vector3i targetBlock = blockComponent.getPosition();
@@ -164,7 +161,7 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
                     if (neighborBlock != neighborBlockAfterUpdate && neighborBlockAfterUpdate != null) {
                         byte connections = Byte.parseByte(neighborBlockAfterUpdate.getURI().getIdentifier().toString());
                         //only add segment with two connections
-                        if(SideBitFlag.getSides(connections).size() <= 2)
+                        if (SideBitFlag.getSides(connections).size() <= 2)
                             worldProvider.setBlock(neighborLocation, neighborBlockAfterUpdate);
                     }
                 }

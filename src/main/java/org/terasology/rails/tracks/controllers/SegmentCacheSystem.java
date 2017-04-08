@@ -21,7 +21,6 @@ import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.rails.tracks.Segment;
 import org.terasology.rails.tracks.components.PathComponent;
-import org.terasology.rails.tracks.components.PathDescriptorComponent;
 import org.terasology.registry.Share;
 
 import java.util.HashMap;
@@ -32,23 +31,22 @@ import java.util.HashMap;
 @RegisterSystem(RegisterMode.AUTHORITY)
 @Share(value = SegmentCacheSystem.class)
 public class SegmentCacheSystem extends BaseComponentSystem {
-    private HashMap<String,Segment> segments = new HashMap<>();
+    private HashMap<String, Segment> segments = new HashMap<>();
 
-    public Segment getSegment(Prefab prefab)
-    {
+    public Segment getSegment(Prefab prefab) {
 
-        Segment segment =  segments.get(prefab.getName());
-        if(segment  != null)
+        Segment segment = segments.get(prefab.getName());
+        if (segment != null)
             return segment;
 
         PathComponent pathComponent = prefab.getComponent(PathComponent.class);
-        if(pathComponent == null)
+        if (pathComponent == null)
             return null;
 
         PathComponent.CubicBezier[] c = new PathComponent.CubicBezier[pathComponent.path.size()];
         pathComponent.path.toArray(c);
-        segment = new Segment(c,pathComponent.startingBinormal);
-        segments.put(prefab.getName(),segment);
+        segment = new Segment(c, pathComponent.startingBinormal);
+        segments.put(prefab.getName(), segment);
 
         return segment;
     }

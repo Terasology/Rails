@@ -20,7 +20,6 @@ import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.prefab.Prefab;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.network.Replicate;
-import org.terasology.rails.tracks.components.PathDescriptorComponent;
 
 /**
  * Created by michaelpollind on 4/5/17.

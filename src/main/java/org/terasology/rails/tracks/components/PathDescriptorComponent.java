@@ -16,10 +16,7 @@
 package org.terasology.rails.tracks.components;
 
 import org.terasology.entitySystem.Component;
-import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.prefab.Prefab;
-import org.terasology.network.Replicate;
-import org.terasology.reflection.MappedContainer;
 
 import java.util.List;
 

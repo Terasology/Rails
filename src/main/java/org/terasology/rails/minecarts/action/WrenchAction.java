@@ -15,15 +15,9 @@
  */
 package org.terasology.rails.minecarts.action;
 
-import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
-import org.terasology.logic.common.ActivateEvent;
-import org.terasology.logic.location.LocationComponent;
-import org.terasology.physics.components.RigidBodyComponent;
-import org.terasology.rails.minecarts.components.RailVehicleComponent;
 
 /**
  * Created by michaelpollind on 4/1/17.

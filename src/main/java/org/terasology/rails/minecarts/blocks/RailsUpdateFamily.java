@@ -74,8 +74,7 @@ public class RailsUpdateFamily extends AbstractBlockFamily implements PathFamily
     }
 
 
-    public Rotation getRotationFor(BlockUri blockUri)
-    {
+    public Rotation getRotationFor(BlockUri blockUri) {
         if (getURI().equals(blockUri.getFamilyUri())) {
             try {
                 byte connections = Byte.parseByte(blockUri.getIdentifier().toString());
@@ -137,14 +136,14 @@ public class RailsUpdateFamily extends AbstractBlockFamily implements PathFamily
             }
         }
         upLocation.y += 2;
-        switch(countConnetions) {
+        switch (countConnetions) {
             case 0:
                 for (Side connectSide : SideBitFlag.getSides(connectionSides)) {
                     if (skipSides.contains(connectSide)) {
                         continue;
                     }
                     if (connectionCondition.isConnectingTo(upLocation, connectSide, worldProvider, blockEntityRegistry)) {
-                        connections  = 0;
+                        connections = 0;
                         connections += SideBitFlag.getSide(connectSide);
                         connections += SideBitFlag.getSide(Side.TOP);
                         break;
@@ -159,7 +158,7 @@ public class RailsUpdateFamily extends AbstractBlockFamily implements PathFamily
                     break;
                 }
                 if (connectionCondition.isConnectingTo(upLocation, connectSide, worldProvider, blockEntityRegistry)) {
-                    connections  = 0;
+                    connections = 0;
                     connections += SideBitFlag.getSide(connectSide);
                     connections += SideBitFlag.getSide(Side.TOP);
                     break;

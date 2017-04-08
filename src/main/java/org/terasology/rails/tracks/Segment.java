@@ -19,7 +19,6 @@ import org.terasology.math.TeraMath;
 import org.terasology.math.geom.Quat4f;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.rails.tracks.components.PathComponent;
-import org.terasology.rails.tracks.components.PathDescriptorComponent;
 
 /**
  * Created by michaelpollind on 4/2/17.
@@ -35,35 +34,33 @@ public class Segment {
     private Vector3f startingNormal;
 
 
-    public Segment(PathComponent.CubicBezier[] curves, Vector3f startingBinormal)
-    {
+    public Segment(PathComponent.CubicBezier[] curves, Vector3f startingBinormal) {
         this.curves = curves;
         this.startingBinormal = startingBinormal;
         this.argLengths = new float[this.curves.length];
         Vector3f normal = new Vector3f();
-        normal.cross(tangent(0,0),startingBinormal);
+        normal.cross(tangent(0, 0), startingBinormal);
         this.startingNormal = normal;
 
         CalculateLength();
 
     }
 
-    public  void  CalculateLength()
-    {
+    public void CalculateLength() {
         if (this.curves.length == 0)
             return;
 
         float distance = 0f;
 
-        Vector3f previous = point(0,0);// curves[0].getPoint(0);
+        Vector3f previous = point(0, 0);// curves[0].getPoint(0);
 
         Vector3f normal = new Vector3f();
-        normal.cross(tangent(0,0), startingBinormal);
+        normal.cross(tangent(0, 0), startingBinormal);
 
         for (int x = 0; x < curves.length; x++) {
 
             for (int y = 0; y <= ARC_SEGMENT_ITERATIONS; y++) {
-                Vector3f current = point(x,y / ARC_SEGMENT_ITERATIONS);
+                Vector3f current = point(x, y / ARC_SEGMENT_ITERATIONS);
                 distance += current.distance(previous);
                 previous = current;
             }
@@ -82,9 +79,8 @@ public class Segment {
         return argLengths.length - 1;
     }
 
-    public  int maxIndex()
-    {
-        return  argLengths.length -1;
+    public int maxIndex() {
+        return argLengths.length - 1;
     }
 
 
@@ -95,8 +91,7 @@ public class Segment {
         return ((t - argLengths[index - 1]) / (argLengths[index - 1] - argLengths[index]));
     }
 
-    public float nearestT(Vector3f pos,Vector3f position,Quat4f rotation)
-    {
+    public float nearestT(Vector3f pos, Vector3f position, Quat4f rotation) {
         if (this.curves.length == 0)
             return 0f;
 
@@ -104,10 +99,10 @@ public class Segment {
         float closest = Float.MAX_VALUE;
 
         float tvalue = 0f;
-        Vector3f previous = point(0,0);// curves[0].getPoint(0);
+        Vector3f previous = point(0, 0);// curves[0].getPoint(0);
         for (int x = 0; x < curves.length; x++) {
             for (int y = 0; y <= ARC_SEGMENT_ITERATIONS; y++) {
-                Vector3f current = point(x,y / ARC_SEGMENT_ITERATIONS);
+                Vector3f current = point(x, y / ARC_SEGMENT_ITERATIONS);
                 tvalue += current.distance(previous);
                 previous = current;
 
@@ -127,57 +122,50 @@ public class Segment {
         return argLengths[argLengths.length - 1];
     }
 
-    public  Vector3f tangent(int index, float t)
-    {
+    public Vector3f tangent(int index, float t) {
         PathComponent.CubicBezier curve = curves[index];
 
-        t = TeraMath.clamp(t,0,1f);
-        float num = 1f -t;
-        Vector3f vf1 = new Vector3f(curve.f2).sub(curve.f1).mul(3f*num*num);
-        Vector3f vf2 = new Vector3f(curve.f3).sub(curve.f2).mul(6f*num*t);
-        Vector3f vf3 = new Vector3f(curve.f4).sub(curve.f3).mul(3*t*t);
+        t = TeraMath.clamp(t, 0, 1f);
+        float num = 1f - t;
+        Vector3f vf1 = new Vector3f(curve.f2).sub(curve.f1).mul(3f * num * num);
+        Vector3f vf2 = new Vector3f(curve.f3).sub(curve.f2).mul(6f * num * t);
+        Vector3f vf3 = new Vector3f(curve.f4).sub(curve.f3).mul(3 * t * t);
 
         return vf1.add(vf2).add(vf3).normalize();
     }
 
-    public  Vector3f tangent(int index, float t,Quat4f rotation)
-    {
-        return  rotation.rotate(this.tangent(index,t));
+    public Vector3f tangent(int index, float t, Quat4f rotation) {
+        return rotation.rotate(this.tangent(index, t));
     }
 
-    public Vector3f point(int index,float t)
-    {
+    public Vector3f point(int index, float t) {
         PathComponent.CubicBezier curve = curves[index];
 
-        t = TeraMath.clamp(t,0,1f);
+        t = TeraMath.clamp(t, 0, 1f);
         float num = 1f - t;
-        Vector3f vf1 = new Vector3f(curve.f1).mul(num*num*num);
-        Vector3f vf2 = new Vector3f(curve.f2).mul(3f*num*num*t);
-        Vector3f vf3 = new Vector3f(curve.f3).mul(3f*num*t*t);
-        Vector3f vf4 = new Vector3f(curve.f4).mul(t*t*t);
+        Vector3f vf1 = new Vector3f(curve.f1).mul(num * num * num);
+        Vector3f vf2 = new Vector3f(curve.f2).mul(3f * num * num * t);
+        Vector3f vf3 = new Vector3f(curve.f3).mul(3f * num * t * t);
+        Vector3f vf4 = new Vector3f(curve.f4).mul(t * t * t);
         return vf1.add(vf2).add(vf3).add(vf4);
 
     }
 
-    public  Vector3f normal(int index,float t)
-    {
-        Vector3f startingTangent = tangent(0,0);
-        Vector3f tangent =  tangent(index,t);
+    public Vector3f normal(int index, float t) {
+        Vector3f startingTangent = tangent(0, 0);
+        Vector3f tangent = tangent(index, t);
         Quat4f arcCurve = Quat4f.shortestArcQuat(startingTangent, tangent);
 
         return arcCurve.rotate(startingNormal);
     }
 
-    public  Vector3f normal(int index,float t,Quat4f rotation) {
-        return rotation.rotate(normal(index,t));
+    public Vector3f normal(int index, float t, Quat4f rotation) {
+        return rotation.rotate(normal(index, t));
     }
 
-    public  Vector3f point(int index,float t,Vector3f position,Quat4f rotation)
-    {
-        return  rotation.rotate(point(index,t)).add(position);
+    public Vector3f point(int index, float t, Vector3f position, Quat4f rotation) {
+        return rotation.rotate(point(index, t)).add(position);
     }
-
-
 
 
 }

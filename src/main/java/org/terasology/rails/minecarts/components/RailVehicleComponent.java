@@ -16,14 +16,9 @@
 package org.terasology.rails.minecarts.components;
 
 
-import com.google.common.collect.Lists;
 import org.terasology.entitySystem.Component;
-import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.network.Replicate;
-import org.terasology.protobuf.EntityData;
-
-import java.util.List;
 
 public class RailVehicleComponent implements Component {
     @Replicate
