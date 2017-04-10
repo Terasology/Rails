@@ -1,10 +1,9 @@
 {
     "id" : "Minecarts",
     "version" : "0.1.0-SNAPSHOT",
-    "author" : "",
+    "author": "small-jeeper, SkySom, Cervator, pollend, msteiger",
     "displayName" : "Minecarts",
-    "description" : "",
-    "dependencies" : [],
+    "description" : "A module that adds rails and carts",
     "serverSideOnly" : false,
    "dependencies": [
         {
