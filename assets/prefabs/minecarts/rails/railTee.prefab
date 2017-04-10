@@ -1,6 +1,0 @@
-{
-    "Rail": {},
-    "PathDescriptor":{
-       "descriptors" : [ "Rails:rightFrontPath","Rails:leftRightPath"]
-    }
-}

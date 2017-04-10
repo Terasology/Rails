@@ -1,0 +1,7 @@
+{
+    "Rail": {},
+    "PathDescriptor" : {
+        "descriptors" : ["SegmentedPaths:leftRightPath"]
+    }
+
+}
