@@ -1,0 +1,43 @@
+{
+    "Location": {
+        "scale": 0.32
+    },
+    "Mesh": {
+        "mesh": "Minecarts:minecart",
+        "material": "Minecarts:minecart"
+    },
+    "RigidBody": {
+        "mass": 250,
+        "collisionGroup": "engine:world",
+        "collidesWith": [
+            "engine:world",
+            "engine:debris",
+            "engine:character",
+            "engine:default"
+        ]
+    },
+
+    "HullShape": {
+         "sourceMesh" : "Minecarts:minecart_bounds"
+    },
+
+    "Health": {
+        "currentHealth": 1,
+        "maxHealth": 1,
+        "regenRate": 1,
+        "waitBeforeRegen": 2,
+        "destroyEntityOnNoHealth" : true
+
+    },
+    "CartRidable" : {},
+    "RailVehicle": {},
+    "Trigger": {
+        "detectGroups": [
+            "engine:world",
+            "engine:debris",
+            "engine:sensor",
+            "engine:kinematic",
+            "engine:default"
+        ]
+    }
+}

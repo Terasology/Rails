@@ -1,0 +1,14 @@
+{
+    "parent": "engine:iconItem",
+    "DisplayName": {
+        "name": "Minecart"
+    },
+    "Item": {
+        "name": "Minecart",
+        "icon": "Minecarts:minecart#minecart",
+        "usage": "IN_DIRECTION"
+    },
+    "CartDefinition": {
+        "prefab" : "Minecarts:minecartVehicle"
+    }
+}

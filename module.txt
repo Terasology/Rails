@@ -1,0 +1,19 @@
+{
+    "id" : "Minecarts",
+    "version" : "0.1.0-SNAPSHOT",
+    "author" : "",
+    "displayName" : "Minecarts",
+    "description" : "",
+    "dependencies" : [],
+    "serverSideOnly" : false,
+   "dependencies": [
+        {
+            "id": "Core",
+            "minVersion": "1.0.0"
+        },
+        {
+            "id" : "SegmentedPaths",
+            "minVersion": "0.1.0"
+        }
+    ]
+}

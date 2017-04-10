@@ -1,0 +1,16 @@
+{
+    "parent" : "engine:iconItem",
+    "DisplayName" : {
+        "name" : "Wrench"
+    },
+    "Item" : {
+        "icon": "Minecarts:minecart#wrench",
+        "usage": "IN_DIRECTION",
+        "renderWithIcon" : true,
+        "baseDamage" : 0
+    },
+  	"PlaySoundAction" : {
+    	sounds = "engine:click"
+  	},
+    "Wrench" : {}
+}
