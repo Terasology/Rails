@@ -23,41 +23,10 @@ Creating Tracks
 =====
 Tracks are build using rails and they are where your minecarts and locomotives will travel on. Tracks can be straight or sloped and can have a tee or a corner joint.
 
-**NOTE:** Track joins are only detected on block updates at the moment. Until this is fixed you will need to trigger one by breaking a block adjacent to the track to update. 
-
-Straight Track
--------
-You can make this kind of track by placing more than one rails in a straight line.
-
-![Straight](https://github.com/Terasology/Rails/wiki/images/Straight.gif)
-
-Sloped Track
--------
-You can make this kind of track by placing more than one rails in a straight line, but with an elevation of **1 block**.
-
-![Sloped](https://github.com/Terasology/Rails/wiki/images/Slope.gif)
-
-Corner Joint
--------
-You can make this joint by placing 3 rails in an elbow (90 degree) bend.
-
-![Corner](https://github.com/Terasology/Rails/wiki/images/Corner.gif)
-
-Tee Joint
--------
-You can make this joint by placing 4 rails in a T-shape.
-
-![Tee](https://github.com/Terasology/Rails/wiki/images/T.gif)
-
-Changing The Direction of A Tee Joint
--------
-You can change the direction of a tee joint by pressing `e` while facing the intersection rail in a tee joint.
-
-![Changing](https://github.com/Terasology/Rails/wiki/images/InvertT.gif)
-
-
-Linking Locomotive-Minecart
+Linking Locomotive-Minecart 
 =====
+TODO: still needs to be implemented
+
 You can link a locomotive with a minecart by following this steps:
 
  1. Place the locomotive
