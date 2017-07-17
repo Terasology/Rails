@@ -33,6 +33,7 @@ import org.terasology.logic.location.LocationComponent;
 import org.terasology.logic.players.LocalPlayer;
 import org.terasology.math.geom.Quat4f;
 import org.terasology.math.geom.Vector3f;
+import org.terasology.minecarts.Constants;
 import org.terasology.minecarts.blocks.RailBlockSegmentMapper;
 import org.terasology.physics.HitResult;
 import org.terasology.physics.Physics;
@@ -58,24 +59,21 @@ import org.terasology.world.WorldProvider;
 public class CartMotionSystem extends BaseComponentSystem implements UpdateSubscriberSystem {
 
     private static final Logger logger = LoggerFactory.getLogger(CartMotionSystem.class);
-    public static final float GRAVITY = 9.8f;
-    public static final float FRICTION_COFF = .1f;
-    public static final float BAUMGARTE_COFF = .1f;
-    public static final float VELOCITY_CAP = 15f;
+
     @In
-    private Time time;
+    Time time;
     @In
-    private EntityManager entityManager;
+    EntityManager entityManager;
     @In
-    private WorldProvider worldProvider;
+    WorldProvider worldProvider;
     @In
-    private Physics physics;
+    Physics physics;
     @In
-    private LocalPlayer localPlayer;
+    LocalPlayer localPlayer;
     @In
-    private InventoryManager inventoryManager;
+    InventoryManager inventoryManager;
     @In
-    private BlockEntityRegistry blockEntityRegistry;
+    BlockEntityRegistry blockEntityRegistry;
     @In
     SegmentSystem segmentSystem;
     @In
@@ -91,8 +89,9 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
 
     @Override
     public void update(float delta) {
-        for (EntityRef railVehicle : entityManager.getEntitiesWith(RailVehicleComponent.class, RigidBodyComponent.class))
+        for (EntityRef railVehicle : entityManager.getEntitiesWith(RailVehicleComponent.class, RigidBodyComponent.class)) {
             updateCart(railVehicle, delta);
+        }
 
     }
 
@@ -125,14 +124,14 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
                 segmentVehicleComponent.heading = segmentSystem.vehicleTangent(railVehicle);
                 rigidBodyComponent.collidesWith.remove(StandardCollisionGroup.WORLD);
 
-                railVehicleComponent.velocity = new Vector3f(project(rigidBodyComponent.velocity, segmentVehicleComponent.heading));
+                railVehicleComponent.velocity = segmentVehicleComponent.heading.project(rigidBodyComponent.velocity);
 
                 railVehicle.addOrSaveComponent(segmentVehicleComponent);
 
             }
         } else {
-            if (railVehicleComponent.velocity.length() > VELOCITY_CAP)
-                railVehicleComponent.velocity.normalize().mul(VELOCITY_CAP);
+            if (railVehicleComponent.velocity.length() > Constants.VELOCITY_CAP)
+                railVehicleComponent.velocity.normalize().mul(Constants.VELOCITY_CAP);
 
             if (segmentSystem.isvehicleValid(railVehicle)) {
 
@@ -143,16 +142,17 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
                 Vector3f normal = segmentSystem.vehicleNormal(railVehicle);
                 Vector3f tangent = segmentSystem.vehicleTangent(railVehicle);
 
-                Vector3f gravity = Vector3f.down().mul(GRAVITY).mul(delta);
-                railVehicleComponent.velocity.add(project(gravity, tangent));
+                Vector3f gravity = Vector3f.down().mul(Constants.GRAVITY).mul(delta);
+                railVehicleComponent.velocity.add(tangent.project(gravity));
 
-                Vector3f friction = project(gravity, normal).invert().mul(FRICTION_COFF);
+
+                Vector3f friction = normal.project(gravity).invert().mul(Constants.FRICTION_COFF);
 
                 float mag = railVehicleComponent.velocity.length() - friction.length();
                 if (mag < 0)
                     mag = railVehicleComponent.velocity.length();
 
-                railVehicleComponent.velocity = project(railVehicleComponent.velocity, segmentVehicleComponent.heading).normalize().mul(mag);
+                railVehicleComponent.velocity = segmentVehicleComponent.heading.project(railVehicleComponent.velocity).normalize().mul(mag);
 
                 bound(railVehicleComponent.velocity);
                 if (segmentSystem.move(railVehicle, Math.signum(segmentVehicleComponent.heading.dot(railVehicleComponent.velocity)) * mag * delta, segmentMapping)) {
@@ -190,73 +190,6 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
         vehicle.saveComponent(rigidBodyComponent);
     }
 
-
-    @ReceiveEvent(components = {RailVehicleComponent.class, SegmentEntityComponent.class, LocationComponent.class, RigidBodyComponent.class}, priority = EventPriority.PRIORITY_HIGH)
-    public void onBump(CollideEvent event, EntityRef entity) {
-        RailVehicleComponent v1 = entity.getComponent(RailVehicleComponent.class);
-        RigidBodyComponent r1 = entity.getComponent(RigidBodyComponent.class);
-
-        if (event.getOtherEntity().hasComponent(CharacterComponent.class)) {
-            LocationComponent playerLocation = event.getOtherEntity().getComponent(LocationComponent.class);
-            LocationComponent cartLocation = entity.getComponent(LocationComponent.class);
-
-            Vector3f bumpForce = new Vector3f(cartLocation.getWorldPosition());
-            bumpForce.sub(playerLocation.getWorldPosition());
-            bumpForce.normalize();
-            bumpForce.scale(15f);
-
-            Vector3f tangent = segmentSystem.vehicleTangent(entity);
-            bumpForce = project(bumpForce, tangent);
-            v1.velocity.add(bumpForce.div(r1.mass));
-            entity.saveComponent(v1);
-
-        } else if (event.getOtherEntity().hasComponent(RailVehicleComponent.class)) {
-            if (!event.getOtherEntity().hasComponent(SegmentEntityComponent.class))
-                return;
-
-
-            RailVehicleComponent v2 = event.getOtherEntity().getComponent(RailVehicleComponent.class);
-            RigidBodyComponent r2 = event.getOtherEntity().getComponent(RigidBodyComponent.class);
-
-            Vector3f v1n = segmentSystem.vehicleTangent(entity);
-            Vector3f v2n = segmentSystem.vehicleTangent(event.getOtherEntity());
-
-            LocationComponent v1l = entity.getComponent(LocationComponent.class);
-            LocationComponent v2l = event.getOtherEntity().getComponent(LocationComponent.class);
-
-            Vector3f halfNormal = new Vector3f(v1n);
-            if (v1n.dot(v2n) < 0)
-                halfNormal.invert();
-            halfNormal.add(v2n).normalize();
-
-            if (!(new Vector3f(v1l.getWorldPosition()).sub(v2l.getWorldPosition()).normalize().dot(halfNormal) < 0))
-                halfNormal.invert();
-
-            float jv = ((halfNormal.x * v1.velocity.x) + (halfNormal.y * v1.velocity.y) + (halfNormal.z * v1.velocity.z)) -
-                    ((halfNormal.x * v2.velocity.x) + (halfNormal.y * v2.velocity.y) + (halfNormal.z * v2.velocity.z));
-
-            Vector3f df = new Vector3f(v2l.getWorldPosition()).sub(v1l.getWorldPosition()).normalize();
-            float b = -df.dot(halfNormal) * (BAUMGARTE_COFF / time.getGameDelta()) * event.getPenetration();
-
-            if (jv <= 0)
-                return;
-
-            float effectiveMass = (1.0f / r1.mass) + (1.0f / r2.mass);
-
-            float lambda = -(jv + b) / effectiveMass;
-
-            Vector3f r1v = new Vector3f(halfNormal.x / r1.mass, halfNormal.y / r1.mass, halfNormal.z / r1.mass).mul(lambda);
-            Vector3f r2v = new Vector3f(halfNormal.x / r2.mass, halfNormal.y / r2.mass, halfNormal.z / r2.mass).mul(lambda).invert();
-
-            v1.velocity.add(r1v);
-            v2.velocity.add(r2v);
-
-
-            entity.saveComponent(v1);
-            event.getOtherEntity().saveComponent(v2);
-        }
-    }
-
     private void bound(Vector3f v) {
         if (Float.isNaN(v.x) || Float.isInfinite(v.x))
             v.x = 0.0f;
@@ -264,17 +197,6 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
             v.y = 0.0f;
         if (Float.isNaN(v.z) || Float.isInfinite(v.z))
             v.z = 0.0f;
-    }
-
-    public final Vector3f project(Vector3f u, Vector3f v) {
-        if (v.lengthSquared() == 0)
-            return Vector3f.zero();
-        return new Vector3f(v).mul(new Vector3f(u).dot(v) / (v.lengthSquared()));
-    }
-
-
-    private void findTrackToAttachTo(EntityRef ref) {
-
     }
 
 }
