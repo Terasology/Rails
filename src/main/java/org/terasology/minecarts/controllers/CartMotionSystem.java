@@ -103,12 +103,14 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
         SegmentEntityComponent segmentVehicleComponent = railVehicle.getComponent(SegmentEntityComponent.class);
 
         if (segmentVehicleComponent == null) {
+            //checks to see if the cart hits a rail segment
             HitResult hit = physics.rayTrace(location.getWorldPosition(), Vector3f.down(), 1.2f, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
             if (hit == null || hit.getBlockPosition() == null)
                 return;
 
             EntityRef ref = blockEntityRegistry.getBlockEntityAt(hit.getBlockPosition());
 
+            //attach cart to rail segment
             if (ref.hasComponent(RailComponent.class)) {
                 segmentVehicleComponent = new SegmentEntityComponent();
                 segmentVehicleComponent.segmentEntity = ref;
@@ -127,14 +129,12 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
                 railVehicleComponent.velocity = segmentVehicleComponent.heading.project(rigidBodyComponent.velocity);
 
                 railVehicle.addOrSaveComponent(segmentVehicleComponent);
-
             }
         } else {
             if (railVehicleComponent.velocity.length() > Constants.VELOCITY_CAP)
                 railVehicleComponent.velocity.normalize().mul(Constants.VELOCITY_CAP);
 
             if (segmentSystem.isvehicleValid(railVehicle)) {
-
                 Vector3f position = segmentSystem.vehiclePoint(railVehicle);
                 MeshComponent mesh = railVehicle.getComponent(MeshComponent.class);
                 position.y = mesh.mesh.getAABB().getMax().y / 2.0f + position.y + .01f;
@@ -145,18 +145,23 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
                 Vector3f gravity = Vector3f.down().mul(Constants.GRAVITY).mul(delta);
                 railVehicleComponent.velocity.add(tangent.project(gravity));
 
-
+                //apply some friction based off the gravity vector projected on the normal multiplied against a friction coff
                 Vector3f friction = normal.project(gravity).invert().mul(Constants.FRICTION_COFF);
 
                 float mag = railVehicleComponent.velocity.length() - friction.length();
+                //make sure the magnitude is not less then zero when the friction value is subtracted off of the velocity
                 if (mag < 0)
                     mag = railVehicleComponent.velocity.length();
 
+                //apply the new velocity to the rail component
                 railVehicleComponent.velocity = segmentVehicleComponent.heading.project(railVehicleComponent.velocity).normalize().mul(mag);
 
+                //make sure the value is not nan or infinite
+                //occurs when the cart hits a perpendicular segment.
                 bound(railVehicleComponent.velocity);
                 if (segmentSystem.move(railVehicle, Math.signum(segmentVehicleComponent.heading.dot(railVehicleComponent.velocity)) * mag * delta, segmentMapping)) {
 
+                    //calculate the cart rotation
                     Quat4f horizontalRotation = Quat4f.shortestArcQuat(Vector3f.north(), new Vector3f(segmentVehicleComponent.heading).setY(0).normalize());
                     Quat4f verticalRotation = Quat4f.shortestArcQuat(new Vector3f(segmentVehicleComponent.heading).setY(0).normalize(), new Vector3f(segmentVehicleComponent.heading));
                     verticalRotation.mul(horizontalRotation);
@@ -181,6 +186,7 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
         RigidBodyComponent rigidBodyComponent = vehicle.getComponent(RigidBodyComponent.class);
         RailVehicleComponent railVehicleComponent = vehicle.getComponent(RailVehicleComponent.class);
 
+        //change the rigidbody into a non kinematic body and remove the SegmentEntityComponent
         rigidBodyComponent.kinematic = false;
         vehicle.removeComponent(SegmentEntityComponent.class);
         rigidBodyComponent.velocity = new Vector3f(railVehicleComponent.velocity);

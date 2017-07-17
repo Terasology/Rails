@@ -23,10 +23,13 @@ import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.logic.characters.CharacterComponent;
+import org.terasology.logic.characters.CharacterImpulseEvent;
 import org.terasology.logic.characters.CharacterMovementComponent;
+import org.terasology.logic.characters.MovementMode;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.minecarts.Constants;
+import org.terasology.minecarts.components.CartRidableComponent;
 import org.terasology.minecarts.components.RailVehicleComponent;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.physics.engine.RigidBody;
@@ -57,7 +60,12 @@ public class CartImpulseSystem extends BaseComponentSystem {
 
     private void handleCharacterCollision(CollideEvent event, EntityRef entity)
     {
+        //ignore impulse if the player is in the cart
+        if (entity.hasComponent(CartRidableComponent.class) && entity.getComponent(CartRidableComponent.class).characterInsideCart == event.getOtherEntity())
+            return;
+
         RailVehicleComponent v1 = entity.getComponent(RailVehicleComponent.class);
+        SegmentEntityComponent se1 = entity.getComponent(SegmentEntityComponent.class);
 
         LocationComponent v1l = entity.getComponent(LocationComponent.class);
         LocationComponent v2l = event.getOtherEntity().getComponent(LocationComponent.class);
@@ -68,19 +76,24 @@ public class CartImpulseSystem extends BaseComponentSystem {
         float jv = ((event.getNormal().x * v1.velocity.x) + (event.getNormal().y * v1.velocity.y) + (event.getNormal().z * v1.velocity.z)) -
                 ((event.getNormal().x * r2.getVelocity().x) + (event.getNormal().y * r2.getVelocity().y) + (event.getNormal().z * r2.getVelocity().z));
 
-        if (jv <= 0)
-            return;
 
-        float effectiveMass = (1.0f/r1.mass);
+        float effectiveMass = (1.0f/r1.mass) + (1.0f/Constants.PLAYER_MASS);
 
         Vector3f df = new Vector3f(v2l.getWorldPosition()).sub(v1l.getWorldPosition()).normalize();
 
         float b = -df.dot(event.getNormal()) * (Constants.BAUMGARTE_COFF / time.getGameDelta()) * event.getPenetration();
 
         float lambda = -(jv + b) / effectiveMass;
-        Vector3f r1v = new Vector3f(event.getNormal().x / r1.mass, event.getNormal().y / r1.mass, event.getNormal().z / r1.mass).mul(lambda);
+
+        if(lambda < 0)
+            return;
+
+        Vector3f r1v =  new Vector3f(event.getNormal().x / r1.mass, event.getNormal().y / r1.mass, event.getNormal().z / r1.mass).mul(lambda);
+        Vector3f r2v =  new Vector3f(event.getNormal().x /Constants.PLAYER_MASS, event.getNormal().y / Constants.PLAYER_MASS, event.getNormal().z /Constants.PLAYER_MASS).mul(lambda).invert();
 
         v1.velocity.add(r1v);
+        event.getOtherEntity().send(new CharacterImpulseEvent(r2v));
+
         entity.saveComponent(v1);
     }
 
@@ -115,11 +128,10 @@ public class CartImpulseSystem extends BaseComponentSystem {
         Vector3f df = new Vector3f(v2l.getWorldPosition()).sub(v1l.getWorldPosition()).normalize();
         float b = -df.dot(halfNormal) * (Constants.BAUMGARTE_COFF / time.getGameDelta()) * event.getPenetration();
 
-        if (jv <= 0)
-            return;
-
         float effectiveMass = (1.0f/r1.mass) + (1.0f/r2.mass);
         float lambda = -(jv + b) / effectiveMass;
+        if(lambda > 0)
+            return;
         Vector3f r1v = new Vector3f(halfNormal.x / r1.mass, halfNormal.y / r1.mass, halfNormal.z / r1.mass).mul(lambda);
         Vector3f r2v = new Vector3f(halfNormal.x / r2.mass, halfNormal.y / r2.mass, halfNormal.z / r2.mass).mul(lambda).invert();
 
