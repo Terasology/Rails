@@ -43,13 +43,10 @@ public class MinecartAction extends BaseComponentSystem {
     @In
     private EntityManager entityManager;
     @In
-    private WorldProvider worldProvider;
-    @In
     private InventoryManager inventoryManager;
     @In
     private BlockManager blockManager;
-    @In
-    private Physics physics;
+
 
     private final Logger logger = LoggerFactory.getLogger(MinecartAction.class);
 
