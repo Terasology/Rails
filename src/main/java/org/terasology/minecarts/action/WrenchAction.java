@@ -15,9 +15,17 @@
  */
 package org.terasology.minecarts.action;
 
+import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
+import org.terasology.logic.common.ActivateEvent;
+import org.terasology.logic.inventory.ItemComponent;
+import org.terasology.minecarts.blocks.RailComponent;
+import org.terasology.minecarts.components.CartDefinitionComponent;
+import org.terasology.minecarts.components.RailVehicleComponent;
+import org.terasology.minecarts.components.WrenchComponent;
 
 /**
  * Created by michaelpollind on 4/1/17.
@@ -27,6 +35,14 @@ public class WrenchAction extends BaseComponentSystem {
 
     @Override
     public void initialise() {
+    }
+
+    @ReceiveEvent(components = {WrenchComponent.class})
+    public void onCartJoinAction(ActivateEvent event, EntityRef item)
+    {
+        EntityRef targetEntity = event.getTarget();
+        if (!targetEntity.hasComponent(RailVehicleComponent.class))
+            return;
     }
 
 

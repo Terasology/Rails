@@ -53,7 +53,7 @@ public class RailsFamilyFactory implements BlockFamilyFactory {
     public static final String TWO_CONNECTIONS_CORNER = "2d_corner";
     public static final String THREE_CONNECTIONS_T = "2d_t";
     public static final String FOUR_CONNECTIONS_CROSS = "cross";
-    private static final Map<String, Byte> RAILS_MAPPING =
+    public static final Map<String, Byte> RAILS_MAPPING =
             new HashMap<String, Byte>() {
                 {
                     put(NO_CONNECTIONS, (byte) 0);
@@ -69,7 +69,7 @@ public class RailsFamilyFactory implements BlockFamilyFactory {
     private ConnectionCondition connectionCondition;
     private byte connectionSides;
 
-    TByteObjectMap<Rotation> rotations = new TByteObjectHashMap<>();
+    private TByteObjectMap<Rotation> rotations = new TByteObjectHashMap<>();
 
     public RailsFamilyFactory() {
         connectionCondition = new RailsConnectionCondition();
@@ -122,7 +122,7 @@ public class RailsFamilyFactory implements BlockFamilyFactory {
                 archetypeBlock, blocksForConnections, (byte) (connectionSides & 0b111110), rotations);
     }
 
-    protected void addConnections(TByteObjectMap<String>[] basicBlocks, int index, String connections) {
+    private void addConnections(TByteObjectMap<String>[] basicBlocks, int index, String connections) {
         if (basicBlocks[index] == null) {
             basicBlocks[index] = new TByteObjectHashMap<>();
         }
@@ -142,8 +142,8 @@ public class RailsFamilyFactory implements BlockFamilyFactory {
      * @param basicBlocks
      * @return
      */
-    protected Block constructBlockForConnections(final byte connections, BlockUri uri, final BlockBuilderHelper blockBuilder,
-                                                 BlockFamilyDefinition definition, TByteObjectMap<String>[] basicBlocks) {
+    private Block constructBlockForConnections(final byte connections, BlockUri uri, final BlockBuilderHelper blockBuilder,
+                                               BlockFamilyDefinition definition, TByteObjectMap<String>[] basicBlocks) {
         int connectionCount = SideBitFlag.getSides(connections).size();
         if (connectionCount > basicBlocks.length - 1)
             return null;
@@ -169,7 +169,7 @@ public class RailsFamilyFactory implements BlockFamilyFactory {
      * @param target
      * @return
      */
-    protected Rotation getRotationToAchieve(byte source, byte target) {
+    private Rotation getRotationToAchieve(byte source, byte target) {
         Collection<Side> originalSides = SideBitFlag.getSides(source);
 
         Iterable<Rotation> rotations = Rotation.horizontalRotations();
@@ -185,6 +185,8 @@ public class RailsFamilyFactory implements BlockFamilyFactory {
         return null;
     }
 
+
+
     public static class RailsConnectionCondition implements ConnectionCondition {
         @Override
         public boolean isConnectingTo(Vector3i blockLocation, Side connectSide, WorldProvider worldProvider, BlockEntityRegistry blockEntityRegistry) {
@@ -192,6 +194,12 @@ public class RailsFamilyFactory implements BlockFamilyFactory {
             neighborLocation.add(connectSide.getVector3i());
 
             EntityRef neighborEntity = blockEntityRegistry.getEntityAt(neighborLocation);
+
+            Block block = worldProvider.getBlock(neighborLocation);
+            int size = SideBitFlag.getSides(Byte.parseByte(block.getURI().getIdentifier().toString())).size();
+            if(size > 1) {
+                return false;
+            }
 
             return neighborEntity != null && connectsToNeighbor(neighborEntity, connectSide.reverse());
         }

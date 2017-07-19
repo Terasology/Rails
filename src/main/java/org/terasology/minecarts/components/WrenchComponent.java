@@ -17,5 +17,8 @@ package org.terasology.minecarts.components;
 
 
 import org.terasology.entitySystem.Component;
+import org.terasology.entitySystem.entity.EntityRef;
 
-public class WrenchComponent implements Component {}
+public class WrenchComponent implements Component {
+    public EntityRef lastSelectedCart;
+}

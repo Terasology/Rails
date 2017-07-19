@@ -18,6 +18,7 @@ package org.terasology.minecarts.blocks;
 import gnu.trove.map.TByteObjectMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.terasology.logic.console.Console;
 import org.terasology.math.Rotation;
 import org.terasology.math.Side;
 import org.terasology.math.SideBitFlag;
@@ -123,6 +124,8 @@ public class RailsUpdateFamily extends AbstractBlockFamily implements PathFamily
                 connections += SideBitFlag.getSide(connectSide);
             } else if (hasTopBlock) {
                 block = worldProvider.getBlock(location);
+
+
                 if (block.getURI() != BlockManager.AIR_ID && !block.isPenetrable() && block.isLiquid()) {
                     skipSides.add(connectSide);
                 }

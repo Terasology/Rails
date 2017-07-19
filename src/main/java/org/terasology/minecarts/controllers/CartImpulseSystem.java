@@ -22,17 +22,18 @@ import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
+import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
 import org.terasology.logic.characters.CharacterComponent;
 import org.terasology.logic.characters.CharacterImpulseEvent;
 import org.terasology.logic.characters.CharacterMovementComponent;
-import org.terasology.logic.characters.MovementMode;
+import org.terasology.logic.location.Location;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.minecarts.Constants;
 import org.terasology.minecarts.components.CartRidableComponent;
+import org.terasology.minecarts.components.CollisionFilterComponent;
 import org.terasology.minecarts.components.RailVehicleComponent;
 import org.terasology.physics.components.RigidBodyComponent;
-import org.terasology.physics.engine.RigidBody;
 import org.terasology.physics.events.CollideEvent;
 import org.terasology.registry.In;
 import org.terasology.segmentedpaths.components.SegmentEntityComponent;
@@ -42,15 +43,39 @@ import org.terasology.segmentedpaths.controllers.SegmentSystem;
  * Created by michaelpollind on 7/15/17.
  */
 @RegisterSystem(RegisterMode.AUTHORITY)
-public class CartImpulseSystem extends BaseComponentSystem {
+public class CartImpulseSystem extends BaseComponentSystem implements UpdateSubscriberSystem {
 
     @In
     Time time;
     @In
     SegmentSystem segmentSystem;
 
+    public static void AddCollisionFilter(EntityRef cart,EntityRef child)
+    {
+        CollisionFilterComponent collisionFilterComponent = cart.getComponent(CollisionFilterComponent.class);
+        if(collisionFilterComponent == null)
+            collisionFilterComponent = new CollisionFilterComponent();
+        collisionFilterComponent.filter.add(child);
+        cart.addOrSaveComponent(collisionFilterComponent);
+    }
+
+
+    public static void RemoveCollisionFilter(EntityRef cart,EntityRef child)
+    {
+        CollisionFilterComponent collisionFilterComponent = cart.getComponent(CollisionFilterComponent.class);
+        if(collisionFilterComponent == null)
+            collisionFilterComponent = new CollisionFilterComponent();
+        collisionFilterComponent.filter.remove(child);
+        cart.addOrSaveComponent(collisionFilterComponent);
+    }
+
+
     @ReceiveEvent(components = {RailVehicleComponent.class, SegmentEntityComponent.class, LocationComponent.class, RigidBodyComponent.class}, priority = EventPriority.PRIORITY_HIGH)
     public void onBump(CollideEvent event, EntityRef entity) {
+        CollisionFilterComponent collisionFilterComponent = entity.getComponent(CollisionFilterComponent.class);
+        if(collisionFilterComponent != null && collisionFilterComponent.filter.contains(event.getOtherEntity()))
+            return;
+
         if (event.getOtherEntity().hasComponent(CharacterComponent.class)) {
             handleCharacterCollision(event,entity);
         } else if (event.getOtherEntity().hasComponent(RailVehicleComponent.class) && event.getOtherEntity().hasComponent(SegmentEntityComponent.class)) {
@@ -58,14 +83,11 @@ public class CartImpulseSystem extends BaseComponentSystem {
         }
     }
 
+
     private void handleCharacterCollision(CollideEvent event, EntityRef entity)
     {
-        //ignore impulse if the player is in the cart
-        if (entity.hasComponent(CartRidableComponent.class) && entity.getComponent(CartRidableComponent.class).characterInsideCart == event.getOtherEntity())
-            return;
 
         RailVehicleComponent v1 = entity.getComponent(RailVehicleComponent.class);
-        SegmentEntityComponent se1 = entity.getComponent(SegmentEntityComponent.class);
 
         LocationComponent v1l = entity.getComponent(LocationComponent.class);
         LocationComponent v2l = event.getOtherEntity().getComponent(LocationComponent.class);
@@ -143,4 +165,8 @@ public class CartImpulseSystem extends BaseComponentSystem {
         event.getOtherEntity().saveComponent(v2);
     }
 
+    @Override
+    public void update(float delta) {
+
+    }
 }

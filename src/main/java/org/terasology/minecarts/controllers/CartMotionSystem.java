@@ -92,7 +92,6 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
         for (EntityRef railVehicle : entityManager.getEntitiesWith(RailVehicleComponent.class, RigidBodyComponent.class)) {
             updateCart(railVehicle, delta);
         }
-
     }
 
     private void updateCart(EntityRef railVehicle, float delta) {

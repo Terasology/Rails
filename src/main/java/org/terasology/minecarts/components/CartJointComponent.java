@@ -15,15 +15,15 @@
  */
 package org.terasology.minecarts.components;
 
-import org.terasology.entitySystem.Component;
-import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.network.FieldReplicateType;
-import org.terasology.network.Replicate;
+import org.terasology.math.geom.Vector3f;
 
-/**
- * Created by michaelpollind on 3/31/17.
- */
-public class CartRidableComponent implements Component {
-    @Replicate(FieldReplicateType.SERVER_TO_CLIENT)
-    public EntityRef rider;
+public class CartJointComponent {
+    public enum LocationJoint{
+        BACK,
+        FRONT
+    }
+
+    public LocationJoint joinType;
+    public Vector3f offset;
+
 }
