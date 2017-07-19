@@ -18,6 +18,7 @@ package org.terasology.minecarts.blocks;
 import gnu.trove.map.TByteObjectMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.console.Console;
 import org.terasology.math.Rotation;
 import org.terasology.math.Side;
@@ -106,8 +107,31 @@ public class RailsUpdateFamily extends AbstractBlockFamily implements PathFamily
         return blocks.valueCollection();
     }
 
+
+    private boolean isFullyConnected(Vector3i location, Side connectSide, WorldProvider worldProvider, BlockEntityRegistry blockEntityRegistry)
+    {
+        if (connectionCondition.isConnectingTo(location, connectSide, worldProvider, blockEntityRegistry)) {
+            Vector3i neighborLocation = new Vector3i(location);
+            neighborLocation.add(connectSide.getVector3i());
+            EnumSet<Side> sides = SideBitFlag.getSides(Byte.parseByte(worldProvider.getBlock(neighborLocation).getURI().getIdentifier().toString()));
+
+            for(Side side : sides)
+            {
+                if(side == Side.TOP || side == Side.BOTTOM)
+                    continue;
+                if (new Vector3i(neighborLocation).add(side.getVector3i()).equals(location)) {
+                    return false;
+                }
+            }
+            if(sides.size() > 1)
+                return  true;
+        }
+        return false;
+    }
+
     private byte getByteConnections(WorldProvider worldProvider, BlockEntityRegistry blockEntityRegistry, Vector3i location) {
         byte connections = 0;
+        byte fullConnectedEdges = 0;
         int countConnetions = 0;
         boolean hasTopBlock = false;
         ArrayList<Side> skipSides = new ArrayList<Side>();
@@ -121,16 +145,22 @@ public class RailsUpdateFamily extends AbstractBlockFamily implements PathFamily
 
         for (Side connectSide : SideBitFlag.getSides(connectionSides)) {
             if (connectionCondition.isConnectingTo(location, connectSide, worldProvider, blockEntityRegistry)) {
-                connections += SideBitFlag.getSide(connectSide);
+                if(isFullyConnected(location, connectSide, worldProvider, blockEntityRegistry))
+                    fullConnectedEdges += SideBitFlag.getSide(connectSide);
+                else
+                    connections += SideBitFlag.getSide(connectSide);
+
             } else if (hasTopBlock) {
                 block = worldProvider.getBlock(location);
-
 
                 if (block.getURI() != BlockManager.AIR_ID && !block.isPenetrable() && block.isLiquid()) {
                     skipSides.add(connectSide);
                 }
             }
         }
+        if(connections == 0)
+            connections = fullConnectedEdges;
+
         countConnetions = SideBitFlag.getSides(connections).size();
 
         upLocation.y -= 2;

@@ -122,7 +122,6 @@ public class CartImpulseSystem extends BaseComponentSystem implements UpdateSubs
 
     private void handleCartCollision(CollideEvent event, EntityRef entity)
     {
-
         RailVehicleComponent v1 = entity.getComponent(RailVehicleComponent.class);
         RailVehicleComponent v2 = event.getOtherEntity().getComponent(RailVehicleComponent.class);
 

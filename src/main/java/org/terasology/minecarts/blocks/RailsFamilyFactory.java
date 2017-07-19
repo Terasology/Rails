@@ -192,15 +192,7 @@ public class RailsFamilyFactory implements BlockFamilyFactory {
         public boolean isConnectingTo(Vector3i blockLocation, Side connectSide, WorldProvider worldProvider, BlockEntityRegistry blockEntityRegistry) {
             Vector3i neighborLocation = new Vector3i(blockLocation);
             neighborLocation.add(connectSide.getVector3i());
-
             EntityRef neighborEntity = blockEntityRegistry.getEntityAt(neighborLocation);
-
-            Block block = worldProvider.getBlock(neighborLocation);
-            int size = SideBitFlag.getSides(Byte.parseByte(block.getURI().getIdentifier().toString())).size();
-            if(size > 1) {
-                return false;
-            }
-
             return neighborEntity != null && connectsToNeighbor(neighborEntity, connectSide.reverse());
         }
 
