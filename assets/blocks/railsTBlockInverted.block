@@ -17,17 +17,17 @@
 {
     "shadowCasting": "false",
     "translucent" : true,
-    "rotation" : "horizontal",
+    "rotation": "Rails:rails",
     "penetrable" : false,
 
-    "tile" : "Rails:TrainTrack",
-    "shape" : "engine:horizontalOffsetPlane",
-    "tiles" : {
-      "sides" : "Rails:TrainTrackEmpty",
-      "top" : "Rails:TrainTrack",
-      "bottom" : "Rails:TrainTrackEmpty"
-    },
-    "entity": {
-      "prefab": "Rails:railPoweredPlain"
+    "2d_t": {
+        "tile" : "Rails:TrainTrackTee",
+        "shape" : "engine:horizontalOffsetPlane",
+        "tiles" : {
+          "center" : "Rails:TrainTrackTeeInversed"
+        },
+        "entity": {
+            "prefab": "Rails:railTeeInversed"
+        }
     }
 }

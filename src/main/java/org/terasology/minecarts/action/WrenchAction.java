@@ -22,16 +22,34 @@ import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.logic.common.ActivateEvent;
 import org.terasology.logic.inventory.ItemComponent;
+import org.terasology.math.SideBitFlag;
+import org.terasology.math.geom.Vector3i;
 import org.terasology.minecarts.blocks.RailComponent;
+import org.terasology.minecarts.blocks.RailsUpdateFamily;
 import org.terasology.minecarts.components.CartDefinitionComponent;
 import org.terasology.minecarts.components.RailVehicleComponent;
 import org.terasology.minecarts.components.WrenchComponent;
+import org.terasology.registry.In;
+import org.terasology.world.BlockEntityRegistry;
+import org.terasology.world.WorldProvider;
+import org.terasology.world.block.Block;
+import org.terasology.world.block.BlockComponent;
+import org.terasology.world.block.BlockManager;
+import org.terasology.world.block.entity.placement.PlaceBlocks;
+import org.terasology.world.block.family.BlockFamily;
 
 /**
  * Created by michaelpollind on 4/1/17.
  */
 @RegisterSystem(RegisterMode.AUTHORITY)
 public class WrenchAction extends BaseComponentSystem {
+
+    @In
+    WorldProvider worldProvider;
+    @In
+    BlockEntityRegistry blockEntityRegistry;
+    @In
+    BlockManager blockManager;
 
     @Override
     public void initialise() {
@@ -43,6 +61,36 @@ public class WrenchAction extends BaseComponentSystem {
         EntityRef targetEntity = event.getTarget();
         if (!targetEntity.hasComponent(RailVehicleComponent.class))
             return;
+    }
+
+
+    @ReceiveEvent(components = {WrenchComponent.class})
+    public void onRailFlipAction(ActivateEvent event, EntityRef item)
+    {
+        EntityRef targetEntity = event.getTarget();
+        if (!targetEntity.hasComponent(RailComponent.class))
+            return;
+
+        Vector3i position = targetEntity.getComponent(BlockComponent.class).getPosition();
+
+        RailsUpdateFamily railFamily = (RailsUpdateFamily) blockManager.getBlockFamily("Rails:rails");
+        RailsUpdateFamily invertFamily = (RailsUpdateFamily) blockManager.getBlockFamily("railsTBlockInverted");
+
+        Block block = worldProvider.getBlock(targetEntity.getComponent(BlockComponent.class).getPosition());
+
+        byte connections = Byte.parseByte(block.getURI().getIdentifier().toString());
+
+
+        if(SideBitFlag.getSides(connections).size() == 3) {
+            if (block.getBlockFamily() == railFamily) {
+                blockEntityRegistry.setBlockForceUpdateEntity(position, invertFamily.getBlockByConnection(connections));
+            } else if (block.getBlockFamily() == invertFamily) {
+
+                blockEntityRegistry.setBlockForceUpdateEntity(position, railFamily.getBlockByConnection(connections));
+            }
+        }
+
+
     }
 
 

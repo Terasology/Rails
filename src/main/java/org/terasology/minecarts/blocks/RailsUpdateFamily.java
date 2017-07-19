@@ -102,12 +102,25 @@ public class RailsUpdateFamily extends AbstractBlockFamily implements PathFamily
         return null;
     }
 
+    public Block getBlockByConnection(byte connectionSides)
+    {
+        return blocks.get(connectionSides);
+    }
+
     @Override
     public Iterable<Block> getBlocks() {
         return blocks.valueCollection();
     }
 
 
+    /**
+     * a fully connected tile has more then 1 connected edge and is not attached to the reference tile
+     * @param location
+     * @param connectSide
+     * @param worldProvider
+     * @param blockEntityRegistry
+     * @return
+     */
     private boolean isFullyConnected(Vector3i location, Side connectSide, WorldProvider worldProvider, BlockEntityRegistry blockEntityRegistry)
     {
         if (connectionCondition.isConnectingTo(location, connectSide, worldProvider, blockEntityRegistry)) {

@@ -34,6 +34,7 @@ import org.terasology.logic.players.LocalPlayer;
 import org.terasology.math.geom.Quat4f;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.minecarts.Constants;
+import org.terasology.minecarts.Util;
 import org.terasology.minecarts.blocks.RailBlockSegmentMapper;
 import org.terasology.physics.HitResult;
 import org.terasology.physics.Physics;
@@ -157,7 +158,7 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
 
                 //make sure the value is not nan or infinite
                 //occurs when the cart hits a perpendicular segment.
-                bound(railVehicleComponent.velocity);
+                Util.bound(railVehicleComponent.velocity);
                 if (segmentSystem.move(railVehicle, Math.signum(segmentVehicleComponent.heading.dot(railVehicleComponent.velocity)) * mag * delta, segmentMapping)) {
 
                     //calculate the cart rotation
@@ -195,13 +196,5 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
         vehicle.saveComponent(rigidBodyComponent);
     }
 
-    private void bound(Vector3f v) {
-        if (Float.isNaN(v.x) || Float.isInfinite(v.x))
-            v.x = 0.0f;
-        if (Float.isNaN(v.y) || Float.isInfinite(v.y))
-            v.y = 0.0f;
-        if (Float.isNaN(v.z) || Float.isInfinite(v.z))
-            v.z = 0.0f;
-    }
 
 }
