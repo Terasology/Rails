@@ -1,6 +1,6 @@
 {
-    "Rail": {},
-    "PathDescriptor":{
+    "Rails:Rail": {},
+    "SegmentedPaths:PathDescriptor":{
        "descriptors" : [ "SegmentedPaths:rightFrontPath","SegmentedPaths:leftRightPath"]
     }
 }

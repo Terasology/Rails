@@ -8,7 +8,7 @@
         "icon": "Rails:minecart#minecart",
         "usage": "IN_DIRECTION"
     },
-    "CartDefinition": {
+    "Rails:CartDefinition": {
         "prefab" : "Rails:minecartVehicle"
     }
 }

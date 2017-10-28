@@ -81,7 +81,7 @@
         }
     },
     "cross": {
-         "tile" : "Rails:TrainTrack",
+        "tile" : "Rails:TrainTrack",
         "shape" : "engine:horizontalOffsetPlane",
         "tiles" : {
           "center" : "Rails:TrainTrackIntersection"
