@@ -156,7 +156,7 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
                 Block neighborBlock = worldProvider.getBlock(neighborLocation);
                 EntityRef blockEntity = blockEntityRegistry.getBlockEntityAt(neighborLocation);
                 if (blockEntity.hasComponent(RailComponent.class)) {
-                    RailsUpdateFamily railsFamily = (RailsUpdateFamily) blockManager.getBlockFamily("Rails:rails");
+                    RailsUpdateFamily railsFamily = (RailsUpdateFamily) neighborBlock.getBlockFamily();
                     Block neighborBlockAfterUpdate = railsFamily.getBlockForNeighborRailUpdate(worldProvider, blockEntityRegistry, neighborLocation, neighborBlock);
                     if (neighborBlock != neighborBlockAfterUpdate && neighborBlockAfterUpdate != null) {
                         byte connections = Byte.parseByte(neighborBlock.getURI().getIdentifier().toString());
