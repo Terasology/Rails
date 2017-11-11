@@ -20,14 +20,11 @@ import org.slf4j.LoggerFactory;
 import org.terasology.engine.Time;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.entitySystem.event.EventPriority;
-import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.prefab.Prefab;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
-import org.terasology.logic.characters.CharacterComponent;
 import org.terasology.logic.inventory.InventoryManager;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.logic.players.LocalPlayer;
@@ -36,20 +33,19 @@ import org.terasology.math.geom.Vector3f;
 import org.terasology.minecarts.Constants;
 import org.terasology.minecarts.Util;
 import org.terasology.minecarts.blocks.RailBlockSegmentMapper;
+import org.terasology.minecarts.blocks.RailComponent;
+import org.terasology.minecarts.components.RailVehicleComponent;
 import org.terasology.physics.HitResult;
 import org.terasology.physics.Physics;
 import org.terasology.physics.StandardCollisionGroup;
 import org.terasology.physics.components.RigidBodyComponent;
-import org.terasology.physics.events.CollideEvent;
-import org.terasology.minecarts.blocks.RailComponent;
-import org.terasology.minecarts.components.RailVehicleComponent;
+import org.terasology.registry.In;
+import org.terasology.rendering.logic.MeshComponent;
 import org.terasology.segmentedpaths.Segment;
 import org.terasology.segmentedpaths.components.PathDescriptorComponent;
 import org.terasology.segmentedpaths.components.SegmentEntityComponent;
 import org.terasology.segmentedpaths.controllers.SegmentCacheSystem;
 import org.terasology.segmentedpaths.controllers.SegmentSystem;
-import org.terasology.registry.In;
-import org.terasology.rendering.logic.MeshComponent;
 import org.terasology.world.BlockEntityRegistry;
 import org.terasology.world.WorldProvider;
 
@@ -93,6 +89,14 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
         for (EntityRef railVehicle : entityManager.getEntitiesWith(RailVehicleComponent.class, RigidBodyComponent.class)) {
             updateCart(railVehicle, delta);
         }
+    }
+
+    public Vector3f updateHeading(EntityRef railVehcile,Vector3f oldHeading){
+        SegmentEntityComponent segmentEntityComponent = railVehcile.getComponent(SegmentEntityComponent.class);
+        if(segmentEntityComponent != null){
+            return segmentEntityComponent.heading.project(oldHeading).normalize();
+        }
+        return null;
     }
 
     private void updateCart(EntityRef railVehicle, float delta) {

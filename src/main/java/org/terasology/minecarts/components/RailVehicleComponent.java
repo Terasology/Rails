@@ -17,15 +17,10 @@ package org.terasology.minecarts.components;
 
 
 import org.terasology.entitySystem.Component;
-import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.logic.location.Location;
-import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.network.FieldReplicateType;
 import org.terasology.network.Replicate;
 import org.terasology.network.ServerEvent;
-
-import java.util.List;
 
 @ServerEvent(lagCompensate = true)
 public class RailVehicleComponent implements Component {

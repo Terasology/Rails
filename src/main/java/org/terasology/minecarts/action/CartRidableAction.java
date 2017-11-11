@@ -20,10 +20,7 @@ import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
-import org.terasology.logic.characters.CharacterComponent;
-import org.terasology.logic.characters.CharacterMovementComponent;
 import org.terasology.logic.characters.MovementMode;
-import org.terasology.logic.characters.events.CollisionEvent;
 import org.terasology.logic.characters.events.SetMovementModeEvent;
 import org.terasology.logic.common.ActivateEvent;
 import org.terasology.logic.health.BeforeDestroyEvent;
@@ -31,14 +28,10 @@ import org.terasology.logic.location.Location;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.geom.Quat4f;
 import org.terasology.math.geom.Vector3f;
-import org.terasology.minecarts.components.CollisionFilterComponent;
+import org.terasology.minecarts.components.CartRidableComponent;
 import org.terasology.minecarts.controllers.CartImpulseSystem;
-import org.terasology.physics.CollisionGroup;
 import org.terasology.physics.StandardCollisionGroup;
 import org.terasology.physics.components.RigidBodyComponent;
-import org.terasology.minecarts.components.CartRidableComponent;
-import org.terasology.minecarts.components.RailVehicleComponent;
-import org.terasology.physics.events.CollideEvent;
 
 /**
  * Created by michaelpollind on 3/31/17.
