@@ -15,18 +15,24 @@
  */
 package org.terasology.minecarts.action;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.logic.common.ActivateEvent;
+import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.SideBitFlag;
 import org.terasology.math.geom.Vector3i;
+import org.terasology.minecarts.Constants;
+import org.terasology.minecarts.Util;
 import org.terasology.minecarts.blocks.RailComponent;
 import org.terasology.minecarts.blocks.RailsUpdateFamily;
 import org.terasology.minecarts.components.RailVehicleComponent;
 import org.terasology.minecarts.components.WrenchComponent;
+import org.terasology.physics.Physics;
 import org.terasology.registry.In;
 import org.terasology.world.BlockEntityRegistry;
 import org.terasology.world.WorldProvider;
@@ -34,11 +40,14 @@ import org.terasology.world.block.Block;
 import org.terasology.world.block.BlockComponent;
 import org.terasology.world.block.BlockManager;
 
+import java.util.Comparator;
+
 /**
  * Created by michaelpollind on 4/1/17.
  */
 @RegisterSystem(RegisterMode.AUTHORITY)
 public class WrenchAction extends BaseComponentSystem {
+    private static final Logger LOGGER = LoggerFactory.getLogger(WrenchAction.class);
 
     @In
     WorldProvider worldProvider;
@@ -46,6 +55,8 @@ public class WrenchAction extends BaseComponentSystem {
     BlockEntityRegistry blockEntityRegistry;
     @In
     BlockManager blockManager;
+    @In
+    Physics physics;
 
     @Override
     public void initialise() {
@@ -54,11 +65,42 @@ public class WrenchAction extends BaseComponentSystem {
     @ReceiveEvent(components = {WrenchComponent.class})
     public void onCartJoinAction(ActivateEvent event, EntityRef item)
     {
-        EntityRef targetEntity = event.getTarget();
-        if (!targetEntity.hasComponent(RailVehicleComponent.class))
+        EntityRef targetVehicle = event.getTarget();
+
+        if (!targetVehicle.hasComponent(RailVehicleComponent.class))
             return;
+
+        LOGGER.info("Cart Join action");
+
+        RailVehicleComponent railVehicleComponent = targetVehicle.getComponent(RailVehicleComponent.class);
+        LocationComponent locationComponent = targetVehicle.getComponent(LocationComponent.class);
+
+        EntityRef otherVehicle = findVehicleToJoin(railVehicleComponent, locationComponent);
+
+        if (otherVehicle == null) {
+            return;
+        }
     }
 
+
+    /**
+     * Gets the nearest rail vehicle not connected to this one, if any.
+     * @param railVehicleComponent
+     * @param locationComponent
+     * @return The {@link EntityRef} of the nearest rail vehicle
+     */
+    private EntityRef findVehicleToJoin(RailVehicleComponent railVehicleComponent,
+                                        LocationComponent locationComponent) {
+        return Util.getEntitiesNearPosition(physics, locationComponent.getWorldPosition(), Constants.MAX_VEHICLE_JOIN_DISTANCE)
+                .stream()
+                .filter(entityRef -> entityRef.hasComponent(RailVehicleComponent.class))
+                .min(Comparator.comparing(
+                        entityRef -> entityRef
+                                .getComponent(LocationComponent.class)
+                                .getWorldPosition().distanceSquared(locationComponent.getWorldPosition())
+                ))
+                .orElse(EntityRef.NULL);
+    }
 
     @ReceiveEvent(components = {WrenchComponent.class})
     public void onRailFlipAction(ActivateEvent event, EntityRef item)

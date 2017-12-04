@@ -24,4 +24,5 @@ public class Constants {
     public static final float BAUMGARTE_COFF = .1f;
     public static final float VELOCITY_CAP = 15f;
     public static final float PLAYER_MASS = 30f;
+    public static final float MAX_VEHICLE_JOIN_DISTANCE = 5f;
 }
