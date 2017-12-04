@@ -28,5 +28,5 @@ import java.util.List;
  */
 public class CollisionFilterComponent implements Component {
     @Replicate(FieldReplicateType.SERVER_TO_CLIENT)
-    public List<EntityRef> filter =  Lists.newArrayList();
+    public List<EntityRef> filter = Lists.newArrayList();
 }

@@ -63,8 +63,7 @@ public class WrenchAction extends BaseComponentSystem {
     }
 
     @ReceiveEvent(components = {WrenchComponent.class})
-    public void onCartJoinAction(ActivateEvent event, EntityRef item)
-    {
+    public void onCartJoinAction(ActivateEvent event, EntityRef item) {
         EntityRef targetVehicle = event.getTarget();
 
         if (!targetVehicle.hasComponent(RailVehicleComponent.class))
@@ -82,9 +81,9 @@ public class WrenchAction extends BaseComponentSystem {
         }
     }
 
-
     /**
      * Gets the nearest rail vehicle not connected to this one, if any.
+     *
      * @param railVehicleComponent
      * @param locationComponent
      * @return The {@link EntityRef} of the nearest rail vehicle
@@ -103,8 +102,7 @@ public class WrenchAction extends BaseComponentSystem {
     }
 
     @ReceiveEvent(components = {WrenchComponent.class})
-    public void onRailFlipAction(ActivateEvent event, EntityRef item)
-    {
+    public void onRailFlipAction(ActivateEvent event, EntityRef item) {
         EntityRef targetEntity = event.getTarget();
         if (!targetEntity.hasComponent(RailComponent.class))
             return;
@@ -119,7 +117,7 @@ public class WrenchAction extends BaseComponentSystem {
         byte connections = Byte.parseByte(block.getURI().getIdentifier().toString());
 
 
-        if(SideBitFlag.getSides(connections).size() == 3) {
+        if (SideBitFlag.getSides(connections).size() == 3) {
             if (block.getBlockFamily() == railFamily) {
                 blockEntityRegistry.setBlockForceUpdateEntity(position, invertFamily.getBlockByConnection(connections));
             } else if (block.getBlockFamily() == invertFamily) {
