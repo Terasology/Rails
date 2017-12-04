@@ -52,8 +52,7 @@ public class WrenchAction extends BaseComponentSystem {
     }
 
     @ReceiveEvent(components = {WrenchComponent.class})
-    public void onCartJoinAction(ActivateEvent event, EntityRef item)
-    {
+    public void onCartJoinAction(ActivateEvent event, EntityRef item) {
         EntityRef targetEntity = event.getTarget();
         if (!targetEntity.hasComponent(RailVehicleComponent.class))
             return;
@@ -61,8 +60,7 @@ public class WrenchAction extends BaseComponentSystem {
 
 
     @ReceiveEvent(components = {WrenchComponent.class})
-    public void onRailFlipAction(ActivateEvent event, EntityRef item)
-    {
+    public void onRailFlipAction(ActivateEvent event, EntityRef item) {
         EntityRef targetEntity = event.getTarget();
         if (!targetEntity.hasComponent(RailComponent.class))
             return;
@@ -77,7 +75,7 @@ public class WrenchAction extends BaseComponentSystem {
         byte connections = Byte.parseByte(block.getURI().getIdentifier().toString());
 
 
-        if(SideBitFlag.getSides(connections).size() == 3) {
+        if (SideBitFlag.getSides(connections).size() == 3) {
             if (block.getBlockFamily() == railFamily) {
                 blockEntityRegistry.setBlockForceUpdateEntity(position, invertFamily.getBlockByConnection(connections));
             } else if (block.getBlockFamily() == invertFamily) {

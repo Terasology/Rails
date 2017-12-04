@@ -127,7 +127,7 @@ public class CartImpulseSystem extends BaseComponentSystem implements UpdateSubs
         LocationComponent v2l = event.getOtherEntity().getComponent(LocationComponent.class);
 
 
-        Vector3f df = new Vector3f(v2l.getWorldPosition()).sub(v1l.getWorldPosition()).add(new Vector3f(Float.MIN_VALUE,Float.MIN_VALUE,Float.MIN_VALUE)).normalize();
+        Vector3f df = new Vector3f(v2l.getWorldPosition()).sub(v1l.getWorldPosition()).add(new Vector3f(Float.MIN_VALUE, Float.MIN_VALUE, Float.MIN_VALUE)).normalize();
 
         //calculate the half normal vector
         Vector3f halfNormal = new Vector3f(df);

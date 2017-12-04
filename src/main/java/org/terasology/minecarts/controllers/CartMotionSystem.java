@@ -91,9 +91,9 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
         }
     }
 
-    public Vector3f updateHeading(EntityRef railVehcile,Vector3f oldHeading){
+    public Vector3f updateHeading(EntityRef railVehcile, Vector3f oldHeading) {
         SegmentEntityComponent segmentEntityComponent = railVehcile.getComponent(SegmentEntityComponent.class);
-        if(segmentEntityComponent != null){
+        if (segmentEntityComponent != null) {
             return segmentEntityComponent.heading.project(oldHeading).normalize();
         }
         return null;
