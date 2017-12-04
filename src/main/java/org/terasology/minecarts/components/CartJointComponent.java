@@ -18,7 +18,7 @@ package org.terasology.minecarts.components;
 import org.terasology.math.geom.Vector3f;
 
 public class CartJointComponent {
-    public enum LocationJoint{
+    public enum LocationJoint {
         BACK,
         FRONT
     }

@@ -186,7 +186,6 @@ public class RailsFamilyFactory implements BlockFamilyFactory {
     }
 
 
-
     public static class RailsConnectionCondition implements ConnectionCondition {
         @Override
         public boolean isConnectingTo(Vector3i blockLocation, Side connectSide, WorldProvider worldProvider, BlockEntityRegistry blockEntityRegistry) {

@@ -53,7 +53,7 @@ public class RailBlockSegmentMapper implements SegmentMapping {
     @Override
     public SegmentPair nextSegment(SegmentEntityComponent vehicle, SegmentEnd ends) {
         BlockComponent blockComponent = vehicle.segmentEntity.getComponent(BlockComponent.class);
-        if(vehicle.segmentEntity.hasComponent(BlockComponent.class)) {
+        if (vehicle.segmentEntity.hasComponent(BlockComponent.class)) {
             BlockFamily blockFamily = blockComponent.getBlock().getBlockFamily();
 
             Vector3f v1 = segmentSystem.segmentPosition(vehicle.segmentEntity);
