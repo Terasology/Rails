@@ -18,9 +18,10 @@ package org.terasology.minecarts.components.joints;
 import org.terasology.entitySystem.Component;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 public class OccupiedCartJointSocketsComponent implements Component {
-    private EnumSet<CartJointSocketLocation> occupiedSocketLocations;
+    private Set<CartJointSocketLocation> occupiedSocketLocations;
 
     public OccupiedCartJointSocketsComponent() {
         occupiedSocketLocations = EnumSet.noneOf(CartJointSocketLocation.class);
@@ -31,11 +32,11 @@ public class OccupiedCartJointSocketsComponent implements Component {
     }
 
     public EnumSet<CartJointSocketLocation> getUnoccupiedSocketLocations() {
-        return EnumSet.complementOf(occupiedSocketLocations);
+        return EnumSet.complementOf(getOccupiedSocketLocations());
     }
 
     public EnumSet<CartJointSocketLocation> getOccupiedSocketLocations() {
-        return occupiedSocketLocations;
+        return EnumSet.copyOf(occupiedSocketLocations);
     }
 
     public void occupySocket(CartJointSocketLocation socketLocation) {
