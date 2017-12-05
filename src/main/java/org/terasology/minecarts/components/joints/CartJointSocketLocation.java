@@ -15,7 +15,38 @@
  */
 package org.terasology.minecarts.components.joints;
 
+import org.terasology.logic.location.LocationComponent;
+import org.terasology.math.geom.Vector3f;
+
+import java.util.Arrays;
+import java.util.Comparator;
+
 public enum CartJointSocketLocation {
-    FRONT,
-    REAR
+    FRONT(Vector3f.north()),
+    REAR(Vector3f.south());
+
+    private Vector3f direction;
+
+    CartJointSocketLocation(Vector3f direction) {
+        this.direction = direction;
+    }
+
+    /**
+     * Returns the {@link CartJointSocketLocation} for an entity that is most oriented towards another entity.
+     * @param entityLocation The {@link LocationComponent} for the entity.
+     * @param otherEntityLocation The {@link LocationComponent} for the other entity.
+     * @return The {@link CartJointSocketLocation} most oriented towards the other entity.
+     */
+    static CartJointSocketLocation getSocketLocationTowards(LocationComponent entityLocation,
+                                                            LocationComponent otherEntityLocation) {
+        Vector3f relativePosition = otherEntityLocation.getWorldPosition().sub(entityLocation.getWorldPosition());
+
+        return Arrays.stream(values())
+                .max(Comparator.comparing(socketLocation -> {
+                    Vector3f socketWorldDirection = entityLocation.getWorldRotation().rotate(socketLocation.direction);
+                    return socketWorldDirection.dot(relativePosition);
+                }))
+                // We should never not have a value in the Optional returned by max
+                .orElse(CartJointSocketLocation.FRONT);
+    }
 }
