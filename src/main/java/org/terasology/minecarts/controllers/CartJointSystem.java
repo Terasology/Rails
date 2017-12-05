@@ -17,6 +17,8 @@ package org.terasology.minecarts.controllers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.terasology.engine.GameEngine;
+import org.terasology.engine.modes.StateIngame;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
@@ -24,6 +26,7 @@ import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
 import org.terasology.logic.location.LocationComponent;
+import org.terasology.math.geom.Vector3f;
 import org.terasology.minecarts.Constants;
 import org.terasology.minecarts.components.RailVehicleComponent;
 import org.terasology.minecarts.components.joints.CartJointComponent;
@@ -43,7 +46,16 @@ public class CartJointSystem extends BaseComponentSystem implements UpdateSubscr
 
     @Override
     public void update(float delta) {
+        // HACK: Find better way to avoid loading game and in-menu updates
+        if (delta == 0.0f) {
+            return;
+        }
 
+        for (EntityRef jointEntity : entityManager.getEntitiesWith(CartJointComponent.class)) {
+            CartJointComponent joint = jointEntity.getComponent(CartJointComponent.class);
+
+            joint.applyImpulse();
+        }
     }
 
     private boolean isDesiredSocketUnoccupied(EntityRef vehicle,
