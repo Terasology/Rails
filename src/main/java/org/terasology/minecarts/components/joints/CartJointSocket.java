@@ -28,9 +28,6 @@ public class CartJointSocket {
     public Vector3f localSocketPoint;
     public EntityRef vehicle;
 
-    private CartJointSocket() {
-    }
-
     public static CartJointSocket createForVehicleAtLocation(EntityRef vehicle,
                                                              CartJointSocketLocation socketLocation) {
         CartJointSocket jointSocket = new CartJointSocket();
