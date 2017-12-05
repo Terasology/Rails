@@ -32,6 +32,7 @@ import org.terasology.minecarts.blocks.RailComponent;
 import org.terasology.minecarts.blocks.RailsUpdateFamily;
 import org.terasology.minecarts.components.RailVehicleComponent;
 import org.terasology.minecarts.components.WrenchComponent;
+import org.terasology.minecarts.controllers.CartJointSystem;
 import org.terasology.registry.In;
 import org.terasology.world.BlockEntityRegistry;
 import org.terasology.world.WorldProvider;
@@ -53,11 +54,7 @@ public class WrenchAction extends BaseComponentSystem {
     @In
     BlockManager blockManager;
     @In
-    EntityManager entityManager;
-
-    @Override
-    public void initialise() {
-    }
+    CartJointSystem cartJointSystem;
 
     @ReceiveEvent(components = {WrenchComponent.class})
     public void onCartJoinAction(ActivateEvent event, EntityRef item) {
@@ -66,48 +63,7 @@ public class WrenchAction extends BaseComponentSystem {
         if (!targetVehicle.hasComponent(RailVehicleComponent.class))
             return;
 
-        RailVehicleComponent railVehicleComponent = targetVehicle.getComponent(RailVehicleComponent.class);
-        LocationComponent locationComponent = targetVehicle.getComponent(LocationComponent.class);
-
-        EntityRef otherVehicle = findVehicleToJoin(targetVehicle, locationComponent);
-
-        if (otherVehicle.equals(EntityRef.NULL)) {
-            LOGGER.info("No joinable vehicle found");
-            return;
-        }
-
-        LOGGER.info("Found joinable vehicle");
-    }
-
-    /**
-     * Gets the nearest rail vehicle not connected to this one, if any.
-     *
-     * @param railVehicle
-     * @param locationComponent
-     * @return The {@link EntityRef} of the nearest rail vehicle
-     */
-    private EntityRef findVehicleToJoin(EntityRef railVehicle,
-                                        LocationComponent locationComponent) {
-        // TODO: Find better way, possibly querying the physics engine
-        EntityRef closestVehicle = EntityRef.NULL;
-        float minSqrDistance = Float.POSITIVE_INFINITY;
-
-        for (EntityRef otherVehicle : entityManager.getEntitiesWith(RailVehicleComponent.class)) {
-            if (railVehicle.equals(otherVehicle)) {
-                continue;
-            }
-
-            float sqrDistance = otherVehicle.getComponent(LocationComponent.class).getWorldPosition()
-                    .distanceSquared(locationComponent.getWorldPosition());
-
-            if (sqrDistance < Constants.MAX_VEHICLE_JOIN_DISTANCE * Constants.MAX_VEHICLE_JOIN_DISTANCE
-                    && sqrDistance < minSqrDistance) {
-                minSqrDistance = sqrDistance;
-                closestVehicle = otherVehicle;
-            }
-        }
-
-        return closestVehicle;
+        cartJointSystem.attachVehicleToNearbyVehicle(targetVehicle);
     }
 
     @ReceiveEvent(components = {WrenchComponent.class})
