@@ -16,13 +16,34 @@
 package org.terasology.minecarts.components.joints;
 
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.math.AABB;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.reflection.MappedContainer;
+import org.terasology.rendering.logic.MeshComponent;
 
 @MappedContainer
 public class CartJointSocket {
 
-    public CartJointSocketLocation jointEndLocation;
-    public Vector3f point;
+    public CartJointSocketLocation socketLocation;
+    public Vector3f localSocketPoint;
     public EntityRef vehicle;
+
+    private CartJointSocket() {
+    }
+
+    public static CartJointSocket createForVehicleAtLocation(EntityRef vehicle,
+                                                             CartJointSocketLocation socketLocation) {
+        CartJointSocket jointSocket = new CartJointSocket();
+
+        AABB aabb = vehicle.getComponent(MeshComponent.class).mesh.getAABB();
+
+        // Get farthest localSocketPoint along socket location direction on AABB
+        // TODO: Replace with something better?
+        jointSocket.localSocketPoint = aabb.centerPointForNormal(socketLocation.getDirection());
+
+        jointSocket.socketLocation = socketLocation;
+        jointSocket.vehicle = vehicle;
+
+        return jointSocket;
+    }
 }
