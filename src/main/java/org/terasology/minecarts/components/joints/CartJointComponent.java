@@ -20,4 +20,9 @@ import org.terasology.entitySystem.Component;
 public class CartJointComponent implements Component {
     public CartJointSocket jointEndA;
     public CartJointSocket jointEndB;
+
+    public CartJointComponent(CartJointSocket jointEndA, CartJointSocket jointEndB) {
+        this.jointEndA = jointEndA;
+        this.jointEndB = jointEndB;
+    }
 }
