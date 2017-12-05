@@ -20,5 +20,29 @@ import org.terasology.entitySystem.Component;
 import java.util.EnumSet;
 
 public class OccupiedCartJointSocketsComponent implements Component {
-    public EnumSet<CartJointSocketLocation> occupiedLocations = EnumSet.noneOf(CartJointSocketLocation.class);
+    private EnumSet<CartJointSocketLocation> occupiedSocketLocations;
+
+    public OccupiedCartJointSocketsComponent() {
+        occupiedSocketLocations = EnumSet.noneOf(CartJointSocketLocation.class);
+    }
+
+    public boolean areAllSocketsOccupied() {
+        return !occupiedSocketLocations.containsAll(EnumSet.allOf(CartJointSocketLocation.class));
+    }
+
+    public EnumSet<CartJointSocketLocation> getUnoccupiedSocketLocations() {
+        return EnumSet.complementOf(occupiedSocketLocations);
+    }
+
+    public EnumSet<CartJointSocketLocation> getOccupiedSocketLocations() {
+        return occupiedSocketLocations;
+    }
+
+    public void occupySocket(CartJointSocketLocation socketLocation) {
+        occupiedSocketLocations.add(socketLocation);
+    }
+
+    public void unoccupySocket(CartJointSocketLocation socketLocation) {
+        occupiedSocketLocations.remove(socketLocation);
+    }
 }
