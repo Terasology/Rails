@@ -44,8 +44,8 @@ public class CartJointSystem extends BaseComponentSystem implements UpdateSubscr
 
     }
 
-    private boolean hasDesiredJointSocketUnoccupied(EntityRef vehicle,
-                                                    CartJointSocketLocation desiredSocketLocation) {
+    private boolean isDesiredSocketUnoccupied(EntityRef vehicle,
+                                              CartJointSocketLocation desiredSocketLocation) {
         if (!vehicle.hasComponent(OccupiedCartJointSocketsComponent.class)) {
             vehicle.addComponent(new OccupiedCartJointSocketsComponent());
         }
@@ -78,8 +78,8 @@ public class CartJointSystem extends BaseComponentSystem implements UpdateSubscr
         );
 
 
-        if (!hasDesiredJointSocketUnoccupied(vehicleA, socketLocationA) ||
-                !hasDesiredJointSocketUnoccupied(vehicleB, socketLocationB)) {
+        if (!isDesiredSocketUnoccupied(vehicleA, socketLocationA) ||
+                !isDesiredSocketUnoccupied(vehicleB, socketLocationB)) {
             return false;
         }
 
@@ -129,8 +129,8 @@ public class CartJointSystem extends BaseComponentSystem implements UpdateSubscr
             );
 
 
-            if (!hasDesiredJointSocketUnoccupied(vehicle, socketLocation) ||
-                    !hasDesiredJointSocketUnoccupied(otherVehicle, otherSocketLocation)) {
+            if (!isDesiredSocketUnoccupied(vehicle, socketLocation) ||
+                    !isDesiredSocketUnoccupied(otherVehicle, otherSocketLocation)) {
                continue;
             }
 
