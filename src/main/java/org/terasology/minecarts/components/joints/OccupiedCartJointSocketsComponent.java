@@ -13,17 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.minecarts.components;
+package org.terasology.minecarts.components.joints;
 
-import org.terasology.math.geom.Vector3f;
+import org.terasology.entitySystem.Component;
 
-public class CartJointComponent {
-    public enum LocationJoint {
-        BACK,
-        FRONT
-    }
+import java.util.EnumSet;
 
-    public LocationJoint joinType;
-    public Vector3f offset;
-
+public class OccupiedCartJointSocketsComponent implements Component {
+    public EnumSet<CartJointSocketLocation> occupiedLocations = EnumSet.noneOf(CartJointSocketLocation.class);
 }
