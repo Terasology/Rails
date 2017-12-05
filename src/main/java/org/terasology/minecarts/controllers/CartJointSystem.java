@@ -31,8 +31,10 @@ import org.terasology.minecarts.components.joints.CartJointSocket;
 import org.terasology.minecarts.components.joints.CartJointSocketLocation;
 import org.terasology.minecarts.components.joints.OccupiedCartJointSocketsComponent;
 import org.terasology.registry.In;
+import org.terasology.registry.Share;
 
 @RegisterSystem(RegisterMode.AUTHORITY)
+@Share(CartJointSystem.class)
 public class CartJointSystem extends BaseComponentSystem implements UpdateSubscriberSystem {
     private static final Logger LOGGER = LoggerFactory.getLogger(CartJointSystem.class);
 
@@ -77,13 +79,14 @@ public class CartJointSystem extends BaseComponentSystem implements UpdateSubscr
                 vehicleLocationA
         );
 
-
         if (!isDesiredSocketUnoccupied(vehicleA, socketLocationA) ||
                 !isDesiredSocketUnoccupied(vehicleB, socketLocationB)) {
+            LOGGER.info("Desired socket was unoccupied");
             return false;
         }
 
         createJointEntityFor(vehicleA, socketLocationA, vehicleB, socketLocationB);
+        LOGGER.info("Created joint entity!");
         return true;
     }
 
@@ -91,8 +94,11 @@ public class CartJointSystem extends BaseComponentSystem implements UpdateSubscr
         EntityRef nearbyVehicle = findNearbyJoinableVehicle(vehicle);
 
         if (nearbyVehicle.equals(EntityRef.NULL)) {
+            LOGGER.info("Nearby joinable vehicle not found");
             return false;
         }
+
+        LOGGER.info("Nearby joinable vehicle found!");
 
         return attachVehicles(vehicle, nearbyVehicle);
     }

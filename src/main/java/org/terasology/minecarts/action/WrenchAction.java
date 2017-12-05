@@ -63,7 +63,11 @@ public class WrenchAction extends BaseComponentSystem {
         if (!targetVehicle.hasComponent(RailVehicleComponent.class))
             return;
 
-        cartJointSystem.attachVehicleToNearbyVehicle(targetVehicle);
+        LOGGER.info("Attaching...");
+
+        if (!cartJointSystem.attachVehicleToNearbyVehicle(targetVehicle)) {
+            LOGGER.info("Did not attach to nearby vehicle");
+        }
     }
 
     @ReceiveEvent(components = {WrenchComponent.class})
