@@ -117,6 +117,23 @@ public class CartJointSystem extends BaseComponentSystem implements UpdateSubscr
 
             LocationComponent otherLocationComponent = otherVehicle.getComponent(LocationComponent.class);
 
+            // If we cannot join this vehicle because of unavailable sockets, skip to the next one
+            CartJointSocketLocation socketLocation = CartJointSocketLocation.getSocketLocationTowards(
+                    locationComponent,
+                    otherLocationComponent
+            );
+
+            CartJointSocketLocation otherSocketLocation = CartJointSocketLocation.getSocketLocationTowards(
+                    otherLocationComponent,
+                    locationComponent
+            );
+
+
+            if (!hasDesiredJointSocketUnoccupied(vehicle, socketLocation) ||
+                    !hasDesiredJointSocketUnoccupied(otherVehicle, otherSocketLocation)) {
+               continue;
+            }
+
             float sqrDistance = otherLocationComponent.getWorldPosition()
                     .distanceSquared(locationComponent.getWorldPosition());
 
