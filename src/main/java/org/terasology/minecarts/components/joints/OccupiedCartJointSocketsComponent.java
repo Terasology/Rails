@@ -21,7 +21,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 public class OccupiedCartJointSocketsComponent implements Component {
-    private Set<CartJointSocketLocation> occupiedSocketLocations;
+    public Set<CartJointSocketLocation> occupiedSocketLocations;
 
     public OccupiedCartJointSocketsComponent() {
         occupiedSocketLocations = EnumSet.noneOf(CartJointSocketLocation.class);
@@ -36,6 +36,10 @@ public class OccupiedCartJointSocketsComponent implements Component {
     }
 
     public EnumSet<CartJointSocketLocation> getOccupiedSocketLocations() {
+        if (occupiedSocketLocations.isEmpty()) {
+            return EnumSet.noneOf(CartJointSocketLocation.class);
+        }
+
         return EnumSet.copyOf(occupiedSocketLocations);
     }
 
