@@ -44,6 +44,11 @@ public class CartJointSocket {
         jointSocket.socketLocation = socketLocation;
         jointSocket.vehicle = vehicle;
 
+        OccupiedCartJointSocketsComponent occupiedCartJointSocketsComponent =
+                vehicle.getComponent(OccupiedCartJointSocketsComponent.class);
+
+        occupiedCartJointSocketsComponent.occupySocket(socketLocation);
+
         return jointSocket;
     }
 }
