@@ -87,6 +87,16 @@ public class CartJointSystem extends BaseComponentSystem implements UpdateSubscr
         return true;
     }
 
+    public boolean attachVehicleToNearbyVehicle(EntityRef vehicle) {
+        EntityRef nearbyVehicle = findVehicleToJoin(vehicle, vehicle.getComponent(LocationComponent.class));
+
+        if (nearbyVehicle.equals(EntityRef.NULL)) {
+            return false;
+        }
+
+        return attachVehicles(vehicle, nearbyVehicle);
+    }
+
     /**
      * Gets the nearest rail vehicle not connected to this one, if any.
      *
