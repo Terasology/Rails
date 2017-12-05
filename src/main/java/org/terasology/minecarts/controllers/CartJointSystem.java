@@ -88,7 +88,7 @@ public class CartJointSystem extends BaseComponentSystem implements UpdateSubscr
     }
 
     public boolean attachVehicleToNearbyVehicle(EntityRef vehicle) {
-        EntityRef nearbyVehicle = findVehicleToJoin(vehicle, vehicle.getComponent(LocationComponent.class));
+        EntityRef nearbyVehicle = findNearbyJoinableVehicle(vehicle);
 
         if (nearbyVehicle.equals(EntityRef.NULL)) {
             return false;
@@ -98,24 +98,26 @@ public class CartJointSystem extends BaseComponentSystem implements UpdateSubscr
     }
 
     /**
-     * Gets the nearest rail vehicle not connected to this one, if any.
+     * Gets the nearest rail vehicle that can be connected to this one, if any.
      *
-     * @param railVehicle
-     * @param locationComponent
+     * @param vehicle
      * @return The {@link EntityRef} of the nearest rail vehicle
      */
-    private EntityRef findVehicleToJoin(EntityRef railVehicle,
-                                        LocationComponent locationComponent) {
+    private EntityRef findNearbyJoinableVehicle(EntityRef vehicle) {
+        LocationComponent locationComponent = vehicle.getComponent(LocationComponent.class);
+
         // TODO: Find better way, possibly querying the physics engine
         EntityRef closestVehicle = EntityRef.NULL;
         float minSqrDistance = Float.POSITIVE_INFINITY;
 
         for (EntityRef otherVehicle : entityManager.getEntitiesWith(RailVehicleComponent.class)) {
-            if (railVehicle.equals(otherVehicle)) {
+            if (vehicle.equals(otherVehicle)) {
                 continue;
             }
 
-            float sqrDistance = otherVehicle.getComponent(LocationComponent.class).getWorldPosition()
+            LocationComponent otherLocationComponent = otherVehicle.getComponent(LocationComponent.class);
+
+            float sqrDistance = otherLocationComponent.getWorldPosition()
                     .distanceSquared(locationComponent.getWorldPosition());
 
             if (sqrDistance < Constants.MAX_VEHICLE_JOIN_DISTANCE * Constants.MAX_VEHICLE_JOIN_DISTANCE
