@@ -53,13 +53,16 @@ public class CartJointComponent implements Component {
         Vector3f normal = otherLocation.getWorldPosition().sub(location.getWorldPosition());
         float distance = normal.length();
 
-        float relVelAlongNormal = otherRailVehicle.velocity.dot(otherSegmentVehicle.heading) - railVehicle.velocity.dot(segmentVehicle.heading);
+        Vector3f projectedNormal = segmentVehicle.heading.project(normal).normalize();
+        Vector3f otherProjectedNormal = otherSegmentVehicle.heading.project(normal).normalize();
+
+        float relVelAlongNormal = otherRailVehicle.velocity.dot(otherProjectedNormal) - railVehicle.velocity.dot(projectedNormal);
         float inverseMassSum = 1 / rigidBody.mass + 1 / otherRigidBody.mass;
         float bias = (Constants.BAUMGARTE_COFF / delta) * (distance - Constants.JOINT_DISTANCE);
         float j = -(relVelAlongNormal + bias) / inverseMassSum;
 
-        railVehicle.velocity.sub(new Vector3f(segmentVehicle.heading).mul(j / rigidBody.mass));
-        otherRailVehicle.velocity.add(new Vector3f(otherSegmentVehicle.heading).mul(j / otherRigidBody.mass));
+        railVehicle.velocity.sub(new Vector3f(projectedNormal).mul(j / rigidBody.mass));
+        otherRailVehicle.velocity.add(new Vector3f(otherProjectedNormal).mul(j / otherRigidBody.mass));
 
         vehicle.saveComponent(railVehicle);
         otherVehicle.saveComponent(otherRailVehicle);
