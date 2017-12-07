@@ -25,4 +25,6 @@ public class Constants {
     public static final float VELOCITY_CAP = 15f;
     public static final float PLAYER_MASS = 30f;
     public static final float MAX_VEHICLE_JOIN_DISTANCE = 5f;
+    // TODO: Make configurable?
+    public static final float JOINT_DISTANCE = 1.4f;
 }

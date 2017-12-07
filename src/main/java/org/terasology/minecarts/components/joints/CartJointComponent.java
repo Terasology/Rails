@@ -20,15 +20,11 @@ import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.minecarts.Constants;
-import org.terasology.minecarts.Util;
 import org.terasology.minecarts.components.RailVehicleComponent;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.segmentedpaths.components.SegmentEntityComponent;
 
 public class CartJointComponent implements Component {
-    // TODO: Make configurable?
-    public static final float JOINT_DISTANCE = 1.4f;
-
     public CartJointSocket frontJointSocket;
     public CartJointSocket rearJointSocket;
 
@@ -81,7 +77,7 @@ public class CartJointComponent implements Component {
 
         float relVelAlongNormal = otherRailVehicle.velocity.dot(otherSegmentVehicle.heading) - railVehicle.velocity.dot(segmentVehicle.heading);
         float inverseMassSum = 1 / rigidBody.mass + 1 / otherRigidBody.mass;
-        float bias = (Constants.BAUMGARTE_COFF / delta) * (distance - JOINT_DISTANCE);
+        float bias = (Constants.BAUMGARTE_COFF / delta) * (distance - Constants.JOINT_DISTANCE);
         float j = -(relVelAlongNormal + bias) / inverseMassSum;
 
         railVehicle.velocity.sub(new Vector3f(segmentVehicle.heading).mul(j / rigidBody.mass));
