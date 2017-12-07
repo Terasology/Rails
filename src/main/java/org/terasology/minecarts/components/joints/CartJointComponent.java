@@ -27,7 +27,7 @@ import org.terasology.segmentedpaths.components.SegmentEntityComponent;
 
 public class CartJointComponent implements Component {
     // TODO: Make configurable?
-    public static final float JOINT_DISTANCE = 1.0f;
+    public static final float JOINT_DISTANCE = 1.4f;
 
     public CartJointSocket frontJointSocket;
     public CartJointSocket rearJointSocket;
@@ -76,10 +76,7 @@ public class CartJointComponent implements Component {
         RigidBodyComponent rigidBody = vehicle.getComponent(RigidBodyComponent.class);
         RigidBodyComponent otherRigidBody = otherVehicle.getComponent(RigidBodyComponent.class);
 
-        Vector3f worldSocketPoint = Util.localToWorldPosition(socket.localSocketPoint, location);
-        Vector3f worldOtherSocketPoint = Util.localToWorldPosition(otherSocket.localSocketPoint, otherLocation);
-
-        Vector3f normal = worldOtherSocketPoint.sub(worldSocketPoint);
+        Vector3f normal = otherLocation.getWorldPosition().sub(location.getWorldPosition());
         float distance = normal.length();
 
         float relVelAlongNormal = otherRailVehicle.velocity.dot(otherSegmentVehicle.heading) - railVehicle.velocity.dot(segmentVehicle.heading);
