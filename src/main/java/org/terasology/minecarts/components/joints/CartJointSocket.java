@@ -16,10 +16,7 @@
 package org.terasology.minecarts.components.joints;
 
 import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.math.AABB;
-import org.terasology.math.geom.Vector3f;
 import org.terasology.reflection.MappedContainer;
-import org.terasology.rendering.logic.MeshComponent;
 
 @MappedContainer
 public class CartJointSocket {
@@ -32,13 +29,9 @@ public class CartJointSocket {
         return connectingVehicle.getComponent(CartJointComponent.class).getJointSocketAt(connectingSocketLocation);
     }
 
-    public static CartJointSocket connectToVehicle(
-            EntityRef vehicle, CartJointSocketLocation socketLocation,
-            CartJointSocketLocation connectingSocketLocation
-    ) {
+    public static CartJointSocket connectToVehicle(EntityRef vehicle,
+                                                   CartJointSocketLocation connectingSocketLocation) {
         CartJointSocket jointSocket = new CartJointSocket();
-
-        AABB aabb = vehicle.getComponent(MeshComponent.class).mesh.getAABB();
 
         jointSocket.connectingSocketLocation = connectingSocketLocation;
         jointSocket.connectingVehicle = vehicle;

@@ -90,10 +90,10 @@ public class CartJointSystem extends BaseComponentSystem implements UpdateSubscr
     private void addJointSocketsTo(EntityRef vehicleA, CartJointSocketLocation socketLocationA,
                                    EntityRef vehicleB, CartJointSocketLocation socketLocationB) {
         CartJointSocket socketA = CartJointSocket.connectToVehicle(
-                vehicleB, socketLocationA, socketLocationB
+                vehicleB, socketLocationB
         );
         CartJointSocket socketB = CartJointSocket.connectToVehicle(
-                vehicleA, socketLocationB, socketLocationA
+                vehicleA, socketLocationA
         );
 
         setJointSocketAt(vehicleA, socketA, socketLocationA);
