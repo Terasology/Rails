@@ -27,11 +27,11 @@ public class CartJointSocket {
     public Vector3f localSocketPoint;
 
     public EntityRef connectingVehicle;
-    public CartJointSocketLocation complementSocketLocation;
+    public CartJointSocketLocation connectingSocketLocation;
 
     public static CartJointSocket connectToVehicle(
             EntityRef vehicle, CartJointSocketLocation socketLocation,
-            CartJointSocketLocation complementSocketLocation
+            CartJointSocketLocation connectingSocketLocation
     ) {
         CartJointSocket jointSocket = new CartJointSocket();
 
@@ -41,7 +41,7 @@ public class CartJointSocket {
         // TODO: Replace with something better?
         jointSocket.localSocketPoint = aabb.centerPointForNormal(socketLocation.getDirection());
 
-        jointSocket.complementSocketLocation = complementSocketLocation;
+        jointSocket.connectingSocketLocation = connectingSocketLocation;
         jointSocket.connectingVehicle = vehicle;
 
         return jointSocket;
