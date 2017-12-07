@@ -24,12 +24,15 @@ import org.terasology.rendering.logic.MeshComponent;
 @MappedContainer
 public class CartJointSocket {
 
-    public CartJointSocketLocation socketLocation;
     public Vector3f localSocketPoint;
-    public EntityRef vehicle;
 
-    public static CartJointSocket createForVehicleAtLocation(EntityRef vehicle,
-                                                             CartJointSocketLocation socketLocation) {
+    public EntityRef connectingVehicle;
+    public CartJointSocketLocation complementSocketLocation;
+
+    public static CartJointSocket connectToVehicle(
+            EntityRef vehicle, CartJointSocketLocation socketLocation,
+            CartJointSocketLocation complementSocketLocation
+    ) {
         CartJointSocket jointSocket = new CartJointSocket();
 
         AABB aabb = vehicle.getComponent(MeshComponent.class).mesh.getAABB();
@@ -38,13 +41,8 @@ public class CartJointSocket {
         // TODO: Replace with something better?
         jointSocket.localSocketPoint = aabb.centerPointForNormal(socketLocation.getDirection());
 
-        jointSocket.socketLocation = socketLocation;
-        jointSocket.vehicle = vehicle;
-
-        OccupiedCartJointSocketsComponent occupiedCartJointSocketsComponent =
-                vehicle.getComponent(OccupiedCartJointSocketsComponent.class);
-
-        occupiedCartJointSocketsComponent.occupySocket(socketLocation);
+        jointSocket.complementSocketLocation = complementSocketLocation;
+        jointSocket.connectingVehicle = vehicle;
 
         return jointSocket;
     }

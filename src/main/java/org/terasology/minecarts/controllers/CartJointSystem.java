@@ -17,8 +17,6 @@ package org.terasology.minecarts.controllers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.terasology.engine.GameEngine;
-import org.terasology.engine.modes.StateIngame;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
@@ -26,13 +24,11 @@ import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
 import org.terasology.logic.location.LocationComponent;
-import org.terasology.math.geom.Vector3f;
 import org.terasology.minecarts.Constants;
 import org.terasology.minecarts.components.RailVehicleComponent;
 import org.terasology.minecarts.components.joints.CartJointComponent;
 import org.terasology.minecarts.components.joints.CartJointSocket;
 import org.terasology.minecarts.components.joints.CartJointSocketLocation;
-import org.terasology.minecarts.components.joints.OccupiedCartJointSocketsComponent;
 import org.terasology.registry.In;
 import org.terasology.registry.Share;
 
@@ -60,21 +56,36 @@ public class CartJointSystem extends BaseComponentSystem implements UpdateSubscr
 
     private boolean isDesiredSocketUnoccupied(EntityRef vehicle,
                                               CartJointSocketLocation desiredSocketLocation) {
-        if (!vehicle.hasComponent(OccupiedCartJointSocketsComponent.class)) {
-            vehicle.addComponent(new OccupiedCartJointSocketsComponent());
+        if (!vehicle.hasComponent(CartJointComponent.class)) {
+            return true;
         }
-
-        return vehicle
-                .getComponent(OccupiedCartJointSocketsComponent.class)
-                .getUnoccupiedSocketLocations()
-                .contains(desiredSocketLocation);
+        return vehicle.getComponent(CartJointComponent.class).getJointSocketAt(desiredSocketLocation) == null;
     }
 
-    private void createJointEntityFor(EntityRef vehicleA, CartJointSocketLocation socketLocationA, EntityRef vehicleB, CartJointSocketLocation socketLocationB) {
-        CartJointSocket socketA = CartJointSocket.createForVehicleAtLocation(vehicleA, socketLocationA);
-        CartJointSocket socketB = CartJointSocket.createForVehicleAtLocation(vehicleB, socketLocationB);
+    private void setJointSocketAt(EntityRef vehicle, CartJointSocket jointSocket,
+                                  CartJointSocketLocation socketLocation) {
+        CartJointComponent cartJointComponent = vehicle.getComponent(CartJointComponent.class);
 
-        entityManager.create(new CartJointComponent(socketA, socketB));
+        if (cartJointComponent == null) {
+            cartJointComponent = new CartJointComponent();
+        }
+
+        cartJointComponent.setJointSocketAt(jointSocket, socketLocation);
+
+        vehicle.addOrSaveComponent(cartJointComponent);
+    }
+
+    private void addJointSocketsTo(EntityRef vehicleA, CartJointSocketLocation socketLocationA,
+                                   EntityRef vehicleB, CartJointSocketLocation socketLocationB) {
+        CartJointSocket socketA = CartJointSocket.connectToVehicle(
+                vehicleA, socketLocationA, socketLocationB
+        );
+        CartJointSocket socketB = CartJointSocket.connectToVehicle(
+                vehicleB, socketLocationB, socketLocationA
+        );
+
+        setJointSocketAt(vehicleA, socketA, socketLocationA);
+        setJointSocketAt(vehicleB, socketB, socketLocationB);
     }
 
     public boolean attachVehicles(EntityRef vehicleA, EntityRef vehicleB) {
@@ -97,8 +108,8 @@ public class CartJointSystem extends BaseComponentSystem implements UpdateSubscr
             return false;
         }
 
-        createJointEntityFor(vehicleA, socketLocationA, vehicleB, socketLocationB);
-        LOGGER.info("Created joint entity!");
+        addJointSocketsTo(vehicleA, socketLocationA, vehicleB, socketLocationB);
+        LOGGER.info("Joined vehicles!");
         return true;
     }
 
@@ -149,7 +160,7 @@ public class CartJointSystem extends BaseComponentSystem implements UpdateSubscr
 
             if (!isDesiredSocketUnoccupied(vehicle, socketLocation) ||
                     !isDesiredSocketUnoccupied(otherVehicle, otherSocketLocation)) {
-               continue;
+                continue;
             }
 
             float sqrDistance = otherLocationComponent.getWorldPosition()
