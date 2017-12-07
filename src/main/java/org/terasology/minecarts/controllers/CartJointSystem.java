@@ -96,9 +96,6 @@ public class CartJointSystem extends BaseComponentSystem implements UpdateSubscr
                 vehicleA, socketLocationB, socketLocationA
         );
 
-        LOGGER.info(socketA.connectingSocketLocation.toString() + ", " + socketLocationB.toString());
-        LOGGER.info(socketB.connectingSocketLocation.toString() + ", " + socketLocationA.toString());
-
         setJointSocketAt(vehicleA, socketA, socketLocationA);
         setJointSocketAt(vehicleB, socketB, socketLocationB);
     }
