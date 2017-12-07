@@ -23,9 +23,6 @@ import org.terasology.rendering.logic.MeshComponent;
 
 @MappedContainer
 public class CartJointSocket {
-
-    public Vector3f localSocketPoint;
-
     public EntityRef connectingVehicle;
     public CartJointSocketLocation connectingSocketLocation;
 
@@ -42,10 +39,6 @@ public class CartJointSocket {
         CartJointSocket jointSocket = new CartJointSocket();
 
         AABB aabb = vehicle.getComponent(MeshComponent.class).mesh.getAABB();
-
-        // Get farthest localSocketPoint along socket location direction on AABB
-        // TODO: Replace with something better?
-        jointSocket.localSocketPoint = aabb.centerPointForNormal(socketLocation.getDirection());
 
         jointSocket.connectingSocketLocation = connectingSocketLocation;
         jointSocket.connectingVehicle = vehicle;
