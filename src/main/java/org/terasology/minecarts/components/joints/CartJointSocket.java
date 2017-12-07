@@ -25,10 +25,6 @@ public class CartJointSocket {
 
     public boolean hasImpulseBeenApplied;
 
-    public CartJointSocket getConnectingSocket() {
-        return connectingVehicle.getComponent(CartJointComponent.class).getJointSocketAt(connectingSocketLocation);
-    }
-
     public static CartJointSocket connectToVehicle(EntityRef vehicle,
                                                    CartJointSocketLocation connectingSocketLocation) {
         CartJointSocket jointSocket = new CartJointSocket();
@@ -37,5 +33,9 @@ public class CartJointSocket {
         jointSocket.connectingVehicle = vehicle;
 
         return jointSocket;
+    }
+
+    public CartJointSocket getConnectingSocket() {
+        return connectingVehicle.getComponent(CartJointComponent.class).getJointSocketAt(connectingSocketLocation);
     }
 }

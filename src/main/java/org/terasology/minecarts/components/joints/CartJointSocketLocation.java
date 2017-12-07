@@ -33,12 +33,13 @@ public enum CartJointSocketLocation {
 
     /**
      * Returns the {@link CartJointSocketLocation} for an entity that is most oriented towards another entity.
-     * @param entityLocation The {@link LocationComponent} for the entity.
+     *
+     * @param entityLocation      The {@link LocationComponent} for the entity.
      * @param otherEntityLocation The {@link LocationComponent} for the other entity.
      * @return The {@link CartJointSocketLocation} most oriented towards the other entity.
      */
     public static CartJointSocketLocation getSocketLocationTowards(LocationComponent entityLocation,
-                                                            LocationComponent otherEntityLocation) {
+                                                                   LocationComponent otherEntityLocation) {
         Vector3f relativePosition = otherEntityLocation.getWorldPosition().sub(entityLocation.getWorldPosition());
 
         return Arrays.stream(values())

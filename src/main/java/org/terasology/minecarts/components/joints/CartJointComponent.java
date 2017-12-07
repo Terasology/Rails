@@ -28,28 +28,6 @@ public class CartJointComponent implements Component {
     public CartJointSocket frontJointSocket;
     public CartJointSocket rearJointSocket;
 
-    public CartJointSocket getJointSocketAt(CartJointSocketLocation socketLocation) {
-        CartJointSocket socket = frontJointSocket;
-
-        switch (socketLocation) {
-            case REAR:
-                socket = rearJointSocket;
-        }
-
-        return socket;
-    }
-
-    public void setJointSocketAt(CartJointSocket socket, CartJointSocketLocation socketLocation) {
-        switch (socketLocation) {
-            case FRONT:
-                frontJointSocket = socket;
-                break;
-            case REAR:
-                rearJointSocket = socket;
-                break;
-        }
-    }
-
     private static void applySocketImpulse(CartJointSocket socket, float delta) {
         CartJointSocket otherSocket = socket.getConnectingSocket();
 
@@ -88,6 +66,28 @@ public class CartJointComponent implements Component {
 
         socket.hasImpulseBeenApplied = true;
         otherSocket.hasImpulseBeenApplied = true;
+    }
+
+    public CartJointSocket getJointSocketAt(CartJointSocketLocation socketLocation) {
+        CartJointSocket socket = frontJointSocket;
+
+        switch (socketLocation) {
+            case REAR:
+                socket = rearJointSocket;
+        }
+
+        return socket;
+    }
+
+    public void setJointSocketAt(CartJointSocket socket, CartJointSocketLocation socketLocation) {
+        switch (socketLocation) {
+            case FRONT:
+                frontJointSocket = socket;
+                break;
+            case REAR:
+                rearJointSocket = socket;
+                break;
+        }
     }
 
     public void applyImpulse(float delta) {
