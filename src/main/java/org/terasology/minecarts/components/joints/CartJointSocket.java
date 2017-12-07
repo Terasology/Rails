@@ -29,6 +29,12 @@ public class CartJointSocket {
     public EntityRef connectingVehicle;
     public CartJointSocketLocation connectingSocketLocation;
 
+    public boolean hasImpulseBeenApplied;
+
+    public CartJointSocket getConnectingSocket() {
+        return connectingVehicle.getComponent(CartJointComponent.class).getJointSocketAt(connectingSocketLocation);
+    }
+
     public static CartJointSocket connectToVehicle(
             EntityRef vehicle, CartJointSocketLocation socketLocation,
             CartJointSocketLocation connectingSocketLocation

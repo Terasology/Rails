@@ -47,10 +47,22 @@ public class CartJointSystem extends BaseComponentSystem implements UpdateSubscr
             return;
         }
 
-        for (EntityRef jointEntity : entityManager.getEntitiesWith(CartJointComponent.class)) {
+        Iterable<EntityRef> jointComponentEntities = entityManager.getEntitiesWith(CartJointComponent.class);
+
+        for (EntityRef jointEntity : jointComponentEntities) {
             CartJointComponent joint = jointEntity.getComponent(CartJointComponent.class);
 
-            joint.applyImpulse();
+            joint.applyImpulse(delta);
+        }
+
+        for (EntityRef jointEntity : jointComponentEntities) {
+            CartJointComponent joint = jointEntity.getComponent(CartJointComponent.class);
+            if (joint.frontJointSocket != null) {
+                joint.frontJointSocket.hasImpulseBeenApplied = false;
+            }
+            if (joint.rearJointSocket != null) {
+                joint.rearJointSocket.hasImpulseBeenApplied = false;
+            }
         }
     }
 
@@ -78,11 +90,14 @@ public class CartJointSystem extends BaseComponentSystem implements UpdateSubscr
     private void addJointSocketsTo(EntityRef vehicleA, CartJointSocketLocation socketLocationA,
                                    EntityRef vehicleB, CartJointSocketLocation socketLocationB) {
         CartJointSocket socketA = CartJointSocket.connectToVehicle(
-                vehicleA, socketLocationA, socketLocationB
+                vehicleB, socketLocationA, socketLocationB
         );
         CartJointSocket socketB = CartJointSocket.connectToVehicle(
-                vehicleB, socketLocationB, socketLocationA
+                vehicleA, socketLocationB, socketLocationA
         );
+
+        LOGGER.info(socketA.connectingSocketLocation.toString() + ", " + socketLocationB.toString());
+        LOGGER.info(socketB.connectingSocketLocation.toString() + ", " + socketLocationA.toString());
 
         setJointSocketAt(vehicleA, socketA, socketLocationA);
         setJointSocketAt(vehicleB, socketB, socketLocationB);
