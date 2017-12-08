@@ -32,6 +32,7 @@ import org.terasology.minecarts.Constants;
 import org.terasology.minecarts.Util;
 import org.terasology.minecarts.components.CollisionFilterComponent;
 import org.terasology.minecarts.components.RailVehicleComponent;
+import org.terasology.minecarts.components.joints.CartJointComponent;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.physics.events.CollideEvent;
 import org.terasology.registry.In;
@@ -76,8 +77,31 @@ public class CartImpulseSystem extends BaseComponentSystem implements UpdateSubs
         if (event.getOtherEntity().hasComponent(CharacterComponent.class)) {
             handleCharacterCollision(event, entity);
         } else if (event.getOtherEntity().hasComponent(RailVehicleComponent.class) && event.getOtherEntity().hasComponent(SegmentEntityComponent.class)) {
+
+            if (areJoinedTogether(entity, event.getOtherEntity())) {
+                return;
+            }
+
             this.handleCartCollision(event, entity);
         }
+    }
+
+    private boolean areJoinedTogether(EntityRef entity, EntityRef otherEntity) {
+        if (!entity.hasComponent(CartJointComponent.class) || !otherEntity.hasComponent(CartJointComponent.class)) {
+            return false;
+        }
+
+        CartJointComponent joint = entity.getComponent(CartJointComponent.class);
+
+        if (joint.frontJointSocket != null && joint.frontJointSocket.connectingVehicle.equals(otherEntity)) {
+            return true;
+        }
+
+        if (joint.rearJointSocket != null && joint.rearJointSocket.connectingVehicle.equals(otherEntity)) {
+            return true;
+        }
+
+        return false;
     }
 
 
