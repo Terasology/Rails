@@ -101,4 +101,20 @@ public class CartJointComponent implements Component {
             applySocketImpulse(rearJointSocket, delta);
         }
     }
+
+    public void invalidateJoints() {
+        if (frontJointSocket != null) {
+            invalidateConnectingSocket(frontJointSocket);
+            frontJointSocket = null;
+        }
+        if (rearJointSocket != null) {
+            invalidateConnectingSocket(rearJointSocket);
+            rearJointSocket = null;
+        }
+    }
+
+    private void invalidateConnectingSocket(CartJointSocket socket) {
+        CartJointComponent connectingJoint = socket.connectingVehicle.getComponent(CartJointComponent.class);
+        connectingJoint.setJointSocketAt(null, socket.connectingSocketLocation);
+    }
 }
