@@ -155,7 +155,7 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
                 float mag = railVehicleComponent.velocity.length() - friction.length();
                 //make sure the magnitude is not less then zero when the friction value is subtracted off of the velocity
                 if (mag < 0)
-                    mag = railVehicleComponent.velocity.length();
+                    mag = 0;
 
                 //apply the new velocity to the rail component
                 railVehicleComponent.velocity = segmentVehicleComponent.heading.project(railVehicleComponent.velocity).normalize().mul(mag);
