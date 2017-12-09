@@ -19,10 +19,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.entitySystem.entity.lifecycleEvents.BeforeRemoveComponent;
+import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
+import org.terasology.logic.health.DestroyEvent;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.minecarts.Constants;
 import org.terasology.minecarts.components.RailVehicleComponent;
@@ -31,6 +34,7 @@ import org.terasology.minecarts.components.joints.CartJointSocket;
 import org.terasology.minecarts.components.joints.CartJointSocketLocation;
 import org.terasology.registry.In;
 import org.terasology.registry.Share;
+import org.terasology.segmentedpaths.components.SegmentEntityComponent;
 
 @RegisterSystem(RegisterMode.AUTHORITY)
 @Share(CartJointSystem.class)
@@ -64,6 +68,12 @@ public class CartJointSystem extends BaseComponentSystem implements UpdateSubscr
                 joint.rearJointSocket.hasImpulseBeenApplied = false;
             }
         }
+    }
+
+    @ReceiveEvent(components = {RailVehicleComponent.class, CartJointComponent.class})
+    public void onVehicleDestroy(DestroyEvent event, EntityRef vehicle, CartJointComponent jointComponent) {
+        LOGGER.info("Destroying joints");
+        jointComponent.invalidateJoints();
     }
 
     private boolean isDesiredSocketUnoccupied(EntityRef vehicle,
