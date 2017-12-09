@@ -82,7 +82,6 @@ public class CartJointSystem extends BaseComponentSystem implements UpdateSubscr
 
     @ReceiveEvent(components = {RailVehicleComponent.class, CartJointComponent.class})
     public void onVehicleDestroy(DestroyEvent event, EntityRef vehicle, CartJointComponent jointComponent) {
-        LOGGER.info("Destroying joints");
         jointComponent.invalidateJoints();
     }
 
