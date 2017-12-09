@@ -70,6 +70,16 @@ public class CartJointSystem extends BaseComponentSystem implements UpdateSubscr
         }
     }
 
+    @ReceiveEvent(components = {SegmentEntityComponent.class})
+    public void beforeVehicleDetachFromRail(BeforeRemoveComponent event, EntityRef vehicle) {
+        if (!vehicle.hasComponent(CartJointComponent.class)) {
+            return;
+        }
+
+        CartJointComponent jointComponent = vehicle.getComponent(CartJointComponent.class);
+        jointComponent.invalidateJoints();
+    }
+
     @ReceiveEvent(components = {RailVehicleComponent.class, CartJointComponent.class})
     public void onVehicleDestroy(DestroyEvent event, EntityRef vehicle, CartJointComponent jointComponent) {
         LOGGER.info("Destroying joints");
