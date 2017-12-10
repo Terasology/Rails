@@ -21,4 +21,5 @@ import org.terasology.world.block.ForceBlockActive;
 
 @ForceBlockActive
 public class RailComponent implements Component {
+    public float frictionCoefficient = 0.1f;
 }
