@@ -150,7 +150,8 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
                 railVehicleComponent.velocity.add(tangent.project(gravity));
 
                 //apply some friction based off the gravity vector projected on the normal multiplied against a friction coff
-                Vector3f friction = normal.project(gravity).invert().mul(Constants.FRICTION_COFF);
+                RailComponent rail = segmentVehicleComponent.segmentEntity.getComponent(RailComponent.class);
+                Vector3f friction = normal.project(gravity).invert().mul(rail.frictionCoefficient);
 
                 float mag = railVehicleComponent.velocity.length() - friction.length();
                 //make sure the magnitude is not less then zero when the friction value is subtracted off of the velocity
