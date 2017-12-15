@@ -26,6 +26,5 @@ public class Constants {
     public static final float PLAYER_MASS = 30f;
 
 
-    public static final float CART_JOINT_DISTANCE = .5f;
-    public static final float CART_JOINT_BREAK_DISTANCE = 6f;
+    public static final float CART_JOINT_BREAK_DISTANCE = 10f;
 }

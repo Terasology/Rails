@@ -22,10 +22,10 @@
     },
     "CartJoint":{
         "front": {
-            "offset": [0,0,0.7]
+            "range": 0.7
         },
         "back": {
-            "offset": [0,0,-0.7]
+            "range": 0.7
         }
     },
     "Health": {

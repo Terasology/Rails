@@ -28,7 +28,7 @@ public class CartJointComponent implements Component {
     public static class CartJointSocket {
         public EntityRef entity;
         public boolean isOwning = false;
-        public Vector3f offset;
+        public float range = .5f;
     }
 
     public CartJointSocket findJoint(EntityRef ref) {
