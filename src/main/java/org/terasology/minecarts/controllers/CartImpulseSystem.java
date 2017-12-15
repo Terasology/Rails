@@ -16,6 +16,7 @@
 package org.terasology.minecarts.controllers;
 
 import org.terasology.engine.Time;
+import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.EventPriority;
 import org.terasology.entitySystem.event.ReceiveEvent;
@@ -32,7 +33,7 @@ import org.terasology.minecarts.Constants;
 import org.terasology.minecarts.Util;
 import org.terasology.minecarts.components.CollisionFilterComponent;
 import org.terasology.minecarts.components.RailVehicleComponent;
-import org.terasology.minecarts.components.joints.CartJointComponent;
+import org.terasology.minecarts.components.CartJointComponent;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.physics.events.CollideEvent;
 import org.terasology.registry.In;
@@ -43,12 +44,13 @@ import org.terasology.segmentedpaths.controllers.SegmentSystem;
  * Created by michaelpollind on 7/15/17.
  */
 @RegisterSystem(RegisterMode.AUTHORITY)
-public class CartImpulseSystem extends BaseComponentSystem implements UpdateSubscriberSystem {
+public class CartImpulseSystem extends BaseComponentSystem  {
 
     @In
     Time time;
     @In
     SegmentSystem segmentSystem;
+
 
     public static void AddCollisionFilter(EntityRef cart, EntityRef child) {
         CollisionFilterComponent collisionFilterComponent = cart.getComponent(CollisionFilterComponent.class);
@@ -92,15 +94,9 @@ public class CartImpulseSystem extends BaseComponentSystem implements UpdateSubs
         }
 
         CartJointComponent joint = entity.getComponent(CartJointComponent.class);
-
-        if (joint.frontJointSocket != null && joint.frontJointSocket.connectingVehicle.equals(otherEntity)) {
+        if (joint.findJoint(otherEntity) != null) {
             return true;
         }
-
-        if (joint.rearJointSocket != null && joint.rearJointSocket.connectingVehicle.equals(otherEntity)) {
-            return true;
-        }
-
         return false;
     }
 
@@ -115,10 +111,7 @@ public class CartImpulseSystem extends BaseComponentSystem implements UpdateSubs
         RigidBodyComponent r1 = entity.getComponent(RigidBodyComponent.class);
         CharacterMovementComponent r2 = event.getOtherEntity().getComponent(CharacterMovementComponent.class);
 
-        float jv = ((event.getNormal().x * v1.velocity.x) + (event.getNormal().y * v1.velocity.y) + (event.getNormal().z * v1.velocity.z)) -
-                ((event.getNormal().x * r2.getVelocity().x) + (event.getNormal().y * r2.getVelocity().y) + (event.getNormal().z * r2.getVelocity().z));
-
-
+        float jv =event.getNormal().dot(v1.velocity) - event.getNormal().dot(r2.getVelocity());
         float effectiveMass = (1.0f / r1.mass) + (1.0f / Constants.PLAYER_MASS);
 
         Vector3f df = new Vector3f(v2l.getWorldPosition()).sub(v1l.getWorldPosition()).normalize();
@@ -151,14 +144,12 @@ public class CartImpulseSystem extends BaseComponentSystem implements UpdateSubs
         LocationComponent v2l = event.getOtherEntity().getComponent(LocationComponent.class);
 
 
-        Vector3f df = new Vector3f(v2l.getWorldPosition()).sub(v1l.getWorldPosition()).add(new Vector3f(Float.MIN_VALUE, Float.MIN_VALUE, Float.MIN_VALUE)).normalize();
+        Vector3f df = new Vector3f(v2l.getWorldPosition()).sub(v1l.getWorldPosition()).add(new Vector3f(Float.MIN_VALUE,Float.MIN_VALUE,Float.MIN_VALUE)).normalize();
 
         //calculate the half normal vector
         Vector3f halfNormal = new Vector3f(df);
 
-        float jv = ((halfNormal.x * v1.velocity.x) + (halfNormal.y * v1.velocity.y) + (halfNormal.z * v1.velocity.z)) -
-                ((halfNormal.x * v2.velocity.x) + (halfNormal.y * v2.velocity.y) + (halfNormal.z * v2.velocity.z));
-
+        float jv = halfNormal.dot(v1.velocity) - halfNormal.dot (v2.velocity);
         float b = -df.dot(halfNormal) * (Constants.BAUMGARTE_COFF / time.getGameDelta()) * event.getPenetration();
 
         float effectiveMass = (1.0f / r1.mass) + (1.0f / r2.mass);
@@ -179,8 +170,4 @@ public class CartImpulseSystem extends BaseComponentSystem implements UpdateSubs
         event.getOtherEntity().saveComponent(v2);
     }
 
-    @Override
-    public void update(float delta) {
-
-    }
 }

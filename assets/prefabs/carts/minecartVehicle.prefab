@@ -20,7 +20,14 @@
     "HullShape": {
          "sourceMesh" : "Rails:minecart_bounds"
     },
-
+    "CartJoint":{
+        "front": {
+            "offset": [0,0,0.7]
+        },
+        "back": {
+            "offset": [0,0,-0.7]
+        }
+    },
     "Health": {
         "currentHealth": 1,
         "maxHealth": 1,
