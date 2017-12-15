@@ -30,6 +30,7 @@ import org.terasology.math.geom.Vector3i;
 import org.terasology.minecarts.Constants;
 import org.terasology.minecarts.blocks.RailComponent;
 import org.terasology.minecarts.blocks.RailsUpdateFamily;
+import org.terasology.minecarts.components.CartJointComponent;
 import org.terasology.minecarts.components.RailVehicleComponent;
 import org.terasology.minecarts.components.WrenchComponent;
 import org.terasology.minecarts.controllers.CartJointSystem;
@@ -57,17 +58,20 @@ public class WrenchAction extends BaseComponentSystem {
     CartJointSystem cartJointSystem;
 
     @ReceiveEvent(components = {WrenchComponent.class})
-    public void onCartJoinAction(ActivateEvent event, EntityRef item) {
+    public void onCartJoinAction(ActivateEvent event, EntityRef item, WrenchComponent wrenchComponent) {
         EntityRef targetVehicle = event.getTarget();
 
-        if (!targetVehicle.hasComponent(RailVehicleComponent.class))
+        if (!targetVehicle.hasComponent(RailVehicleComponent.class) && !targetVehicle.hasComponent(CartJointComponent.class))
             return;
 
-        LOGGER.info("Attaching...");
-
-        if (!cartJointSystem.attachVehicleToNearbyVehicle(targetVehicle)) {
-            LOGGER.info("Did not attach to nearby vehicle");
+        if(wrenchComponent.lastSelectedCart != null){
+            cartJointSystem.joinVehicles(targetVehicle,wrenchComponent.lastSelectedCart);
+            wrenchComponent.lastSelectedCart = null;
+            LOGGER.debug("Carts Joined");
         }
+
+        wrenchComponent.lastSelectedCart = targetVehicle;
+
     }
 
     @ReceiveEvent(components = {WrenchComponent.class})

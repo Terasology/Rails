@@ -19,191 +19,151 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.entitySystem.entity.lifecycleEvents.BeforeRemoveComponent;
-import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
-import org.terasology.logic.health.DestroyEvent;
+import org.terasology.logic.behavior.tree.Interpreter;
 import org.terasology.logic.location.LocationComponent;
+import org.terasology.math.geom.Vector3f;
 import org.terasology.minecarts.Constants;
+import org.terasology.minecarts.Util;
+import org.terasology.minecarts.components.CartJointComponent;
 import org.terasology.minecarts.components.RailVehicleComponent;
-import org.terasology.minecarts.components.joints.CartJointComponent;
-import org.terasology.minecarts.components.joints.CartJointSocket;
-import org.terasology.minecarts.components.joints.CartJointSocketLocation;
+import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.registry.In;
 import org.terasology.registry.Share;
 import org.terasology.segmentedpaths.components.SegmentEntityComponent;
 
 @RegisterSystem(RegisterMode.AUTHORITY)
 @Share(CartJointSystem.class)
-public class CartJointSystem extends BaseComponentSystem implements UpdateSubscriberSystem {
+public class CartJointSystem extends BaseComponentSystem implements  UpdateSubscriberSystem {
     private static final Logger LOGGER = LoggerFactory.getLogger(CartJointSystem.class);
 
     @In
     EntityManager entityManager;
 
+    public boolean joinVehicles(EntityRef entity1, EntityRef entity2) {
+        if (entity1.equals(entity2) && !entity1.exists() && !entity2.exists())
+            return false;
+        CartJointComponent cartJointComponent1 = entity1.getComponent(CartJointComponent.class);
+        CartJointComponent cartJointComponent2 = entity2.getComponent(CartJointComponent.class);
+        if (cartJointComponent1 == null || cartJointComponent2 == null)
+            return false;
+
+
+        boolean isJoined = false;
+
+        if (cartJointComponent1.back != null && cartJointComponent2.back != null)
+            isJoined = tryJoin(Vector3f.south(), entity1, cartJointComponent1.back, Vector3f.south(), entity2, cartJointComponent2.back);
+        if (!isJoined && cartJointComponent1.back != null && cartJointComponent2.front != null)
+            isJoined = tryJoin(Vector3f.south(), entity1, cartJointComponent1.back, Vector3f.north(), entity2, cartJointComponent2.front);
+        if (!isJoined && cartJointComponent1.front != null && cartJointComponent2.back != null)
+            isJoined = tryJoin(Vector3f.north(), entity1, cartJointComponent1.front, Vector3f.south(), entity2, cartJointComponent2.back);
+        if (!isJoined && cartJointComponent1.front != null && cartJointComponent2.front != null)
+            isJoined = tryJoin(Vector3f.north(), entity1, cartJointComponent1.front, Vector3f.north(), entity2, cartJointComponent2.front);
+
+        if (isJoined) {
+            LOGGER.info("Joint created between: " + entity1 + " and " + entity2);
+            entity1.saveComponent(cartJointComponent1);
+            entity2.saveComponent(cartJointComponent2);
+        }
+
+        return isJoined;
+    }
+
+    private boolean tryJoin(Vector3f d1, EntityRef e1, CartJointComponent.CartJointSocket j1, Vector3f d2, EntityRef e2, CartJointComponent.CartJointSocket j2) {
+        LocationComponent l1 = e1.getComponent(LocationComponent.class);
+        LocationComponent l2 = e2.getComponent(LocationComponent.class);
+
+        Vector3f cart1Direction = l1.getWorldRotation().rotate(d1);
+        Vector3f cart2Direction = l2.getWorldRotation().rotate(d2);
+        if (cart1Direction.dot(cart2Direction) < 0) {
+            if (l1.getWorldPosition().distanceSquared(l2.getWorldPosition()) < (j1.range + j2.range) * (j1.range + j2.range)) {
+                j1.entity = e2;
+                j1.isOwning = true;
+                j2.entity = e1;
+                j2.isOwning = false;
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public void update(float delta) {
-        // HACK: Find better way to avoid loading game and in-menu updates
-        if (delta == 0.0f) {
+        for (EntityRef railVehicle : entityManager.getEntitiesWith(RailVehicleComponent.class, RigidBodyComponent.class, CartJointComponent.class)) {
+            CartJointComponent cartJointComponent = railVehicle.getComponent(CartJointComponent.class);
+            if (cartJointComponent.front != null && cartJointComponent.front.isOwning) {
+                CartJointComponent frontCartJoint = cartJointComponent.front.entity.getComponent(CartJointComponent.class);
+                if (frontCartJoint != null) {
+                    applyImpulseOnSocket(delta, cartJointComponent.front, frontCartJoint.findJoint(railVehicle));
+                }
+            }
+            if (cartJointComponent.back != null && cartJointComponent.back.isOwning) {
+                CartJointComponent backCartJoin = cartJointComponent.back.entity.getComponent(CartJointComponent.class);
+                if (backCartJoin != null) {
+                    applyImpulseOnSocket(delta, cartJointComponent.back, backCartJoin.findJoint(railVehicle));
+                }
+            }
+
+        }
+    }
+
+    private void clearJoinSocket(CartJointComponent.CartJointSocket jointSocket) {
+        jointSocket.entity = null;
+        jointSocket.isOwning = false;
+    }
+
+    private void applyImpulseOnSocket(float delta, CartJointComponent.CartJointSocket j1, CartJointComponent.CartJointSocket j2) {
+        if(j1.entity == null || j2.entity == null)
+            return;
+
+        LocationComponent location = j2.entity.getComponent(LocationComponent.class);
+        LocationComponent otherLocation = j1.entity.getComponent(LocationComponent.class);
+
+        RailVehicleComponent railVehicle = j2.entity.getComponent(RailVehicleComponent.class);
+        RailVehicleComponent otherRailVehicle = j1.entity.getComponent(RailVehicleComponent.class);
+
+        SegmentEntityComponent segmentVehicle = j2.entity.getComponent(SegmentEntityComponent.class);
+        SegmentEntityComponent otherSegmentVehicle = j1.entity.getComponent(SegmentEntityComponent.class);
+        if (segmentVehicle == null || otherSegmentVehicle == null) {
+            LOGGER.info("Joint broken between: " + j1.entity + " and " + j2.entity);
+            clearJoinSocket(j1);
+            clearJoinSocket(j2);
             return;
         }
 
-        Iterable<EntityRef> jointComponentEntities = entityManager.getEntitiesWith(CartJointComponent.class);
 
-        for (EntityRef jointEntity : jointComponentEntities) {
-            CartJointComponent joint = jointEntity.getComponent(CartJointComponent.class);
+        RigidBodyComponent rigidBody = j2.entity.getComponent(RigidBodyComponent.class);
+        RigidBodyComponent otherRigidBody = j1.entity.getComponent(RigidBodyComponent.class);
 
-            joint.applyImpulse(delta);
-        }
-
-        for (EntityRef jointEntity : jointComponentEntities) {
-            CartJointComponent joint = jointEntity.getComponent(CartJointComponent.class);
-            if (joint.frontJointSocket != null) {
-                joint.frontJointSocket.hasImpulseBeenApplied = false;
-            }
-            if (joint.rearJointSocket != null) {
-                joint.rearJointSocket.hasImpulseBeenApplied = false;
-            }
-        }
-    }
-
-    @ReceiveEvent(components = {SegmentEntityComponent.class})
-    public void beforeVehicleDetachFromRail(BeforeRemoveComponent event, EntityRef vehicle) {
-        if (!vehicle.hasComponent(CartJointComponent.class)) {
+        Vector3f normal = new Vector3f(location.getWorldPosition()).sub(otherLocation.getWorldPosition());
+        float distance = normal.length();
+        if (distance > Constants.CART_JOINT_BREAK_DISTANCE) {
+            clearJoinSocket(j1);
+            clearJoinSocket(j2);
+            LOGGER.info("Joint broken between: " + j1.entity + " and " + j2.entity);
             return;
         }
 
-        CartJointComponent jointComponent = vehicle.getComponent(CartJointComponent.class);
-        jointComponent.invalidateJoints();
-    }
+        Vector3f projectedNormal =  segmentVehicle.heading.project(normal).normalize();
+        Vector3f otherProjectedNormal = otherSegmentVehicle.heading.project(normal).normalize();
 
-    @ReceiveEvent(components = {RailVehicleComponent.class, CartJointComponent.class})
-    public void onVehicleDestroy(DestroyEvent event, EntityRef vehicle, CartJointComponent jointComponent) {
-        jointComponent.invalidateJoints();
-    }
-
-    private boolean isDesiredSocketUnoccupied(EntityRef vehicle,
-                                              CartJointSocketLocation desiredSocketLocation) {
-        if (!vehicle.hasComponent(CartJointComponent.class)) {
-            return true;
-        }
-        return vehicle.getComponent(CartJointComponent.class).getJointSocketAt(desiredSocketLocation) == null;
-    }
-
-    private void setJointSocketAt(EntityRef vehicle, CartJointSocket jointSocket,
-                                  CartJointSocketLocation socketLocation) {
-        CartJointComponent cartJointComponent = vehicle.getComponent(CartJointComponent.class);
-
-        if (cartJointComponent == null) {
-            cartJointComponent = new CartJointComponent();
-        }
-
-        cartJointComponent.setJointSocketAt(jointSocket, socketLocation);
-
-        vehicle.addOrSaveComponent(cartJointComponent);
-    }
-
-    private void addJointSocketsTo(EntityRef vehicleA, CartJointSocketLocation socketLocationA,
-                                   EntityRef vehicleB, CartJointSocketLocation socketLocationB) {
-        CartJointSocket socketA = CartJointSocket.connectToVehicle(
-                vehicleB, socketLocationB
-        );
-        CartJointSocket socketB = CartJointSocket.connectToVehicle(
-                vehicleA, socketLocationA
-        );
-
-        setJointSocketAt(vehicleA, socketA, socketLocationA);
-        setJointSocketAt(vehicleB, socketB, socketLocationB);
-    }
-
-    public boolean attachVehicles(EntityRef vehicleA, EntityRef vehicleB) {
-        LocationComponent vehicleLocationA = vehicleA.getComponent(LocationComponent.class);
-        LocationComponent vehicleLocationB = vehicleB.getComponent(LocationComponent.class);
-
-        CartJointSocketLocation socketLocationA = CartJointSocketLocation.getSocketLocationTowards(
-                vehicleLocationA,
-                vehicleLocationB
-        );
-
-        CartJointSocketLocation socketLocationB = CartJointSocketLocation.getSocketLocationTowards(
-                vehicleLocationB,
-                vehicleLocationA
-        );
-
-        if (!isDesiredSocketUnoccupied(vehicleA, socketLocationA) ||
-                !isDesiredSocketUnoccupied(vehicleB, socketLocationB)) {
-            LOGGER.info("Desired socket was unoccupied");
-            return false;
-        }
-
-        addJointSocketsTo(vehicleA, socketLocationA, vehicleB, socketLocationB);
-        LOGGER.info("Joined vehicles!");
-        return true;
-    }
-
-    public boolean attachVehicleToNearbyVehicle(EntityRef vehicle) {
-        EntityRef nearbyVehicle = findNearbyJoinableVehicle(vehicle);
-
-        if (nearbyVehicle.equals(EntityRef.NULL)) {
-            LOGGER.info("Nearby joinable vehicle not found");
-            return false;
-        }
-
-        LOGGER.info("Nearby joinable vehicle found!");
-
-        return attachVehicles(vehicle, nearbyVehicle);
-    }
-
-    /**
-     * Gets the nearest rail vehicle that can be connected to this one, if any.
-     *
-     * @param vehicle
-     * @return The {@link EntityRef} of the nearest rail vehicle
-     */
-    private EntityRef findNearbyJoinableVehicle(EntityRef vehicle) {
-        LocationComponent locationComponent = vehicle.getComponent(LocationComponent.class);
-
-        // TODO: Find better way, possibly querying the physics engine
-        EntityRef closestVehicle = EntityRef.NULL;
-        float minSqrDistance = Float.POSITIVE_INFINITY;
-
-        for (EntityRef otherVehicle : entityManager.getEntitiesWith(RailVehicleComponent.class)) {
-            if (vehicle.equals(otherVehicle)) {
-                continue;
-            }
-
-            LocationComponent otherLocationComponent = otherVehicle.getComponent(LocationComponent.class);
-
-            // If we cannot join this vehicle because of unavailable sockets, skip to the next one
-            CartJointSocketLocation socketLocation = CartJointSocketLocation.getSocketLocationTowards(
-                    locationComponent,
-                    otherLocationComponent
-            );
-
-            CartJointSocketLocation otherSocketLocation = CartJointSocketLocation.getSocketLocationTowards(
-                    otherLocationComponent,
-                    locationComponent
-            );
+        float relVelAlongNormal = otherRailVehicle.velocity.dot(otherProjectedNormal) - railVehicle.velocity.dot(projectedNormal);
+        float inverseMassSum = 1 / rigidBody.mass + 1 / otherRigidBody.mass;
+        float bias = (Constants.BAUMGARTE_COFF / delta) * ((j1.range + j2.range) - distance);
+        float j = -(relVelAlongNormal + bias) / inverseMassSum;
 
 
-            if (!isDesiredSocketUnoccupied(vehicle, socketLocation) ||
-                    !isDesiredSocketUnoccupied(otherVehicle, otherSocketLocation)) {
-                continue;
-            }
+        railVehicle.velocity.sub(new Vector3f(projectedNormal).mul(j / rigidBody.mass));
+        otherRailVehicle.velocity.add(new Vector3f(otherProjectedNormal).mul(j / otherRigidBody.mass));
 
-            float sqrDistance = otherLocationComponent.getWorldPosition()
-                    .distanceSquared(locationComponent.getWorldPosition());
+        Util.bound(railVehicle.velocity);
+        Util.bound(otherRailVehicle.velocity);
+        j2.entity.saveComponent(railVehicle);
+        j1.entity.saveComponent(otherRailVehicle);
 
-            if (sqrDistance < Constants.MAX_VEHICLE_JOIN_DISTANCE * Constants.MAX_VEHICLE_JOIN_DISTANCE
-                    && sqrDistance < minSqrDistance) {
-                minSqrDistance = sqrDistance;
-                closestVehicle = otherVehicle;
-            }
-        }
 
-        return closestVehicle;
     }
 }
