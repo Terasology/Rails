@@ -15,15 +15,27 @@
  */
 package org.terasology.minecarts.components;
 
+import org.terasology.entitySystem.Component;
+import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.math.geom.Vector3f;
+import org.terasology.reflection.MappedContainer;
 
-public class CartJointComponent {
-    public enum LocationJoint {
-        BACK,
-        FRONT
+public class CartJointComponent implements Component {
+    public CartJointSocket front;
+    public CartJointSocket back;
+
+    @MappedContainer
+    public static class CartJointSocket {
+        public EntityRef entity;
+        public boolean isOwning = false;
+        public float range = .5f;
     }
 
-    public LocationJoint joinType;
-    public Vector3f offset;
-
+    public CartJointSocket findJoint(EntityRef ref) {
+        if(front != null && front.entity == ref)
+            return front;
+        if(back != null && back.entity == ref)
+            return back;
+        return null;
+    }
 }
