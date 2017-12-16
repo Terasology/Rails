@@ -43,7 +43,7 @@ import org.terasology.registry.In;
 import org.terasology.rendering.logic.MeshComponent;
 import org.terasology.segmentedpaths.Segment;
 import org.terasology.segmentedpaths.components.PathDescriptorComponent;
-import org.terasology.segmentedpaths.components.SegmentEntityComponent;
+import org.terasology.segmentedpaths.components.PathFollowerComponent;
 import org.terasology.segmentedpaths.controllers.SegmentCacheSystem;
 import org.terasology.segmentedpaths.controllers.SegmentSystem;
 import org.terasology.world.BlockEntityRegistry;
@@ -92,9 +92,9 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
     }
 
     public Vector3f updateHeading(EntityRef railVehcile,Vector3f oldHeading){
-        SegmentEntityComponent segmentEntityComponent = railVehcile.getComponent(SegmentEntityComponent.class);
-        if(segmentEntityComponent != null){
-            return segmentEntityComponent.heading.project(oldHeading).normalize();
+        PathFollowerComponent pathFollowerComponent = railVehcile.getComponent(PathFollowerComponent.class);
+        if(pathFollowerComponent != null){
+            return pathFollowerComponent.heading.project(oldHeading).normalize();
         }
         return null;
     }
@@ -104,7 +104,7 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
         LocationComponent location = railVehicle.getComponent(LocationComponent.class);
         RigidBodyComponent rigidBodyComponent = railVehicle.getComponent(RigidBodyComponent.class);
         RailVehicleComponent railVehicleComponent = railVehicle.getComponent(RailVehicleComponent.class);
-        SegmentEntityComponent segmentVehicleComponent = railVehicle.getComponent(SegmentEntityComponent.class);
+        PathFollowerComponent segmentVehicleComponent = railVehicle.getComponent(PathFollowerComponent.class);
 
         if (segmentVehicleComponent == null) {
             //checks to see if the cart hits a rail segment
@@ -116,7 +116,7 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
 
             //attach cart to rail segment
             if (ref.hasComponent(RailComponent.class)) {
-                segmentVehicleComponent = new SegmentEntityComponent();
+                segmentVehicleComponent = new PathFollowerComponent();
                 segmentVehicleComponent.segmentEntity = ref;
 
                 Prefab prefab = ref.getComponent(PathDescriptorComponent.class).descriptors.get(0);
@@ -124,7 +124,7 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
 
                 Vector3f position = segmentSystem.segmentPosition(ref);
                 Quat4f rotation = segmentSystem.segmentRotation(ref);
-                segmentVehicleComponent.t = segment.nearestT(location.getWorldPosition(), position, rotation);
+                segmentVehicleComponent.segmentPosition = segment.nearestT(location.getWorldPosition(), position, rotation);
                 segmentVehicleComponent.descriptor = prefab;
                 railVehicle.addComponent(segmentVehicleComponent);
                 segmentVehicleComponent.heading = segmentSystem.vehicleTangent(railVehicle);
@@ -190,9 +190,9 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
         RigidBodyComponent rigidBodyComponent = vehicle.getComponent(RigidBodyComponent.class);
         RailVehicleComponent railVehicleComponent = vehicle.getComponent(RailVehicleComponent.class);
 
-        //change the rigidbody into a non kinematic body and remove the SegmentEntityComponent
+        //change the rigidbody into a non kinematic body and remove the PathFollowerComponent
         rigidBodyComponent.kinematic = false;
-        vehicle.removeComponent(SegmentEntityComponent.class);
+        vehicle.removeComponent(PathFollowerComponent.class);
         rigidBodyComponent.velocity = new Vector3f(railVehicleComponent.velocity);
         rigidBodyComponent.collidesWith.add(StandardCollisionGroup.WORLD);
 
