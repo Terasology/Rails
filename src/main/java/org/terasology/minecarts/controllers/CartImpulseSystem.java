@@ -35,7 +35,7 @@ import org.terasology.minecarts.components.RailVehicleComponent;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.physics.events.CollideEvent;
 import org.terasology.registry.In;
-import org.terasology.segmentedpaths.components.SegmentEntityComponent;
+import org.terasology.segmentedpaths.components.PathFollowerComponent;
 import org.terasology.segmentedpaths.controllers.SegmentSystem;
 
 /**
@@ -67,7 +67,7 @@ public class CartImpulseSystem extends BaseComponentSystem implements UpdateSubs
     }
 
 
-    @ReceiveEvent(components = {RailVehicleComponent.class, SegmentEntityComponent.class, LocationComponent.class, RigidBodyComponent.class}, priority = EventPriority.PRIORITY_HIGH)
+    @ReceiveEvent(components = {RailVehicleComponent.class, PathFollowerComponent.class, LocationComponent.class, RigidBodyComponent.class}, priority = EventPriority.PRIORITY_HIGH)
     public void onBump(CollideEvent event, EntityRef entity) {
         CollisionFilterComponent collisionFilterComponent = entity.getComponent(CollisionFilterComponent.class);
         if (collisionFilterComponent != null && collisionFilterComponent.filter.contains(event.getOtherEntity()))
@@ -75,7 +75,7 @@ public class CartImpulseSystem extends BaseComponentSystem implements UpdateSubs
 
         if (event.getOtherEntity().hasComponent(CharacterComponent.class)) {
             handleCharacterCollision(event, entity);
-        } else if (event.getOtherEntity().hasComponent(RailVehicleComponent.class) && event.getOtherEntity().hasComponent(SegmentEntityComponent.class)) {
+        } else if (event.getOtherEntity().hasComponent(RailVehicleComponent.class) && event.getOtherEntity().hasComponent(PathFollowerComponent.class)) {
             this.handleCartCollision(event, entity);
         }
     }

@@ -26,7 +26,7 @@ import org.terasology.segmentedpaths.Segment;
 import org.terasology.segmentedpaths.blocks.PathFamily;
 import org.terasology.segmentedpaths.components.BlockMappingComponent;
 import org.terasology.segmentedpaths.components.PathDescriptorComponent;
-import org.terasology.segmentedpaths.components.SegmentEntityComponent;
+import org.terasology.segmentedpaths.components.PathFollowerComponent;
 import org.terasology.segmentedpaths.controllers.SegmentCacheSystem;
 import org.terasology.segmentedpaths.controllers.SegmentMapping;
 import org.terasology.segmentedpaths.controllers.SegmentSystem;
@@ -51,7 +51,7 @@ public class RailBlockSegmentMapper implements SegmentMapping {
 
 
     @Override
-    public SegmentPair nextSegment(SegmentEntityComponent vehicle, SegmentEnd ends) {
+    public SegmentPair nextSegment(PathFollowerComponent vehicle, SegmentEnd ends) {
         BlockComponent blockComponent = vehicle.segmentEntity.getComponent(BlockComponent.class);
         if(vehicle.segmentEntity.hasComponent(BlockComponent.class)) {
             BlockFamily blockFamily = blockComponent.getBlock().getBlockFamily();
