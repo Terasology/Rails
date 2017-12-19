@@ -16,14 +16,12 @@
 package org.terasology.minecarts.controllers;
 
 import org.terasology.engine.Time;
-import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.EventPriority;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
-import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
 import org.terasology.logic.characters.CharacterComponent;
 import org.terasology.logic.characters.CharacterImpulseEvent;
 import org.terasology.logic.characters.CharacterMovementComponent;
@@ -31,13 +29,13 @@ import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.minecarts.Constants;
 import org.terasology.minecarts.Util;
+import org.terasology.minecarts.components.CartJointComponent;
 import org.terasology.minecarts.components.CollisionFilterComponent;
 import org.terasology.minecarts.components.RailVehicleComponent;
-import org.terasology.minecarts.components.CartJointComponent;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.physics.events.CollideEvent;
 import org.terasology.registry.In;
-import org.terasology.segmentedpaths.components.SegmentEntityComponent;
+import org.terasology.segmentedpaths.components.PathFollowerComponent;
 import org.terasology.segmentedpaths.controllers.SegmentSystem;
 
 /**
@@ -70,7 +68,7 @@ public class CartImpulseSystem extends BaseComponentSystem  {
     }
 
 
-    @ReceiveEvent(components = {RailVehicleComponent.class, SegmentEntityComponent.class, LocationComponent.class, RigidBodyComponent.class}, priority = EventPriority.PRIORITY_HIGH)
+    @ReceiveEvent(components = {RailVehicleComponent.class, PathFollowerComponent.class, LocationComponent.class, RigidBodyComponent.class}, priority = EventPriority.PRIORITY_HIGH)
     public void onBump(CollideEvent event, EntityRef entity) {
         CollisionFilterComponent collisionFilterComponent = entity.getComponent(CollisionFilterComponent.class);
         if (collisionFilterComponent != null && collisionFilterComponent.filter.contains(event.getOtherEntity()))
@@ -78,8 +76,7 @@ public class CartImpulseSystem extends BaseComponentSystem  {
 
         if (event.getOtherEntity().hasComponent(CharacterComponent.class)) {
             handleCharacterCollision(event, entity);
-        } else if (event.getOtherEntity().hasComponent(RailVehicleComponent.class) && event.getOtherEntity().hasComponent(SegmentEntityComponent.class)) {
-
+        } else if (event.getOtherEntity().hasComponent(RailVehicleComponent.class) && event.getOtherEntity().hasComponent(PathFollowerComponent.class)) {
             if (areJoinedTogether(entity, event.getOtherEntity())) {
                 return;
             }

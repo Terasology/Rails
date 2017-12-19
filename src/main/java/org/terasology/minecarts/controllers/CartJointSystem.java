@@ -23,7 +23,6 @@ import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
-import org.terasology.logic.behavior.tree.Interpreter;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.minecarts.Constants;
@@ -33,7 +32,7 @@ import org.terasology.minecarts.components.RailVehicleComponent;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.registry.In;
 import org.terasology.registry.Share;
-import org.terasology.segmentedpaths.components.SegmentEntityComponent;
+import org.terasology.segmentedpaths.components.PathFollowerComponent;
 
 @RegisterSystem(RegisterMode.AUTHORITY)
 @Share(CartJointSystem.class)
@@ -125,8 +124,8 @@ public class CartJointSystem extends BaseComponentSystem implements  UpdateSubsc
         RailVehicleComponent railVehicle = j2.entity.getComponent(RailVehicleComponent.class);
         RailVehicleComponent otherRailVehicle = j1.entity.getComponent(RailVehicleComponent.class);
 
-        SegmentEntityComponent segmentVehicle = j2.entity.getComponent(SegmentEntityComponent.class);
-        SegmentEntityComponent otherSegmentVehicle = j1.entity.getComponent(SegmentEntityComponent.class);
+        PathFollowerComponent segmentVehicle = j2.entity.getComponent(PathFollowerComponent.class);
+        PathFollowerComponent otherSegmentVehicle = j1.entity.getComponent(PathFollowerComponent.class);
         if (segmentVehicle == null || otherSegmentVehicle == null) {
             LOGGER.info("Joint broken between: " + j1.entity + " and " + j2.entity);
             clearJoinSocket(j1);
