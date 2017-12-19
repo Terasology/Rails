@@ -37,7 +37,7 @@ import org.terasology.minecarts.components.CartJointComponent;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.physics.events.CollideEvent;
 import org.terasology.registry.In;
-import org.terasology.segmentedpaths.components.SegmentEntityComponent;
+import org.terasology.segmentedpaths.components.PathFollowerComponent;
 import org.terasology.segmentedpaths.controllers.SegmentSystem;
 
 /**
@@ -70,7 +70,7 @@ public class CartImpulseSystem extends BaseComponentSystem  {
     }
 
 
-    @ReceiveEvent(components = {RailVehicleComponent.class, SegmentEntityComponent.class, LocationComponent.class, RigidBodyComponent.class}, priority = EventPriority.PRIORITY_HIGH)
+    @ReceiveEvent(components = {RailVehicleComponent.class, LocationComponent.class, RigidBodyComponent.class}, priority = EventPriority.PRIORITY_HIGH)
     public void onBump(CollideEvent event, EntityRef entity) {
         CollisionFilterComponent collisionFilterComponent = entity.getComponent(CollisionFilterComponent.class);
         if (collisionFilterComponent != null && collisionFilterComponent.filter.contains(event.getOtherEntity()))
@@ -78,12 +78,10 @@ public class CartImpulseSystem extends BaseComponentSystem  {
 
         if (event.getOtherEntity().hasComponent(CharacterComponent.class)) {
             handleCharacterCollision(event, entity);
-        } else if (event.getOtherEntity().hasComponent(RailVehicleComponent.class) && event.getOtherEntity().hasComponent(SegmentEntityComponent.class)) {
-
+        } else if (event.getOtherEntity().hasComponent(RailVehicleComponent.class) && event.getOtherEntity().hasComponent(RailVehicleComponent.class)) {
             if (areJoinedTogether(entity, event.getOtherEntity())) {
                 return;
             }
-
             this.handleCartCollision(event, entity);
         }
     }
@@ -143,9 +141,7 @@ public class CartImpulseSystem extends BaseComponentSystem  {
         LocationComponent v1l = entity.getComponent(LocationComponent.class);
         LocationComponent v2l = event.getOtherEntity().getComponent(LocationComponent.class);
 
-
         Vector3f df = new Vector3f(v2l.getWorldPosition()).sub(v1l.getWorldPosition()).add(new Vector3f(Float.MIN_VALUE,Float.MIN_VALUE,Float.MIN_VALUE)).normalize();
-
         //calculate the half normal vector
         Vector3f normal = new Vector3f(df);
 
