@@ -36,7 +36,7 @@ import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.physics.events.CollideEvent;
 import org.terasology.registry.In;
 import org.terasology.segmentedpaths.components.PathFollowerComponent;
-import org.terasology.segmentedpaths.controllers.SegmentSystem;
+import org.terasology.segmentedpaths.controllers.PathFollowerSystem;
 
 /**
  * Created by michaelpollind on 7/15/17.
@@ -47,7 +47,7 @@ public class CartImpulseSystem extends BaseComponentSystem  {
     @In
     Time time;
     @In
-    SegmentSystem segmentSystem;
+    PathFollowerSystem segmentSystem;
 
 
     public static void AddCollisionFilter(EntityRef cart, EntityRef child) {
