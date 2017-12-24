@@ -23,12 +23,13 @@ import org.terasology.math.geom.Quat4f;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.segmentedpaths.Segment;
+import org.terasology.segmentedpaths.SegmentMeta;
 import org.terasology.segmentedpaths.blocks.PathFamily;
 import org.terasology.segmentedpaths.components.BlockMappingComponent;
 import org.terasology.segmentedpaths.components.PathDescriptorComponent;
-import org.terasology.segmentedpaths.components.PathFollowerComponent;
 import org.terasology.segmentedpaths.controllers.SegmentCacheSystem;
 import org.terasology.segmentedpaths.controllers.SegmentMapping;
+import org.terasology.segmentedpaths.controllers.PathFollowerSystem;
 import org.terasology.segmentedpaths.controllers.SegmentSystem;
 import org.terasology.world.BlockEntityRegistry;
 import org.terasology.world.block.BlockComponent;
@@ -39,35 +40,38 @@ import org.terasology.world.block.family.BlockFamily;
  */
 public class RailBlockSegmentMapper implements SegmentMapping {
 
+    private PathFollowerSystem pathFollowerSystem;
     private SegmentSystem segmentSystem;
     private SegmentCacheSystem segmentCacheSystem;
     private BlockEntityRegistry blockEntityRegistry;
 
-    public RailBlockSegmentMapper(BlockEntityRegistry blockEntityRegistry, SegmentSystem segmentSystem, SegmentCacheSystem segmentCacheSystem) {
+    public RailBlockSegmentMapper(BlockEntityRegistry blockEntityRegistry, PathFollowerSystem pathFollowerSystem,SegmentSystem segmentSystem, SegmentCacheSystem segmentCacheSystem) {
         this.blockEntityRegistry = blockEntityRegistry;
-        this.segmentSystem = segmentSystem;
+        this.pathFollowerSystem = pathFollowerSystem;
         this.segmentCacheSystem = segmentCacheSystem;
+        this.segmentSystem = segmentSystem;
     }
 
 
     @Override
-    public SegmentPair nextSegment(PathFollowerComponent vehicle, SegmentEnd ends) {
-        BlockComponent blockComponent = vehicle.segmentEntity.getComponent(BlockComponent.class);
-        if (vehicle.segmentEntity.hasComponent(BlockComponent.class)) {
+    public MappingResult nextSegment(SegmentMeta meta, SegmentEnd ends) {
+        if (meta.association.hasComponent(BlockComponent.class)) {
+            BlockComponent blockComponent = meta.association.getComponent(BlockComponent.class);
+
             BlockFamily blockFamily = blockComponent.getBlock().getBlockFamily();
 
-            Vector3f v1 = segmentSystem.segmentPosition(vehicle.segmentEntity);
-            Quat4f q1 = segmentSystem.segmentRotation(vehicle.segmentEntity);
+            Vector3f v1 = segmentSystem.segmentPosition(meta.association);
+            Quat4f q1 = segmentSystem.segmentRotation(meta.association);
 
-            Segment currentSegment = segmentCacheSystem.getSegment(vehicle.descriptor);
+            Segment currentSegment = segmentCacheSystem.getSegment(meta.prefab);
 
 
-            BlockMappingComponent blockMappingComponent = vehicle.descriptor.getComponent(BlockMappingComponent.class);
+            BlockMappingComponent blockMappingComponent = meta.prefab.getComponent(BlockMappingComponent.class);
             if (blockFamily instanceof PathFamily) {
 
                 Rotation rotation = ((PathFamily) blockFamily).getRotationFor(blockComponent.getBlock().getURI());
                 switch (ends) {
-                    case S1: {
+                    case START: {
                         Vector3i segment = findOffset(blockComponent.getPosition(), blockMappingComponent.s1, blockMappingComponent.s2, rotation);//rotation.rotate(blockMappingComponent.s1).getVector3i());
                         EntityRef blockEntity = blockEntityRegistry.getBlockEntityAt(segment);
                         PathDescriptorComponent pathDescriptor = blockEntity.getComponent(PathDescriptorComponent.class);
@@ -81,12 +85,12 @@ public class RailBlockSegmentMapper implements SegmentMapping {
 
                             Segment nextSegment = segmentCacheSystem.getSegment(d);
                             if (segmentSystem.segmentMatch(currentSegment, v1, q1, nextSegment, v2, q2) != SegmentSystem.JointMatch.None) {
-                                return new SegmentPair(d, blockEntity);
+                                return new MappingResult(d,blockEntity);
                             }
                         }
                     }
                     break;
-                    case S2: {
+                    case END: {
                         Vector3i segment = findOffset(blockComponent.getPosition(), blockMappingComponent.s2, blockMappingComponent.s1, rotation);//rotation.rotate(blockMappingComponent.s2).getVector3i());
                         EntityRef blockEntity = blockEntityRegistry.getBlockEntityAt(segment);
                         PathDescriptorComponent pathDescriptor = blockEntity.getComponent(PathDescriptorComponent.class);
@@ -100,7 +104,7 @@ public class RailBlockSegmentMapper implements SegmentMapping {
 
                             Segment nextSegment = segmentCacheSystem.getSegment(d);
                             if (segmentSystem.segmentMatch(currentSegment, v1, q1, nextSegment, v2, q2) != SegmentSystem.JointMatch.None) {
-                                return new SegmentPair(d, blockEntity);
+                                return new MappingResult(d,blockEntity);
                             }
                         }
                     }
