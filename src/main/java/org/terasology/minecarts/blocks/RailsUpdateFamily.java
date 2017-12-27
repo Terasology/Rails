@@ -100,8 +100,7 @@ public class RailsUpdateFamily extends AbstractBlockFamily implements PathFamily
         return null;
     }
 
-    public Block getBlockByConnection(byte connectionSides)
-    {
+    public Block getBlockByConnection(byte connectionSides) {
         return blocks.get(connectionSides);
     }
 
@@ -113,29 +112,28 @@ public class RailsUpdateFamily extends AbstractBlockFamily implements PathFamily
 
     /**
      * a fully connected tile has more then 1 connected edge and is not attached to the reference tile
+     *
      * @param location
      * @param connectSide
      * @param worldProvider
      * @param blockEntityRegistry
      * @return
      */
-    private boolean isFullyConnected(Vector3i location, Side connectSide, WorldProvider worldProvider, BlockEntityRegistry blockEntityRegistry)
-    {
+    private boolean isFullyConnected(Vector3i location, Side connectSide, WorldProvider worldProvider, BlockEntityRegistry blockEntityRegistry) {
         if (connectionCondition.isConnectingTo(location, connectSide, worldProvider, blockEntityRegistry)) {
             Vector3i neighborLocation = new Vector3i(location);
             neighborLocation.add(connectSide.getVector3i());
             EnumSet<Side> sides = SideBitFlag.getSides(Byte.parseByte(worldProvider.getBlock(neighborLocation).getURI().getIdentifier().toString()));
 
-            for(Side side : sides)
-            {
-                if(side == Side.TOP || side == Side.BOTTOM)
+            for (Side side : sides) {
+                if (side == Side.TOP || side == Side.BOTTOM)
                     continue;
                 if (new Vector3i(neighborLocation).add(side.getVector3i()).equals(location)) {
                     return false;
                 }
             }
-            if(sides.size() > 1)
-                return  true;
+            if (sides.size() > 1)
+                return true;
         }
         return false;
     }
@@ -156,7 +154,7 @@ public class RailsUpdateFamily extends AbstractBlockFamily implements PathFamily
 
         for (Side connectSide : SideBitFlag.getSides(connectionSides)) {
             if (connectionCondition.isConnectingTo(location, connectSide, worldProvider, blockEntityRegistry)) {
-                if(isFullyConnected(location, connectSide, worldProvider, blockEntityRegistry))
+                if (isFullyConnected(location, connectSide, worldProvider, blockEntityRegistry))
                     fullConnectedEdges += SideBitFlag.getSide(connectSide);
                 else
                     connections += SideBitFlag.getSide(connectSide);
@@ -169,7 +167,7 @@ public class RailsUpdateFamily extends AbstractBlockFamily implements PathFamily
                 }
             }
         }
-        if(connections == 0)
+        if (connections == 0)
             connections = fullConnectedEdges;
 
         countConnetions = SideBitFlag.getSides(connections).size();

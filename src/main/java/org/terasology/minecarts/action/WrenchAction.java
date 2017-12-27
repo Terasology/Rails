@@ -15,18 +15,25 @@
  */
 package org.terasology.minecarts.action;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.logic.common.ActivateEvent;
+import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.SideBitFlag;
 import org.terasology.math.geom.Vector3i;
+import org.terasology.minecarts.Constants;
 import org.terasology.minecarts.blocks.RailComponent;
 import org.terasology.minecarts.blocks.RailsUpdateFamily;
+import org.terasology.minecarts.components.CartJointComponent;
 import org.terasology.minecarts.components.RailVehicleComponent;
 import org.terasology.minecarts.components.WrenchComponent;
+import org.terasology.minecarts.controllers.CartJointSystem;
 import org.terasology.registry.In;
 import org.terasology.world.BlockEntityRegistry;
 import org.terasology.world.WorldProvider;
@@ -39,6 +46,7 @@ import org.terasology.world.block.BlockManager;
  */
 @RegisterSystem(RegisterMode.AUTHORITY)
 public class WrenchAction extends BaseComponentSystem {
+    private static final Logger LOGGER = LoggerFactory.getLogger(WrenchAction.class);
 
     @In
     WorldProvider worldProvider;
@@ -46,23 +54,28 @@ public class WrenchAction extends BaseComponentSystem {
     BlockEntityRegistry blockEntityRegistry;
     @In
     BlockManager blockManager;
-
-    @Override
-    public void initialise() {
-    }
+    @In
+    CartJointSystem cartJointSystem;
 
     @ReceiveEvent(components = {WrenchComponent.class})
-    public void onCartJoinAction(ActivateEvent event, EntityRef item)
-    {
-        EntityRef targetEntity = event.getTarget();
-        if (!targetEntity.hasComponent(RailVehicleComponent.class))
+    public void onCartJoinAction(ActivateEvent event, EntityRef item, WrenchComponent wrenchComponent) {
+        EntityRef targetVehicle = event.getTarget();
+
+        if (!targetVehicle.hasComponent(RailVehicleComponent.class) && !targetVehicle.hasComponent(CartJointComponent.class))
             return;
+
+        if(wrenchComponent.lastSelectedCart != null){
+            cartJointSystem.joinVehicles(targetVehicle,wrenchComponent.lastSelectedCart);
+            wrenchComponent.lastSelectedCart = null;
+            LOGGER.debug("Carts Joined");
+        }
+
+        wrenchComponent.lastSelectedCart = targetVehicle;
+
     }
 
-
     @ReceiveEvent(components = {WrenchComponent.class})
-    public void onRailFlipAction(ActivateEvent event, EntityRef item)
-    {
+    public void onRailFlipAction(ActivateEvent event, EntityRef item) {
         EntityRef targetEntity = event.getTarget();
         if (!targetEntity.hasComponent(RailComponent.class))
             return;
@@ -77,7 +90,7 @@ public class WrenchAction extends BaseComponentSystem {
         byte connections = Byte.parseByte(block.getURI().getIdentifier().toString());
 
 
-        if(SideBitFlag.getSides(connections).size() == 3) {
+        if (SideBitFlag.getSides(connections).size() == 3) {
             if (block.getBlockFamily() == railFamily) {
                 blockEntityRegistry.setBlockForceUpdateEntity(position, invertFamily.getBlockByConnection(connections));
             } else if (block.getBlockFamily() == invertFamily) {
