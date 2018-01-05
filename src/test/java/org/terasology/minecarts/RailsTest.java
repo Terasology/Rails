@@ -115,6 +115,20 @@ public class RailsTest extends ModuleTestingEnvironment {
         assertRailBlockAtConnectsTo(Vector3i.south(), SideBitFlag.getSides(Side.BACK));
     }
 
+    @Test
+    public void doubleSlopeRail() throws Exception {
+        setBlock(Vector3i.zero(), dirtBlock);
+        setBlock(Vector3i.north(), dirtBlock);
+        setBlock(Vector3i.north().add(Vector3i.up()), dirtBlock);
+
+        setRailBlock(Vector3i.south());
+        setRailBlock(Vector3i.zero().add(Vector3i.up()));
+        setRailBlock(Vector3i.north().add(Vector3i.up().scale(2)));
+
+        assertRailBlockAtConnectsTo(Vector3i.zero().add(Vector3i.up()), SideBitFlag.getSides(Side.BACK, Side.TOP));
+        assertRailBlockAtConnectsTo(Vector3i.south(), SideBitFlag.getSides(Side.BACK, Side.TOP));
+    }
+
     private void assertRailBlockAtConnectsTo(Vector3i position, byte expectedConnectionSides) {
         BlockUri railsBlockUri = worldProvider.getBlock(position).getURI();
         String expectedIdentifier = String.valueOf(expectedConnectionSides);
