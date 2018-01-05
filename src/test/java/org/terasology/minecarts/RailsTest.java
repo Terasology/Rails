@@ -20,17 +20,12 @@ import com.google.common.collect.Sets;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.theories.DataPoints;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.math.Region3i;
 import org.terasology.math.Side;
 import org.terasology.math.SideBitFlag;
 import org.terasology.math.geom.Vector3i;
-import org.terasology.minecarts.blocks.RailsFamilyFactory;
 import org.terasology.moduletestingenvironment.ModuleTestingEnvironment;
 import org.terasology.world.BlockEntityRegistry;
 import org.terasology.world.WorldProvider;
@@ -73,7 +68,7 @@ public class RailsTest extends ModuleTestingEnvironment {
     public void singleRail() {
         setRailBlock(Vector3i.zero());
 
-        assertRailsBlockAt(Vector3i.zero(), SideBitFlag.getSides());
+        assertRailBlockAtConnectsTo(Vector3i.zero(), SideBitFlag.getSides());
     }
 
     @Test
@@ -81,8 +76,8 @@ public class RailsTest extends ModuleTestingEnvironment {
         setRailBlock(Vector3i.zero());
         setRailBlock(Vector3i.north());
 
-        assertRailsBlockAt(Vector3i.zero(), SideBitFlag.getSides(Side.BACK));
-        assertRailsBlockAt(Vector3i.north(), SideBitFlag.getSides(Side.FRONT));
+        assertRailBlockAtConnectsTo(Vector3i.zero(), SideBitFlag.getSides(Side.BACK));
+        assertRailBlockAtConnectsTo(Vector3i.north(), SideBitFlag.getSides(Side.FRONT));
     }
 
     @Test
@@ -91,9 +86,9 @@ public class RailsTest extends ModuleTestingEnvironment {
         setRailBlock(Vector3i.north());
         setRailBlock(Vector3i.west());
 
-        assertRailsBlockAt(Vector3i.north(), SideBitFlag.getSides(Side.FRONT));
-        assertRailsBlockAt(Vector3i.zero(), SideBitFlag.getSides(Side.BACK, Side.RIGHT));
-        assertRailsBlockAt(Vector3i.west(), SideBitFlag.getSides(Side.LEFT));
+        assertRailBlockAtConnectsTo(Vector3i.north(), SideBitFlag.getSides(Side.FRONT));
+        assertRailBlockAtConnectsTo(Vector3i.zero(), SideBitFlag.getSides(Side.BACK, Side.RIGHT));
+        assertRailBlockAtConnectsTo(Vector3i.west(), SideBitFlag.getSides(Side.LEFT));
     }
 
     @Test
@@ -104,7 +99,7 @@ public class RailsTest extends ModuleTestingEnvironment {
         // Must be added last so that the tee is actually created
         setRailBlock(Vector3i.zero());
 
-        assertRailsBlockAt(Vector3i.zero(), SideBitFlag.getSides(Side.FRONT, Side.BACK, Side.RIGHT));
+        assertRailBlockAtConnectsTo(Vector3i.zero(), SideBitFlag.getSides(Side.FRONT, Side.BACK, Side.RIGHT));
     }
 
     @Test
@@ -115,12 +110,12 @@ public class RailsTest extends ModuleTestingEnvironment {
         setRailBlock(Vector3i.north().add(Vector3i.up()));
         setRailBlock(Vector3i.south());
 
-        assertRailsBlockAt(Vector3i.north().add(Vector3i.up()), SideBitFlag.getSides(Side.FRONT));
-        assertRailsBlockAt(Vector3i.zero(), SideBitFlag.getSides(Side.BACK, Side.TOP));
-        assertRailsBlockAt(Vector3i.south(), SideBitFlag.getSides(Side.BACK));
+        assertRailBlockAtConnectsTo(Vector3i.north().add(Vector3i.up()), SideBitFlag.getSides(Side.FRONT));
+        assertRailBlockAtConnectsTo(Vector3i.zero(), SideBitFlag.getSides(Side.BACK, Side.TOP));
+        assertRailBlockAtConnectsTo(Vector3i.south(), SideBitFlag.getSides(Side.BACK));
     }
 
-    private void assertRailsBlockAt(Vector3i position, byte expectedConnectionSides) {
+    private void assertRailBlockAtConnectsTo(Vector3i position, byte expectedConnectionSides) {
         BlockUri railsBlockUri = worldProvider.getBlock(position).getURI();
         String expectedIdentifier = String.valueOf(expectedConnectionSides);
 
