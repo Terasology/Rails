@@ -16,6 +16,8 @@ A cart is a vehicle that can travel on rails. This module contains a simplistic 
 ## Wrench
 The wrench is a tool that can be used to perform specific actions like connecting carts with each other or changing the direction of a tee joint.
 
+For additional items like locomotives and special rails to use with **Rails**, please take a look at the [AdditionalRails](https://github.com/Terasology/AdditionalRails) module.
+
 Creating Tracks
 =====
 Tracks are built by placing rail blocks. When a rail block is placed, it automatically connects to nearby rail blocks to form contiguous track segments. Rail blocks can be straight or sloped and can form a corner, T (tee) junction, or an intersection.
