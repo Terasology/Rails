@@ -17,7 +17,6 @@ package org.terasology.minecarts.components;
 
 import org.terasology.entitySystem.Component;
 import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.math.geom.Vector3f;
 import org.terasology.reflection.MappedContainer;
 
 public class CartJointComponent implements Component {

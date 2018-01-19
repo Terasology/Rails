@@ -17,7 +17,6 @@ package org.terasology.minecarts.components;
 
 
 import org.terasology.entitySystem.Component;
-import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.network.FieldReplicateType;
 import org.terasology.network.Replicate;
@@ -29,5 +28,4 @@ public class RailVehicleComponent implements Component {
     public Vector3f velocity = new Vector3f();
     public float backAxisOffset = 0f;
     public float frontAxisOffset = 0f;
-
 }

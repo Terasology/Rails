@@ -17,17 +17,14 @@ package org.terasology.minecarts.action;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.logic.common.ActivateEvent;
-import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.SideBitFlag;
 import org.terasology.math.geom.Vector3i;
-import org.terasology.minecarts.Constants;
 import org.terasology.minecarts.blocks.RailComponent;
 import org.terasology.minecarts.blocks.RailsUpdateFamily;
 import org.terasology.minecarts.components.CartJointComponent;

@@ -41,12 +41,11 @@ import org.terasology.physics.StandardCollisionGroup;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.registry.In;
 import org.terasology.rendering.logic.MeshComponent;
-import org.terasology.segmentedpaths.segments.CurvedSegment;
 import org.terasology.segmentedpaths.SegmentMeta;
 import org.terasology.segmentedpaths.components.PathDescriptorComponent;
 import org.terasology.segmentedpaths.components.PathFollowerComponent;
-import org.terasology.segmentedpaths.controllers.SegmentCacheSystem;
 import org.terasology.segmentedpaths.controllers.PathFollowerSystem;
+import org.terasology.segmentedpaths.controllers.SegmentCacheSystem;
 import org.terasology.segmentedpaths.controllers.SegmentSystem;
 import org.terasology.segmentedpaths.segments.Segment;
 import org.terasology.world.BlockEntityRegistry;
@@ -130,7 +129,6 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
                 Quat4f rotation = segmentSystem.segmentRotation(ref);
 
                 float segmentPosition = segment.nearestSegmentPosition(location.getWorldPosition(), position, rotation);
-                ;
 
                 segmentVehicleComponent.segmentMeta = new SegmentMeta(segmentPosition, ref, prefab);
                 railVehicle.addComponent(segmentVehicleComponent);
