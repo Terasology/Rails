@@ -65,7 +65,7 @@ public class CartImpulseSystem extends BaseComponentSystem  {
     }
 
 
-    @ReceiveEvent(components = {RailVehicleComponent.class, PathFollowerComponent.class, LocationComponent.class, RigidBodyComponent.class}, priority = EventPriority.PRIORITY_HIGH)
+    @ReceiveEvent(components = {RailVehicleComponent.class, LocationComponent.class, RigidBodyComponent.class}, priority = EventPriority.PRIORITY_HIGH)
     public void onBump(CollideEvent event, EntityRef entity) {
         CollisionFilterComponent collisionFilterComponent = entity.getComponent(CollisionFilterComponent.class);
         if (collisionFilterComponent != null && collisionFilterComponent.filter.contains(event.getOtherEntity()))
@@ -77,7 +77,6 @@ public class CartImpulseSystem extends BaseComponentSystem  {
             if (areJoinedTogether(entity, event.getOtherEntity())) {
                 return;
             }
-
             this.handleCartCollision(event, entity);
         }
     }
@@ -137,9 +136,7 @@ public class CartImpulseSystem extends BaseComponentSystem  {
         LocationComponent v1l = entity.getComponent(LocationComponent.class);
         LocationComponent v2l = event.getOtherEntity().getComponent(LocationComponent.class);
 
-
         Vector3f df = new Vector3f(v2l.getWorldPosition()).sub(v1l.getWorldPosition()).add(new Vector3f(Float.MIN_VALUE,Float.MIN_VALUE,Float.MIN_VALUE)).normalize();
-
         //calculate the half normal vector
         Vector3f normal = new Vector3f(df);
 

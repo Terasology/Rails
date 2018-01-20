@@ -37,7 +37,10 @@
 
     },
     "Rails:CartRidable" : {},
-    "Rails:RailVehicle": {},
+    "Rails:RailVehicle": {
+        'frontAxisOffset': 0.5,
+        'backAxisOffset': -0.5
+    },
     "Trigger": {
         "detectGroups": [
             "engine:world",

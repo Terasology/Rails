@@ -41,12 +41,11 @@ import org.terasology.physics.StandardCollisionGroup;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.registry.In;
 import org.terasology.rendering.logic.MeshComponent;
-import org.terasology.segmentedpaths.segments.CurvedSegment;
 import org.terasology.segmentedpaths.SegmentMeta;
 import org.terasology.segmentedpaths.components.PathDescriptorComponent;
 import org.terasology.segmentedpaths.components.PathFollowerComponent;
-import org.terasology.segmentedpaths.controllers.SegmentCacheSystem;
 import org.terasology.segmentedpaths.controllers.PathFollowerSystem;
+import org.terasology.segmentedpaths.controllers.SegmentCacheSystem;
 import org.terasology.segmentedpaths.controllers.SegmentSystem;
 import org.terasology.segmentedpaths.segments.Segment;
 import org.terasology.world.BlockEntityRegistry;
@@ -85,7 +84,7 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
 
     @Override
     public void initialise() {
-        segmentMapping = new RailBlockSegmentMapper(blockEntityRegistry, pathFollowerSystem,segmentSystem, segmentCacheSystem);
+        segmentMapping = new RailBlockSegmentMapper(blockEntityRegistry, pathFollowerSystem, segmentSystem, segmentCacheSystem);
     }
 
 
@@ -96,9 +95,9 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
         }
     }
 
-    public Vector3f updateHeading(EntityRef railVehcile,Vector3f oldHeading){
+    public Vector3f updateHeading(EntityRef railVehcile, Vector3f oldHeading) {
         PathFollowerComponent pathFollowerComponent = railVehcile.getComponent(PathFollowerComponent.class);
-        if(pathFollowerComponent != null){
+        if (pathFollowerComponent != null) {
             return pathFollowerComponent.heading.project(oldHeading).normalize();
         }
         return null;
@@ -129,9 +128,9 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
                 Vector3f position = segmentSystem.segmentPosition(ref);
                 Quat4f rotation = segmentSystem.segmentRotation(ref);
 
-                float segmentPosition = segment.nearestSegmentPosition(location.getWorldPosition(), position, rotation);;
+                float segmentPosition = segment.nearestSegmentPosition(location.getWorldPosition(), position, rotation);
 
-                segmentVehicleComponent.segmentMeta = new SegmentMeta(segmentPosition,ref,prefab);
+                segmentVehicleComponent.segmentMeta = new SegmentMeta(segmentPosition, ref, prefab);
                 railVehicle.addComponent(segmentVehicleComponent);
                 segmentVehicleComponent.heading = pathFollowerSystem.vehicleTangent(railVehicle);
                 rigidBodyComponent.collidesWith.remove(StandardCollisionGroup.WORLD);
@@ -172,12 +171,24 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
                 Util.bound(railVehicleComponent.velocity);
                 if (pathFollowerSystem.move(railVehicle, Math.signum(segmentVehicleComponent.heading.dot(railVehicleComponent.velocity)) * mag * delta, segmentMapping)) {
 
-                    //calculate the cart rotation
-                    Quat4f horizontalRotation = Quat4f.shortestArcQuat(Vector3f.north(), new Vector3f(segmentVehicleComponent.heading).setY(0).normalize());
-                    Quat4f verticalRotation = Quat4f.shortestArcQuat(new Vector3f(segmentVehicleComponent.heading).setY(0).normalize(), new Vector3f(segmentVehicleComponent.heading));
-                    verticalRotation.mul(horizontalRotation);
-                    location.setLocalRotation(verticalRotation);
-                    location.setWorldPosition(position);
+                    Vector3f frontAxisPosition = pathFollowerSystem.vehiclePoint(railVehicle, railVehicleComponent.frontAxisOffset, segmentMapping);
+                    Vector3f backAxisPosition = pathFollowerSystem.vehiclePoint(railVehicle, railVehicleComponent.backAxisOffset, segmentMapping);
+                    if (frontAxisPosition == null || backAxisPosition == null) {
+                        Quat4f horizontalRotation = Quat4f.shortestArcQuat(Vector3f.north(), new Vector3f(segmentVehicleComponent.heading).setY(0).normalize());
+                        Quat4f verticalRotation = Quat4f.shortestArcQuat(new Vector3f(segmentVehicleComponent.heading).setY(0).normalize(), new Vector3f(segmentVehicleComponent.heading));
+                        verticalRotation.mul(horizontalRotation);
+                        location.setLocalRotation(verticalRotation);
+                        location.setWorldPosition(position);
+                    } else {
+                        frontAxisPosition.y = mesh.mesh.getAABB().getMax().y / 2.0f + frontAxisPosition.y + .01f;
+                        backAxisPosition.y = mesh.mesh.getAABB().getMax().y / 2.0f + backAxisPosition.y + .01f;
+
+                        Quat4f horizontalRotation = Quat4f.shortestArcQuat(Vector3f.north(), new Vector3f(frontAxisPosition).sub(backAxisPosition).setY(0).normalize());
+                        Quat4f verticalRotation = Quat4f.shortestArcQuat(new Vector3f(segmentVehicleComponent.heading).setY(0).normalize(), new Vector3f(segmentVehicleComponent.heading));
+                        verticalRotation.mul(horizontalRotation);
+                        location.setLocalRotation(verticalRotation);
+                        location.setWorldPosition((backAxisPosition.add(frontAxisPosition)).div(2));
+                    }
                     rigidBodyComponent.kinematic = true;
                 } else {
                     detachFromRail(railVehicle);

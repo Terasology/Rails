@@ -26,4 +26,6 @@ import org.terasology.network.ServerEvent;
 public class RailVehicleComponent implements Component {
     @Replicate(FieldReplicateType.SERVER_TO_CLIENT)
     public Vector3f velocity = new Vector3f();
+    public float backAxisOffset = 0f;
+    public float frontAxisOffset = 0f;
 }
