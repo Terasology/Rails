@@ -1,6 +1,6 @@
 {
     "id": "Rails",
-    "version" : "0.3.7-SNAPSHOT",
+    "version" : "0.3.8-SNAPSHOT",
     "author": "small-jeeper, SkySom, Cervator, pollend, msteiger",
     "displayName": "Rails",
     "description": "A module that adds rails and carts.",
@@ -12,7 +12,7 @@
         },
         {
             "id" : "SegmentedPaths",
-            "minVersion": "0.2.0"
+            "minVersion": "0.2.1"
 
         },
         {
