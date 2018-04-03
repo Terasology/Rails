@@ -24,6 +24,7 @@ import org.terasology.logic.characters.MovementMode;
 import org.terasology.logic.characters.events.SetMovementModeEvent;
 import org.terasology.logic.common.ActivateEvent;
 import org.terasology.logic.health.BeforeDestroyEvent;
+import org.terasology.logic.players.event.OnPlayerRespawnedEvent;
 import org.terasology.logic.location.Location;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.geom.Quat4f;
@@ -57,6 +58,11 @@ public class CartRidableAction extends BaseComponentSystem {
         CartRidableComponent cartRidableComponent = entity.getComponent(CartRidableComponent.class);
         
         dismount(entity, cartRidableComponent.rider);
+    }
+    
+    @ReceiveEvent(components = {RidingCartComponent.class})
+    public void onRiderDestroyed(BeforeDestroyEvent event, EntityRef rider, RidingCartComponent ridingComponent){
+        dismount(ridingComponent.cart, rider);
     }
     
     private void mount(EntityRef cart, EntityRef rider){
