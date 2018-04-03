@@ -29,6 +29,7 @@ import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.geom.Quat4f;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.minecarts.components.CartRidableComponent;
+import org.terasology.minecarts.components.RidingCartComponent;
 import org.terasology.minecarts.controllers.CartImpulseSystem;
 import org.terasology.physics.StandardCollisionGroup;
 import org.terasology.physics.components.RigidBodyComponent;
@@ -42,43 +43,60 @@ public class CartRidableAction extends BaseComponentSystem {
     @ReceiveEvent(components = {CartRidableComponent.class, LocationComponent.class})
     public void onUseFunctional(ActivateEvent event, EntityRef entity) {
         CartRidableComponent cartRidableComponent = entity.getComponent(CartRidableComponent.class);
-        RigidBodyComponent railVehicleRigidBody = entity.getComponent(RigidBodyComponent.class);
 
         if (cartRidableComponent.rider == null) {
-            event.getInstigator().send(new SetMovementModeEvent(MovementMode.NONE));
-            cartRidableComponent.rider = event.getInstigator();
-            Location.attachChild(entity, cartRidableComponent.rider, new Vector3f(0, 1.5f, 0), new Quat4f());
-            CartImpulseSystem.AddCollisionFilter(entity, cartRidableComponent.rider);
-            railVehicleRigidBody.collidesWith.remove(StandardCollisionGroup.CHARACTER);
-            railVehicleRigidBody.collidesWith.remove(StandardCollisionGroup.DEFAULT);
+            mount(entity, event.getInstigator());
         } else {
-            event.getInstigator().send(new SetMovementModeEvent(MovementMode.WALKING));
-            Location.removeChild(entity, cartRidableComponent.rider);
-            CartImpulseSystem.RemoveCollisionFilter(entity, cartRidableComponent.rider);
-            cartRidableComponent.rider = null;
-            railVehicleRigidBody.collidesWith.add(StandardCollisionGroup.CHARACTER);
-            railVehicleRigidBody.collidesWith.add(StandardCollisionGroup.DEFAULT);
+            dismount(entity, event.getInstigator());
         }
-        entity.saveComponent(cartRidableComponent);
-        entity.saveComponent(railVehicleRigidBody);
     }
 
 
     @ReceiveEvent(components = {CartRidableComponent.class, LocationComponent.class})
     public void onCartDestroyed(BeforeDestroyEvent event, EntityRef entity) {
         CartRidableComponent cartRidableComponent = entity.getComponent(CartRidableComponent.class);
-        RigidBodyComponent railVehicleRigidBody = entity.getComponent(RigidBodyComponent.class);
-
-        if (cartRidableComponent.rider != null) {
-            event.getInstigator().send(new SetMovementModeEvent(MovementMode.WALKING));
-            Location.removeChild(entity, cartRidableComponent.rider);
-            CartImpulseSystem.RemoveCollisionFilter(entity, cartRidableComponent.rider);
-            cartRidableComponent.rider = null;
-            railVehicleRigidBody.collidesWith.add(StandardCollisionGroup.CHARACTER);
-            railVehicleRigidBody.collidesWith.add(StandardCollisionGroup.DEFAULT);
-        }
-        entity.saveComponent(cartRidableComponent);
-        entity.saveComponent(railVehicleRigidBody);
+        
+        dismount(entity, cartRidableComponent.rider);
     }
-
+    
+    private void mount(EntityRef cart, EntityRef rider){
+        CartRidableComponent cartRidableComponent = cart.getComponent(CartRidableComponent.class);
+        RigidBodyComponent railVehicleRigidBody = cart.getComponent(RigidBodyComponent.class);
+        
+        if(rider.getComponent(RidingCartComponent.class) != null){
+            return;
+        }
+        if(cartRidableComponent.rider != null){
+            return;
+        }
+        rider.send(new SetMovementModeEvent(MovementMode.NONE));
+        cartRidableComponent.rider = rider;
+        Location.attachChild(cart, rider, new Vector3f(0, 1.5f, 0), new Quat4f());
+        CartImpulseSystem.AddCollisionFilter(cart, rider);
+        railVehicleRigidBody.collidesWith.remove(StandardCollisionGroup.CHARACTER);
+        railVehicleRigidBody.collidesWith.remove(StandardCollisionGroup.DEFAULT);
+        rider.addComponent(new RidingCartComponent(cart));
+        
+        cart.saveComponent(cartRidableComponent);
+        cart.saveComponent(railVehicleRigidBody);
+    }
+    
+    private void dismount(EntityRef cart, EntityRef rider){
+        CartRidableComponent cartRidableComponent = cart.getComponent(CartRidableComponent.class);
+        if(rider == null || !rider.equals(cartRidableComponent.rider)) {
+            return;
+        }
+        rider.removeComponent(RidingCartComponent.class);
+        rider.send(new SetMovementModeEvent(MovementMode.WALKING));
+        Location.removeChild(cart, rider);
+        
+        RigidBodyComponent railVehicleRigidBody = cart.getComponent(RigidBodyComponent.class);
+        CartImpulseSystem.RemoveCollisionFilter(cart, rider);
+        cartRidableComponent.rider = null;
+        railVehicleRigidBody.collidesWith.add(StandardCollisionGroup.CHARACTER);
+        railVehicleRigidBody.collidesWith.add(StandardCollisionGroup.DEFAULT);
+        
+        cart.saveComponent(cartRidableComponent);
+        cart.saveComponent(railVehicleRigidBody);
+    }
 }
