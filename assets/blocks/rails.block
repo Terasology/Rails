@@ -17,7 +17,7 @@
 {
     "shadowCasting": "false",
     "translucent" : true,
-    "rotation": "Rails:rails",
+    "family": "rails",
     "penetrable" : false,
 
     "no_connections": {

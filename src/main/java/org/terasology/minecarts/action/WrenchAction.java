@@ -17,19 +17,16 @@ package org.terasology.minecarts.action;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.logic.common.ActivateEvent;
-import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.SideBitFlag;
 import org.terasology.math.geom.Vector3i;
-import org.terasology.minecarts.Constants;
+import org.terasology.minecarts.blocks.RailBlockFamily;
 import org.terasology.minecarts.blocks.RailComponent;
-import org.terasology.minecarts.blocks.RailsUpdateFamily;
 import org.terasology.minecarts.components.CartJointComponent;
 import org.terasology.minecarts.components.RailVehicleComponent;
 import org.terasology.minecarts.components.WrenchComponent;
@@ -82,13 +79,12 @@ public class WrenchAction extends BaseComponentSystem {
 
         Vector3i position = targetEntity.getComponent(BlockComponent.class).getPosition();
 
-        RailsUpdateFamily railFamily = (RailsUpdateFamily) blockManager.getBlockFamily("Rails:rails");
-        RailsUpdateFamily invertFamily = (RailsUpdateFamily) blockManager.getBlockFamily("railsTBlockInverted");
+        RailBlockFamily railFamily = (RailBlockFamily) blockManager.getBlockFamily("Rails:rails");
+        RailBlockFamily invertFamily = (RailBlockFamily) blockManager.getBlockFamily("railsTBlockInverted");
 
         Block block = worldProvider.getBlock(targetEntity.getComponent(BlockComponent.class).getPosition());
 
         byte connections = Byte.parseByte(block.getURI().getIdentifier().toString());
-
 
         if (SideBitFlag.getSides(connections).size() == 3) {
             if (block.getBlockFamily() == railFamily) {

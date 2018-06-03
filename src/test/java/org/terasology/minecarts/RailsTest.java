@@ -163,8 +163,7 @@ public class RailsTest extends ModuleTestingEnvironment {
     }
 
     private void setBlockForFamily(Vector3i position, BlockFamily blockFamily) {
-        setBlock(position, blockFamily.getBlockForPlacement(worldProvider, blockEntityRegistry, position,
-                Side.TOP, Side.TOP));
+        setBlock(position, blockFamily.getBlockForPlacement(position, Side.TOP, Side.TOP));
     }
 
     private void setRailBlock(Vector3i position) {
