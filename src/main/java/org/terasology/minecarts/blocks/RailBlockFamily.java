@@ -15,7 +15,6 @@
  */
 package org.terasology.minecarts.blocks;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import gnu.trove.map.TByteObjectMap;
 import gnu.trove.map.hash.TByteObjectHashMap;
@@ -35,15 +34,11 @@ import org.terasology.world.block.BlockUri;
 import org.terasology.world.block.family.BlockSections;
 import org.terasology.world.block.family.MultiConnectFamily;
 import org.terasology.world.block.family.RegisterBlockFamily;
-import org.terasology.world.block.family.UpdatesWithNeighboursFamily;
 import org.terasology.world.block.loader.BlockFamilyDefinition;
 import org.terasology.world.block.shapes.BlockShape;
 
 import javax.print.attribute.standard.Sides;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @RegisterBlockFamily("rails")
 @BlockSections({"no_connections", "one_connection", "one_connection_slope", "line_connection", "2d_corner", "2d_t", "cross"})
@@ -69,7 +64,7 @@ public class RailBlockFamily extends MultiConnectFamily  implements PathFamily {
 
         this.registerBlock(blockUri,definition,blockBuilder,NO_CONNECTIONS, (byte) 0, Rotation.horizontalRotations());
         this.registerBlock(blockUri,definition,blockBuilder,ONE_CONNECTION, SideBitFlag.getSides(Side.RIGHT), Rotation.horizontalRotations());
-        this.registerBlock(blockUri,definition,blockBuilder,ONE_CONNECTIONS_SLOPE, SideBitFlag.getSides(Side.BACK, Side.TOP), Rotation.horizontalRotations());
+        this.registerBlock(blockUri,definition,blockBuilder,ONE_CONNECTIONS_SLOPE, SideBitFlag.getSides(Side.FRONT, Side.TOP), Rotation.horizontalRotations());
         this.registerBlock(blockUri,definition,blockBuilder,TWO_CONNECTIONS_LINE, SideBitFlag.getSides(Side.LEFT, Side.RIGHT), Rotation.horizontalRotations());
         this.registerBlock(blockUri,definition,blockBuilder,TWO_CONNECTIONS_CORNER, SideBitFlag.getSides(Side.LEFT, Side.FRONT), Rotation.horizontalRotations());
         this.registerBlock(blockUri,definition,blockBuilder,THREE_CONNECTIONS_T, SideBitFlag.getSides(Side.LEFT, Side.RIGHT, Side.FRONT), Rotation.horizontalRotations());
@@ -94,82 +89,38 @@ public class RailBlockFamily extends MultiConnectFamily  implements PathFamily {
 
     @Override
     public Block getBlockForPlacement(Vector3i location, Side attachmentSide, Side direction) {
-        return blocks.get(getByteConnections(location));
-    }
-
-    private byte getByteConnections(Vector3i location) {
         byte connections = 0;
-        byte fullConnectedEdges = 0;
-        int countConnetions = 0;
-        boolean hasTopBlock = false;
-        ArrayList<Side> skipSides = new ArrayList<Side>();
-        Vector3i upLocation = new Vector3i(location);
-        upLocation.y += 1;
-        Block block = worldProvider.getBlock(upLocation);
-
-        if (block.getURI() != BlockManager.AIR_ID && !block.isPenetrable() && block.isLiquid()) {
-            hasTopBlock = true;
-        }
-
-        for (Side connectSide : Side.values()) {
-            if (connectionCondition(location, connectSide)) {
-                if (isFullyConnected(location, connectSide, worldProvider, blockEntityRegistry))
-                    fullConnectedEdges += SideBitFlag.getSide(connectSide);
-                else
-                    connections += SideBitFlag.getSide(connectSide);
-
-            } else if (hasTopBlock) {
-                block = worldProvider.getBlock(location);
-
-                if (block.getURI() != BlockManager.AIR_ID && !block.isPenetrable() && block.isLiquid()) {
-                    skipSides.add(connectSide);
-                }
+        for (Side connectSide : SideBitFlag.getSides(getConnectionSides())) {
+            if (this.connectionCondition(location, connectSide) && !isFullyConnected(location,connectSide)) {
+                connections |= SideBitFlag.getSide(connectSide);
             }
         }
-        if (connections == 0)
-            connections = fullConnectedEdges;
 
-        countConnetions = SideBitFlag.getSides(connections).size();
-
-        upLocation.y -= 2;
-        for (Side connectSide : Side.values()) {
-            if (connectionCondition(upLocation, connectSide)) {
-                connections += SideBitFlag.getSide(connectSide);
+        for (Side connectSide : SideBitFlag.getSides(getConnectionSides())) {
+            if (this.connectionCondition(new Vector3i(location).add(Vector3i.down()), connectSide)) {
+                connections |= SideBitFlag.getSide(connectSide);
             }
         }
-        upLocation.y += 2;
-        switch (countConnetions) {
-            case 0:
-                for (Side connectSide : Side.values()) {
-                    if (skipSides.contains(connectSide)) {
-                        continue;
-                    }
-                    if (connectionCondition(upLocation, connectSide)) {
-                        connections = 0;
-                        connections += SideBitFlag.getSide(connectSide);
-                        connections += SideBitFlag.getSide(Side.TOP);
-                        break;
-                    }
-                }
-                break;
-            case 1:
-                EnumSet<Side> sides = SideBitFlag.getSides(connections);
-                Side connectSide = (Side) sides.toArray()[0];
-                connectSide = connectSide.reverse();
-                if (skipSides.contains(connectSide)) {
-                    break;
-                }
 
-                if (connectionCondition(upLocation,connectSide)) {
-                    connections = 0;
-                    connections += SideBitFlag.getSide(connectSide);
-                    connections += SideBitFlag.getSide(Side.TOP);
-                    break;
+        for (Side connectSide : SideBitFlag.getSides(getConnectionSides())) {
+            if (this.connectionCondition(new Vector3i(location).add(Vector3i.up()), connectSide)) {
+                connections |= SideBitFlag.getSide(Side.TOP);
+                if(SideBitFlag.getSides(connections).size() == 1){
+                    connections |= SideBitFlag.getSide(connectSide.reverse());
                 }
                 break;
+            }
         }
-        return connections;
+        return blocks.get(connections);
     }
+
+
+
+    @Override
+    public Block getBlockForNeighborUpdate(Vector3i location, Block oldBlock) {
+        return oldBlock;
+    }
+
 
 
     /**
@@ -177,11 +128,9 @@ public class RailBlockFamily extends MultiConnectFamily  implements PathFamily {
      *
      * @param location
      * @param connectSide
-     * @param worldProvider
-     * @param blockEntityRegistry
      * @return
      */
-    private boolean isFullyConnected(Vector3i location, Side connectSide, WorldProvider worldProvider, BlockEntityRegistry blockEntityRegistry) {
+    private boolean isFullyConnected(Vector3i location, Side connectSide) {
         if (connectionCondition(location, connectSide)) {
             Vector3i neighborLocation = new Vector3i(location);
             neighborLocation.add(connectSide.getVector3i());
