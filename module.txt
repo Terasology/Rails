@@ -1,6 +1,6 @@
 {
     "id": "Rails",
-    "version" : "0.3.2-SNAPSHOT",
+    "version" : "0.4.0-SNAPSHOT",
     "author": "small-jeeper, SkySom, Cervator, pollend, msteiger",
     "displayName": "Rails",
     "description": "A module that adds rails and carts.",
