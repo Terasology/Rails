@@ -45,20 +45,10 @@ public class MinecartAction extends BaseComponentSystem {
     @In
     private BlockManager blockManager;
 
-
     private final Logger logger = LoggerFactory.getLogger(MinecartAction.class);
 
     @Override
     public void initialise() {
-    }
-
-
-    @ReceiveEvent
-    public void onPlayerSpawn(OnPlayerSpawnedEvent event, EntityRef player, InventoryComponent inventory) {
-        BlockItemFactory blockFactory = new BlockItemFactory(entityManager);
-        inventoryManager.giveItem(player, player, entityManager.create("Rails:minecart"));
-        inventoryManager.giveItem(player, player, entityManager.create("Rails:wrench"));
-        inventoryManager.giveItem(player, player, blockFactory.newInstance(blockManager.getBlockFamily("Rails:rails"), 99));
     }
 
     @ReceiveEvent(components = {CartDefinitionComponent.class, ItemComponent.class})
