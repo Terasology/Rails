@@ -18,6 +18,8 @@ package org.terasology.minecarts.blocks;
 import com.google.common.collect.Sets;
 import gnu.trove.map.TByteObjectMap;
 import gnu.trove.map.hash.TByteObjectHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.math.Rotation;
 import org.terasology.math.Side;
@@ -25,11 +27,8 @@ import org.terasology.math.SideBitFlag;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.naming.Name;
 import org.terasology.segmentedpaths.blocks.PathFamily;
-import org.terasology.world.BlockEntityRegistry;
-import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
 import org.terasology.world.block.BlockBuilderHelper;
-import org.terasology.world.block.BlockManager;
 import org.terasology.world.block.BlockUri;
 import org.terasology.world.block.family.BlockSections;
 import org.terasology.world.block.family.MultiConnectFamily;
@@ -37,12 +36,15 @@ import org.terasology.world.block.family.RegisterBlockFamily;
 import org.terasology.world.block.loader.BlockFamilyDefinition;
 import org.terasology.world.block.shapes.BlockShape;
 
-import javax.print.attribute.standard.Sides;
-import java.util.*;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 @RegisterBlockFamily("rails")
 @BlockSections({"no_connections", "one_connection", "one_connection_slope", "line_connection", "2d_corner", "2d_t", "cross"})
-public class RailBlockFamily extends MultiConnectFamily  implements PathFamily {
+public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
     public static final String NO_CONNECTIONS = "no_connections";
     public static final String ONE_CONNECTION = "one_connection";
     public static final String ONE_CONNECTIONS_SLOPE = "one_connection_slope";
@@ -51,10 +53,12 @@ public class RailBlockFamily extends MultiConnectFamily  implements PathFamily {
     public static final String THREE_CONNECTIONS_T = "2d_t";
     public static final String FOUR_CONNECTIONS_CROSS = "cross";
 
-    private TByteObjectMap<Rotation> rotationMap  = new TByteObjectHashMap<>();
+    private TByteObjectMap<Rotation> rotationMap = new TByteObjectHashMap<>();
+    private Map<String, Byte> baseSideBitMap = new HashMap<>();
 
     public RailBlockFamily(BlockFamilyDefinition definition, BlockShape shape, BlockBuilderHelper blockBuilder) {
         super(definition, shape, blockBuilder);
+        initSideBitMap();
     }
 
     public RailBlockFamily(BlockFamilyDefinition definition, BlockBuilderHelper blockBuilder) {
@@ -62,25 +66,33 @@ public class RailBlockFamily extends MultiConnectFamily  implements PathFamily {
 
         BlockUri blockUri = new BlockUri(definition.getUrn());
 
-        this.registerBlock(blockUri,definition,blockBuilder,NO_CONNECTIONS, (byte) 0, Rotation.horizontalRotations());
-        this.registerBlock(blockUri,definition,blockBuilder,ONE_CONNECTION, SideBitFlag.getSides(Side.RIGHT), Rotation.horizontalRotations());
-        this.registerBlock(blockUri,definition,blockBuilder,ONE_CONNECTIONS_SLOPE, SideBitFlag.getSides(Side.FRONT, Side.TOP), Rotation.horizontalRotations());
-        this.registerBlock(blockUri,definition,blockBuilder,TWO_CONNECTIONS_LINE, SideBitFlag.getSides(Side.LEFT, Side.RIGHT), Rotation.horizontalRotations());
-        this.registerBlock(blockUri,definition,blockBuilder,TWO_CONNECTIONS_CORNER, SideBitFlag.getSides(Side.LEFT, Side.FRONT), Rotation.horizontalRotations());
-        this.registerBlock(blockUri,definition,blockBuilder,THREE_CONNECTIONS_T, SideBitFlag.getSides(Side.LEFT, Side.RIGHT, Side.FRONT), Rotation.horizontalRotations());
-        this.registerBlock(blockUri,definition,blockBuilder,FOUR_CONNECTIONS_CROSS, SideBitFlag.getSides(Side.RIGHT, Side.LEFT, Side.BACK, Side.FRONT), Rotation.horizontalRotations());
-   }
+        initSideBitMap();
+
+        for (String k : baseSideBitMap.keySet()) {
+            this.registerBlock(blockUri, definition, blockBuilder, k, baseSideBitMap.get(k), Rotation.horizontalRotations());
+        }
+    }
+
+    private void initSideBitMap() {
+        baseSideBitMap.put(NO_CONNECTIONS, (byte) 0);
+        baseSideBitMap.put(ONE_CONNECTION, (byte) 0b010000);
+        baseSideBitMap.put(ONE_CONNECTIONS_SLOPE, (byte) 0b000101);
+        baseSideBitMap.put(TWO_CONNECTIONS_LINE, (byte) 0b010010);
+        baseSideBitMap.put(TWO_CONNECTIONS_CORNER, (byte) 0b000110);
+        baseSideBitMap.put(THREE_CONNECTIONS_T, (byte) 0b010110);
+        baseSideBitMap.put(FOUR_CONNECTIONS_CROSS, (byte) 0b110110);
+    }
 
     @Override
     public Set<Block> registerBlock(BlockUri root, BlockFamilyDefinition definition, BlockBuilderHelper blockBuilder, String name, byte sides, Iterable<Rotation> rotations) {
         Set<Block> result = Sets.newLinkedHashSet();
-        for (Rotation rotation: rotations) {
+        for (Rotation rotation : rotations) {
             byte sideBits = 0;
             for (Side side : SideBitFlag.getSides(sides)) {
                 sideBits += SideBitFlag.getSide(rotation.rotate(side));
             }
             Block block = blockBuilder.constructTransformedBlock(definition, name, rotation, new BlockUri(root, new Name(String.valueOf(sideBits))), this);
-            rotationMap.put(sideBits,rotation);
+            rotationMap.put(sideBits, rotation);
             blocks.put(sideBits, block);
             result.add(block);
         }
@@ -91,7 +103,7 @@ public class RailBlockFamily extends MultiConnectFamily  implements PathFamily {
     public Block getBlockForPlacement(Vector3i location, Side attachmentSide, Side direction) {
         byte connections = 0;
         for (Side connectSide : SideBitFlag.getSides(getConnectionSides())) {
-            if (this.connectionCondition(location, connectSide) && !isFullyConnected(location,connectSide)) {
+            if (this.connectionCondition(location, connectSide) && !isFullyConnected(location, connectSide)) {
                 connections |= SideBitFlag.getSide(connectSide);
             }
         }
@@ -105,22 +117,69 @@ public class RailBlockFamily extends MultiConnectFamily  implements PathFamily {
         for (Side connectSide : SideBitFlag.getSides(getConnectionSides())) {
             if (this.connectionCondition(new Vector3i(location).add(Vector3i.up()), connectSide)) {
                 connections |= SideBitFlag.getSide(Side.TOP);
-                if(SideBitFlag.getSides(connections).size() == 1){
+                if (SideBitFlag.getSides(connections).size() == 1) {
                     connections |= SideBitFlag.getSide(connectSide.reverse());
                 }
                 break;
             }
         }
-        return blocks.get(connections);
+
+        Block result = blocks.get(connections);
+        if (result != null) {
+            return result;
+        } else {
+            return getClosestMatch(connections);
+        }
     }
 
+    private Block getClosestMatch(byte connections) {
+        EnumSet<Side> sides = SideBitFlag.getSides(connections);
+
+        // Indices represent priorities, 0 being the highest and 6 being the lowest
+        String[] keys = new String[baseSideBitMap.size()];
+        keys[0] = FOUR_CONNECTIONS_CROSS;
+        keys[1] = THREE_CONNECTIONS_T;
+        keys[2] = TWO_CONNECTIONS_LINE;
+        keys[3] = TWO_CONNECTIONS_CORNER;
+        keys[4] = ONE_CONNECTIONS_SLOPE;
+        keys[5] = ONE_CONNECTION;
+        keys[6] = NO_CONNECTIONS;
+
+        for (String k : keys) {
+            Block result = checkConnection(sides, k);
+            if (result != null) {
+                return result;
+            }
+        }
+
+        return blocks.get((byte) 0); // default block, simple no connection block
+    }
+
+    private Block checkConnection(EnumSet<Side> sides, String connection) {
+        Set<Byte> arrangements = new HashSet<>();
+
+        for (Rotation rotation : Rotation.horizontalRotations()) {
+            byte sideBits = 0;
+            for (Side side : SideBitFlag.getSides(baseSideBitMap.get(connection))) {
+                sideBits += SideBitFlag.getSide(rotation.rotate(side));
+            }
+            arrangements.add(sideBits);
+        }
+
+        for (byte b : arrangements) {
+            if (sides.containsAll(SideBitFlag.getSides(b))) {
+                return blocks.get(b);
+            }
+        }
+
+        return null;
+    }
 
 
     @Override
     public Block getBlockForNeighborUpdate(Vector3i location, Block oldBlock) {
         return oldBlock;
     }
-
 
 
     /**
@@ -137,14 +196,17 @@ public class RailBlockFamily extends MultiConnectFamily  implements PathFamily {
             EnumSet<Side> sides = SideBitFlag.getSides(Byte.parseByte(worldProvider.getBlock(neighborLocation).getURI().getIdentifier().toString()));
 
             for (Side side : sides) {
-                if (side == Side.TOP || side == Side.BOTTOM)
+                if (side == Side.TOP || side == Side.BOTTOM) {
                     continue;
+                }
                 if (new Vector3i(neighborLocation).add(side.getVector3i()).equals(location)) {
                     return false;
                 }
             }
-            if (sides.size() > 1)
+            if (sides.size() > 1) {
                 return true;
+            }
+
         }
         return false;
     }
@@ -160,12 +222,12 @@ public class RailBlockFamily extends MultiConnectFamily  implements PathFamily {
 
     @Override
     public byte getConnectionSides() {
-        return SideBitFlag.getSides(Side.LEFT,Side.FRONT,Side.BACK,Side.RIGHT);
+        return SideBitFlag.getSides(Side.LEFT, Side.FRONT, Side.BACK, Side.RIGHT);
     }
 
     @Override
     public Block getArchetypeBlock() {
-        return blocks.get(SideBitFlag.getSides(Side.RIGHT,Side.LEFT));
+        return blocks.get(SideBitFlag.getSides(Side.RIGHT, Side.LEFT));
     }
 
     public Block getBlockByConnection(byte connectionSides) {
