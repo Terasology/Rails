@@ -18,8 +18,6 @@ package org.terasology.minecarts.blocks;
 import com.google.common.collect.Sets;
 import gnu.trove.map.TByteObjectMap;
 import gnu.trove.map.hash.TByteObjectHashMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.math.Rotation;
 import org.terasology.math.Side;
@@ -114,9 +112,11 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
             }
         }
 
+        Side topSide = Side.BOTTOM;
         for (Side connectSide : SideBitFlag.getSides(getConnectionSides())) {
             if (this.connectionCondition(new Vector3i(location).add(Vector3i.up()), connectSide)) {
                 connections |= SideBitFlag.getSide(Side.TOP);
+                topSide = connectSide;
                 if (SideBitFlag.getSides(connections).size() == 1) {
                     connections |= SideBitFlag.getSide(connectSide.reverse());
                 }
@@ -128,25 +128,25 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
         if (result != null) {
             return result;
         } else {
-            return getClosestMatch(connections);
+            return getClosestMatch(connections, topSide);
         }
     }
 
-    private Block getClosestMatch(byte connections) {
+    private Block getClosestMatch(byte connections, Side topSide) {
         EnumSet<Side> sides = SideBitFlag.getSides(connections);
 
         // Indices represent priorities, 0 being the highest and 6 being the lowest
         String[] keys = new String[baseSideBitMap.size()];
         keys[0] = FOUR_CONNECTIONS_CROSS;
         keys[1] = THREE_CONNECTIONS_T;
-        keys[2] = TWO_CONNECTIONS_LINE;
+        keys[2] = ONE_CONNECTIONS_SLOPE;
         keys[3] = TWO_CONNECTIONS_CORNER;
-        keys[4] = ONE_CONNECTIONS_SLOPE;
+        keys[4] = TWO_CONNECTIONS_LINE;
         keys[5] = ONE_CONNECTION;
         keys[6] = NO_CONNECTIONS;
 
         for (String k : keys) {
-            Block result = checkConnection(sides, k);
+            Block result = checkConnection(sides, k, topSide);
             if (result != null) {
                 return result;
             }
@@ -155,7 +155,18 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
         return blocks.get((byte) 0); // default block, simple no connection block
     }
 
-    private Block checkConnection(EnumSet<Side> sides, String connection) {
+    private Block checkConnection(EnumSet<Side> sides, String connection, Side topSide) {
+
+        // if building slopes, make sure it is in the direction of the top block
+        if (connection.equals(ONE_CONNECTIONS_SLOPE)) {
+            if (sides.contains(Side.TOP) && sides.contains(topSide.reverse())) {
+                byte b = SideBitFlag.getSides(topSide.reverse(), Side.TOP);
+                return blocks.get(b);
+            } else {
+                return null;
+            }
+        }
+
         Set<Byte> arrangements = new HashSet<>();
 
         for (Rotation rotation : Rotation.horizontalRotations()) {
