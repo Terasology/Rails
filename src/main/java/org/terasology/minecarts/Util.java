@@ -28,6 +28,15 @@ public class Util {
             v.z = 0.0f;
     }
 
+    public static void bound(org.joml.Vector3f v) {
+        if (Float.isNaN(v.x) || Float.isInfinite(v.x))
+            v.x = 0.0f;
+        if (Float.isNaN(v.y) || Float.isInfinite(v.y))
+            v.y = 0.0f;
+        if (Float.isNaN(v.z) || Float.isInfinite(v.z))
+            v.z = 0.0f;
+    }
+
     public static Vector3f localToWorldPosition(Vector3f localPosition, LocationComponent locationComponent) {
         Vector3f worldPosition = new Vector3f(localPosition);
 

@@ -26,6 +26,7 @@ import org.terasology.logic.characters.CharacterComponent;
 import org.terasology.logic.characters.CharacterImpulseEvent;
 import org.terasology.logic.characters.CharacterMovementComponent;
 import org.terasology.logic.location.LocationComponent;
+import org.terasology.math.JomlUtil;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.minecarts.Constants;
 import org.terasology.minecarts.Util;
@@ -105,12 +106,12 @@ public class CartImpulseSystem extends BaseComponentSystem  {
         RigidBodyComponent r1 = entity.getComponent(RigidBodyComponent.class);
         CharacterMovementComponent r2 = event.getOtherEntity().getComponent(CharacterMovementComponent.class);
 
-        float jv =event.getNormal().dot(v1.velocity) - event.getNormal().dot(r2.getVelocity());
+        float jv =event.getNormal().dot(v1.velocity) - event.getNormal().dot(JomlUtil.from(r2.getVelocity()));
         float effectiveMass = (1.0f / r1.mass) + (1.0f / Constants.PLAYER_MASS);
 
         Vector3f df = new Vector3f(v2l.getWorldPosition()).sub(v1l.getWorldPosition()).normalize();
 
-        float b = -df.dot(event.getNormal()) * (Constants.BAUMGARTE_COFF / time.getGameDelta()) * event.getPenetration();
+        float b = -df.dot(JomlUtil.from(event.getNormal())) * (Constants.BAUMGARTE_COFF / time.getGameDelta()) * event.getPenetration();
 
         float lambda = -(jv + b) / effectiveMass;
 
@@ -120,7 +121,7 @@ public class CartImpulseSystem extends BaseComponentSystem  {
         Vector3f r1v = new Vector3f(event.getNormal().x / r1.mass, event.getNormal().y / r1.mass, event.getNormal().z / r1.mass).mul(lambda);
         Vector3f r2v = new Vector3f(event.getNormal().x / Constants.PLAYER_MASS, event.getNormal().y / Constants.PLAYER_MASS, event.getNormal().z / Constants.PLAYER_MASS).mul(lambda).invert();
 
-        v1.velocity.add(r1v);
+        v1.velocity.add(JomlUtil.from(r1v));
         event.getOtherEntity().send(new CharacterImpulseEvent(r2v));
 
         entity.saveComponent(v1);
@@ -143,7 +144,7 @@ public class CartImpulseSystem extends BaseComponentSystem  {
         //calculate the half normal vector
         Vector3f normal = new Vector3f(df);
 
-        float jv = normal.dot(v1.velocity) - normal.dot (v2.velocity);
+        float jv = normal.dot(JomlUtil.from(v1.velocity)) - normal.dot (JomlUtil.from(v2.velocity));
         float b = -df.dot(normal) * (Constants.BAUMGARTE_COFF / time.getGameDelta()) * event.getPenetration();
 
         float effectiveMass = (1.0f / r1.mass) + (1.0f / r2.mass);
@@ -156,8 +157,8 @@ public class CartImpulseSystem extends BaseComponentSystem  {
         Util.bound(r1v);
         Util.bound(r2v);
 
-        v1.velocity.add(r1v);
-        v2.velocity.add(r2v);
+        v1.velocity.add(JomlUtil.from(r1v));
+        v2.velocity.add(JomlUtil.from(r2v));
 
 
         entity.saveComponent(v1);

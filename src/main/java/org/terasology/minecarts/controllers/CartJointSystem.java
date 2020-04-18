@@ -24,6 +24,7 @@ import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
 import org.terasology.logic.location.LocationComponent;
+import org.terasology.math.JomlUtil;
 import org.terasology.math.geom.Vector3f;
 import org.terasology.minecarts.Constants;
 import org.terasology.minecarts.Util;
@@ -149,14 +150,14 @@ public class CartJointSystem extends BaseComponentSystem implements  UpdateSubsc
         Vector3f projectedNormal =  segmentVehicle.heading.project(normal).normalize();
         Vector3f otherProjectedNormal = otherSegmentVehicle.heading.project(normal).normalize();
 
-        float relVelAlongNormal = otherRailVehicle.velocity.dot(otherProjectedNormal) - railVehicle.velocity.dot(projectedNormal);
+        float relVelAlongNormal = otherRailVehicle.velocity.dot(JomlUtil.from(otherProjectedNormal)) - railVehicle.velocity.dot(JomlUtil.from(projectedNormal));
         float inverseMassSum = 1 / rigidBody.mass + 1 / otherRigidBody.mass;
         float bias = (Constants.BAUMGARTE_COFF / delta) * ((j1.range + j2.range) - distance);
         float j = -(relVelAlongNormal + bias) / inverseMassSum;
 
 
-        railVehicle.velocity.sub(new Vector3f(projectedNormal).mul(j / rigidBody.mass));
-        otherRailVehicle.velocity.add(new Vector3f(otherProjectedNormal).mul(j / otherRigidBody.mass));
+        railVehicle.velocity.sub(JomlUtil.from(projectedNormal).mul(j / rigidBody.mass));
+        otherRailVehicle.velocity.add(JomlUtil.from(otherProjectedNormal).mul(j / otherRigidBody.mass));
 
         Util.bound(railVehicle.velocity);
         Util.bound(otherRailVehicle.velocity);
