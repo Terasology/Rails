@@ -9,5 +9,5 @@
         {"id" : "SegmentedPaths", "minVersion": "0.2.1"},
         {"id" : "ModuleTestingEnvironment", "minVersion" : "0.1.0"}
     ],
-    "isAsset": true
+    "isLibrary": true
 }
