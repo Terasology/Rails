@@ -46,7 +46,7 @@ public class RailsTest extends ModuleTestingEnvironment {
 
     @Override
     public Set<String> getDependencies() {
-        return Sets.newHashSet("Rails", "CoreBlocks");
+        return Sets.newHashSet("Rails", "CoreAssets");
     }
 
     @Before
@@ -55,7 +55,7 @@ public class RailsTest extends ModuleTestingEnvironment {
         blockEntityRegistry = getHostContext().get(BlockEntityRegistry.class);
 
         BlockManager blockManager = getHostContext().get(BlockManager.class);
-        dirtBlock = blockManager.getBlock("CoreBlocks:Dirt");
+        dirtBlock = blockManager.getBlock("CoreAssets:Dirt");
         railBlockFamily = blockManager.getBlockFamily(RAIL_BLOCKFAMILY_URI);
 
         fillRegion(

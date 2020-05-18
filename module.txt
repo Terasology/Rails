@@ -1,13 +1,18 @@
 {
     "id": "Rails",
-    "version" : "0.4.0-SNAPSHOT",
+    "version": "1.0.0",
     "author": "small-jeeper, SkySom, Cervator, pollend, msteiger",
     "displayName": "Rails",
     "description": "A module that adds rails and carts.",
-    "serverSideOnly" : false,
+    "serverSideOnly": false,
     "dependencies": [
-        {"id": "Core", "minVersion": "3.0.0"},
-        {"id" : "SegmentedPaths", "minVersion": "0.2.1"},
-        {"id" : "ModuleTestingEnvironment", "minVersion" : "0.1.0"}
-    ]
+        { "id": "CoreAssets", "minVersion": "2.0.1" },
+        { "id": "Drops", "minVersion": "1.0.1" },
+        { "id": "Health", "minVersion": "1.0.0" },
+        { "id": "Inventory", "minVersion": "1.1.0" },
+        { "id": "ModuleTestingEnvironment", "minVersion": "0.1.0" },
+        { "id": "SegmentedPaths", "minVersion": "1.0.0" }
+    ],
+    "isAsset": true,
+    "isLibrary": true
 }
