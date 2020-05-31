@@ -10,7 +10,7 @@
         { "id": "Drops", "minVersion": "1.0.1" },
         { "id": "Health", "minVersion": "1.0.0" },
         { "id": "Inventory", "minVersion": "1.1.0" },
-        { "id": "ModuleTestingEnvironment", "minVersion": "0.2.0" },
+        { "id": "ModuleTestingEnvironment", "minVersion": "0.2.0", "optional": true },
         { "id": "SegmentedPaths", "minVersion": "1.0.0" }
     ],
     "isAsset": true,
