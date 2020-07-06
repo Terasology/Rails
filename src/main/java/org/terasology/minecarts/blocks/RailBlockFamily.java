@@ -18,6 +18,7 @@ package org.terasology.minecarts.blocks;
 import com.google.common.collect.Sets;
 import gnu.trove.map.TByteObjectMap;
 import gnu.trove.map.hash.TByteObjectHashMap;
+import org.joml.Vector3ic;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.math.Rotation;
 import org.terasology.math.Side;
@@ -28,6 +29,7 @@ import org.terasology.segmentedpaths.blocks.PathFamily;
 import org.terasology.world.block.Block;
 import org.terasology.world.block.BlockBuilderHelper;
 import org.terasology.world.block.BlockUri;
+import org.terasology.world.block.family.BlockPlacementData;
 import org.terasology.world.block.family.BlockSections;
 import org.terasology.world.block.family.MultiConnectFamily;
 import org.terasology.world.block.family.RegisterBlockFamily;
@@ -67,7 +69,8 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
         initSideBitMap();
 
         for (String k : baseSideBitMap.keySet()) {
-            this.registerBlock(blockUri, definition, blockBuilder, k, baseSideBitMap.get(k), Rotation.horizontalRotations());
+            this.registerBlock(blockUri, definition, blockBuilder, k, baseSideBitMap.get(k),
+                Rotation.horizontalRotations());
         }
     }
 
@@ -82,20 +85,23 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
     }
 
     @Override
-    public Set<Block> registerBlock(BlockUri root, BlockFamilyDefinition definition, BlockBuilderHelper blockBuilder, String name, byte sides, Iterable<Rotation> rotations) {
+    public Set<Block> registerBlock(BlockUri root, BlockFamilyDefinition definition, BlockBuilderHelper blockBuilder,
+                                    String name, byte sides, Iterable<Rotation> rotations) {
         Set<Block> result = Sets.newLinkedHashSet();
         for (Rotation rotation : rotations) {
             byte sideBits = 0;
             for (Side side : SideBitFlag.getSides(sides)) {
                 sideBits += SideBitFlag.getSide(rotation.rotate(side));
             }
-            Block block = blockBuilder.constructTransformedBlock(definition, name, rotation, new BlockUri(root, new Name(String.valueOf(sideBits))), this);
+            Block block = blockBuilder.constructTransformedBlock(definition, name, rotation, new BlockUri(root,
+                new Name(String.valueOf(sideBits))), this);
             rotationMap.put(sideBits, rotation);
             blocks.put(sideBits, block);
             result.add(block);
         }
         return result;
     }
+
 
     @Override
     public Block getBlockForPlacement(Vector3i location, Side attachmentSide, Side direction) {
@@ -204,7 +210,8 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
         if (connectionCondition(location, connectSide)) {
             Vector3i neighborLocation = new Vector3i(location);
             neighborLocation.add(connectSide.getVector3i());
-            EnumSet<Side> sides = SideBitFlag.getSides(Byte.parseByte(worldProvider.getBlock(neighborLocation).getURI().getIdentifier().toString()));
+            EnumSet<Side> sides =
+                SideBitFlag.getSides(Byte.parseByte(worldProvider.getBlock(neighborLocation).getURI().getIdentifier().toString()));
 
             for (Side side : sides) {
                 if (side == Side.TOP || side == Side.BOTTOM) {
@@ -232,6 +239,14 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
     }
 
     @Override
+    protected boolean connectionCondition(Vector3ic blockLocation, Side connectSide) {
+        org.joml.Vector3i neighborLocation = new org.joml.Vector3i(blockLocation);
+        neighborLocation.add(connectSide.direction());
+        EntityRef neighborEntity = blockEntityRegistry.getEntityAt(neighborLocation);
+        return neighborEntity != null && neighborEntity.hasComponent(RailComponent.class);
+    }
+
+    @Override
     public byte getConnectionSides() {
         return SideBitFlag.getSides(Side.LEFT, Side.FRONT, Side.BACK, Side.RIGHT);
     }
@@ -244,7 +259,6 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
     public Block getBlockByConnection(byte connectionSides) {
         return blocks.get(connectionSides);
     }
-
 
     @Override
     public Rotation getRotationFor(BlockUri blockUri) {
