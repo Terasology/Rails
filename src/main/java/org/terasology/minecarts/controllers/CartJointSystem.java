@@ -15,6 +15,7 @@
  */
 package org.terasology.minecarts.controllers;
 
+import org.joml.Vector3f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityManager;
@@ -24,7 +25,8 @@ import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
 import org.terasology.logic.location.LocationComponent;
-import org.terasology.math.geom.Vector3f;
+import org.terasology.math.JomlUtil;
+import org.terasology.math.geom.Vector2d;
 import org.terasology.minecarts.Constants;
 import org.terasology.minecarts.Util;
 import org.terasology.minecarts.components.CartJointComponent;
@@ -43,24 +45,30 @@ public class CartJointSystem extends BaseComponentSystem implements  UpdateSubsc
     EntityManager entityManager;
 
     public boolean joinVehicles(EntityRef entity1, EntityRef entity2) {
-        if (entity1.equals(entity2) && !entity1.exists() && !entity2.exists())
+        if (entity1.equals(entity2) && !entity1.exists() && !entity2.exists()) {
             return false;
+        }
         CartJointComponent cartJointComponent1 = entity1.getComponent(CartJointComponent.class);
         CartJointComponent cartJointComponent2 = entity2.getComponent(CartJointComponent.class);
-        if (cartJointComponent1 == null || cartJointComponent2 == null)
+        if (cartJointComponent1 == null || cartJointComponent2 == null) {
             return false;
+        }
 
 
         boolean isJoined = false;
 
-        if (cartJointComponent1.back != null && cartJointComponent2.back != null)
-            isJoined = tryJoin(Vector3f.south(), entity1, cartJointComponent1.back, Vector3f.south(), entity2, cartJointComponent2.back);
-        if (!isJoined && cartJointComponent1.back != null && cartJointComponent2.front != null)
-            isJoined = tryJoin(Vector3f.south(), entity1, cartJointComponent1.back, Vector3f.north(), entity2, cartJointComponent2.front);
-        if (!isJoined && cartJointComponent1.front != null && cartJointComponent2.back != null)
-            isJoined = tryJoin(Vector3f.north(), entity1, cartJointComponent1.front, Vector3f.south(), entity2, cartJointComponent2.back);
-        if (!isJoined && cartJointComponent1.front != null && cartJointComponent2.front != null)
-            isJoined = tryJoin(Vector3f.north(), entity1, cartJointComponent1.front, Vector3f.north(), entity2, cartJointComponent2.front);
+        if (cartJointComponent1.back != null && cartJointComponent2.back != null) {
+            isJoined = tryJoin(new Vector3f(0, 0, -1), entity1, cartJointComponent1.back, new Vector3f(0, 0, -1), entity2, cartJointComponent2.back);
+        }
+        if (!isJoined && cartJointComponent1.back != null && cartJointComponent2.front != null) {
+            isJoined = tryJoin(new Vector3f(0, 0, -1), entity1, cartJointComponent1.back, new Vector3f(0, 0, 1), entity2, cartJointComponent2.front);
+        }
+        if (!isJoined && cartJointComponent1.front != null && cartJointComponent2.back != null) {
+            isJoined = tryJoin(new Vector3f(0, 0, 1), entity1, cartJointComponent1.front, new Vector3f(0, 0, -1), entity2, cartJointComponent2.back);
+        }
+        if (!isJoined && cartJointComponent1.front != null && cartJointComponent2.front != null) {
+            isJoined = tryJoin(new Vector3f(0, 0, 1), entity1, cartJointComponent1.front, new Vector3f(0, 0, 1), entity2, cartJointComponent2.front);
+        }
 
         if (isJoined) {
             LOGGER.info("Joint created between: " + entity1 + " and " + entity2);
@@ -75,8 +83,8 @@ public class CartJointSystem extends BaseComponentSystem implements  UpdateSubsc
         LocationComponent l1 = e1.getComponent(LocationComponent.class);
         LocationComponent l2 = e2.getComponent(LocationComponent.class);
 
-        Vector3f cart1Direction = l1.getWorldRotation().rotate(d1);
-        Vector3f cart2Direction = l2.getWorldRotation().rotate(d2);
+        Vector3f cart1Direction = JomlUtil.from(l1.getWorldRotation()).transform(new Vector3f(d1));
+        Vector3f cart2Direction = JomlUtil.from(l2.getWorldRotation()).transform(new Vector3f(d2));
         if (cart1Direction.dot(cart2Direction) < 0) {
             if (l1.getWorldPosition().distanceSquared(l2.getWorldPosition()) < (j1.range + j2.range) * (j1.range + j2.range)) {
                 j1.entity = e2;
@@ -115,8 +123,9 @@ public class CartJointSystem extends BaseComponentSystem implements  UpdateSubsc
     }
 
     private void applyImpulseOnSocket(float delta, CartJointComponent.CartJointSocket j1, CartJointComponent.CartJointSocket j2) {
-        if(j1.entity == null || j2.entity == null)
+        if (j1.entity == null || j2.entity == null) {
             return;
+        }
 
         LocationComponent location = j2.entity.getComponent(LocationComponent.class);
         LocationComponent otherLocation = j1.entity.getComponent(LocationComponent.class);
@@ -137,7 +146,7 @@ public class CartJointSystem extends BaseComponentSystem implements  UpdateSubsc
         RigidBodyComponent rigidBody = j2.entity.getComponent(RigidBodyComponent.class);
         RigidBodyComponent otherRigidBody = j1.entity.getComponent(RigidBodyComponent.class);
 
-        Vector3f normal = new Vector3f(location.getWorldPosition()).sub(otherLocation.getWorldPosition());
+        Vector3f normal = new Vector3f(JomlUtil.from(location.getWorldPosition())).sub(JomlUtil.from(otherLocation.getWorldPosition()));
         float distance = normal.length();
         if (distance > Constants.CART_JOINT_BREAK_DISTANCE) {
             clearJoinSocket(j1);
@@ -146,8 +155,8 @@ public class CartJointSystem extends BaseComponentSystem implements  UpdateSubsc
             return;
         }
 
-        Vector3f projectedNormal =  segmentVehicle.heading.project(normal).normalize();
-        Vector3f otherProjectedNormal = otherSegmentVehicle.heading.project(normal).normalize();
+        Vector3f projectedNormal = Util.project(segmentVehicle.heading, normal, new org.joml.Vector3f()).normalize();//segmentVehicle.heading.project(normal).normalize();
+        Vector3f otherProjectedNormal = Util.project(otherSegmentVehicle.heading, normal, new Vector3f()).normalize();
 
         float relVelAlongNormal = otherRailVehicle.velocity.dot(otherProjectedNormal) - railVehicle.velocity.dot(projectedNormal);
         float inverseMassSum = 1 / rigidBody.mass + 1 / otherRigidBody.mass;
@@ -162,7 +171,5 @@ public class CartJointSystem extends BaseComponentSystem implements  UpdateSubsc
         Util.bound(otherRailVehicle.velocity);
         j2.entity.saveComponent(railVehicle);
         j1.entity.saveComponent(otherRailVehicle);
-
-
     }
 }

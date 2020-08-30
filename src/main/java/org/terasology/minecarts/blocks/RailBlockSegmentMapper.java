@@ -15,18 +15,18 @@
  */
 package org.terasology.minecarts.blocks;
 
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+import org.joml.Vector3i;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.prefab.Prefab;
+import org.terasology.math.JomlUtil;
 import org.terasology.math.Rotation;
 import org.terasology.math.Side;
-import org.terasology.math.geom.Quat4f;
-import org.terasology.math.geom.Vector3f;
-import org.terasology.math.geom.Vector3i;
 import org.terasology.segmentedpaths.SegmentMeta;
 import org.terasology.segmentedpaths.blocks.PathFamily;
 import org.terasology.segmentedpaths.components.BlockMappingComponent;
 import org.terasology.segmentedpaths.components.PathDescriptorComponent;
-import org.terasology.segmentedpaths.components.PathFollowerComponent;
 import org.terasology.segmentedpaths.controllers.SegmentCacheSystem;
 import org.terasology.segmentedpaths.controllers.SegmentMapping;
 import org.terasology.segmentedpaths.controllers.PathFollowerSystem;
@@ -41,12 +41,13 @@ import org.terasology.world.block.family.BlockFamily;
  */
 public class RailBlockSegmentMapper implements SegmentMapping {
 
-    private PathFollowerSystem pathFollowerSystem;
-    private SegmentSystem segmentSystem;
-    private SegmentCacheSystem segmentCacheSystem;
-    private BlockEntityRegistry blockEntityRegistry;
+    private final PathFollowerSystem pathFollowerSystem;
+    private final SegmentSystem segmentSystem;
+    private final SegmentCacheSystem segmentCacheSystem;
+    private final BlockEntityRegistry blockEntityRegistry;
 
-    public RailBlockSegmentMapper(BlockEntityRegistry blockEntityRegistry, PathFollowerSystem pathFollowerSystem,SegmentSystem segmentSystem, SegmentCacheSystem segmentCacheSystem) {
+    public RailBlockSegmentMapper(BlockEntityRegistry blockEntityRegistry, PathFollowerSystem pathFollowerSystem,
+                                  SegmentSystem segmentSystem, SegmentCacheSystem segmentCacheSystem) {
         this.blockEntityRegistry = blockEntityRegistry;
         this.pathFollowerSystem = pathFollowerSystem;
         this.segmentCacheSystem = segmentCacheSystem;
@@ -61,7 +62,7 @@ public class RailBlockSegmentMapper implements SegmentMapping {
             BlockFamily blockFamily = blockComponent.getBlock().getBlockFamily();
 
             Vector3f v1 = segmentSystem.segmentPosition(meta.association);
-            Quat4f q1 = segmentSystem.segmentRotation(meta.association);
+            Quaternionf q1 = segmentSystem.segmentRotation(meta.association);
 
             Segment currentSegment = segmentCacheSystem.getSegment(meta.prefab);
 
@@ -72,39 +73,47 @@ public class RailBlockSegmentMapper implements SegmentMapping {
                 Rotation rotation = ((PathFamily) blockFamily).getRotationFor(blockComponent.getBlock().getURI());
                 switch (ends) {
                     case START: {
-                        Vector3i segment = findOffset(blockComponent.getPosition(), blockMappingComponent.s1, blockMappingComponent.s2, rotation);//rotation.rotate(blockMappingComponent.s1).getVector3i());
+                        Vector3i segment = findOffset(JomlUtil.from(blockComponent.position),
+                            blockMappingComponent.s1, blockMappingComponent.s2, rotation);//rotation.rotate
+                        // (blockMappingComponent.s1).getVector3i());
                         EntityRef blockEntity = blockEntityRegistry.getBlockEntityAt(segment);
-                        PathDescriptorComponent pathDescriptor = blockEntity.getComponent(PathDescriptorComponent.class);
-                        if (pathDescriptor == null)
+                        PathDescriptorComponent pathDescriptor =
+                            blockEntity.getComponent(PathDescriptorComponent.class);
+                        if (pathDescriptor == null) {
                             return null;
+                        }
 
                         Vector3f v2 = segmentSystem.segmentPosition(blockEntity);
-                        Quat4f q2 = segmentSystem.segmentRotation(blockEntity);
+                        Quaternionf q2 = segmentSystem.segmentRotation(blockEntity);
 
                         for (Prefab d : pathDescriptor.descriptors) {
 
                             Segment nextSegment = segmentCacheSystem.getSegment(d);
                             if (segmentSystem.segmentMatch(currentSegment, v1, q1, nextSegment, v2, q2) != SegmentSystem.JointMatch.None) {
-                                return new MappingResult(d,blockEntity);
+                                return new MappingResult(d, blockEntity);
                             }
                         }
                     }
                     break;
                     case END: {
-                        Vector3i segment = findOffset(blockComponent.getPosition(), blockMappingComponent.s2, blockMappingComponent.s1, rotation);//rotation.rotate(blockMappingComponent.s2).getVector3i());
+                        Vector3i segment = findOffset(JomlUtil.from(blockComponent.position),
+                            blockMappingComponent.s2, blockMappingComponent.s1, rotation);//rotation.rotate
+                        // (blockMappingComponent.s2).getVector3i());
                         EntityRef blockEntity = blockEntityRegistry.getBlockEntityAt(segment);
-                        PathDescriptorComponent pathDescriptor = blockEntity.getComponent(PathDescriptorComponent.class);
-                        if (pathDescriptor == null)
+                        PathDescriptorComponent pathDescriptor =
+                            blockEntity.getComponent(PathDescriptorComponent.class);
+                        if (pathDescriptor == null) {
                             return null;
+                        }
 
                         Vector3f v2 = segmentSystem.segmentPosition(blockEntity);
-                        Quat4f q2 = segmentSystem.segmentRotation(blockEntity);
+                        Quaternionf q2 = segmentSystem.segmentRotation(blockEntity);
 
                         for (Prefab d : pathDescriptor.descriptors) {
 
                             Segment nextSegment = segmentCacheSystem.getSegment(d);
                             if (segmentSystem.segmentMatch(currentSegment, v1, q1, nextSegment, v2, q2) != SegmentSystem.JointMatch.None) {
-                                return new MappingResult(d,blockEntity);
+                                return new MappingResult(d, blockEntity);
                             }
                         }
                     }
@@ -117,14 +126,16 @@ public class RailBlockSegmentMapper implements SegmentMapping {
     }
 
     private Vector3i findOffset(Vector3i loc, Side main, Side influence, Rotation r) {
-        if (main == Side.TOP)
-            return new Vector3i(loc).add(r.rotate(main).getVector3i()).add(new Vector3i(r.rotate(influence).getVector3i()).invert());
+        if (main == Side.TOP) {
+            return new Vector3i(loc).add(r.rotate(main).direction()).add(new Vector3i(r.rotate(influence).direction()).mul(-1));
+        }
 
-        Vector3i current = new Vector3i(loc).add(r.rotate(main).getVector3i());
+        Vector3i current = new Vector3i(loc).add(r.rotate(main).direction());
         EntityRef entity = blockEntityRegistry.getBlockEntityAt(current);
         BlockComponent blockComponent = entity.getComponent(BlockComponent.class);
-        if (!(blockComponent.getBlock().getBlockFamily() instanceof PathFamily))
-            current.add(Vector3i.down());
+        if (!(blockComponent.getBlock().getBlockFamily() instanceof PathFamily)) {
+            current.add(new Vector3i(0, -1, 0));
+        }
         return current;
     }
 }

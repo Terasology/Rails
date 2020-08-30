@@ -16,8 +16,8 @@
 package org.terasology.minecarts.components;
 
 
+import org.joml.Vector3f;
 import org.terasology.entitySystem.Component;
-import org.terasology.math.geom.Vector3f;
 import org.terasology.network.FieldReplicateType;
 import org.terasology.network.Replicate;
 import org.terasology.network.ServerEvent;
