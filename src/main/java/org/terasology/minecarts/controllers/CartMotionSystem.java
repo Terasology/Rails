@@ -112,6 +112,10 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
         PathFollowerComponent segmentVehicleComponent = railVehicle.getComponent(PathFollowerComponent.class);
 
         if (segmentVehicleComponent == null) {
+            if(railVehicleComponent.lastDetach + 1.5f > time.getGameTime()) {
+                return;
+            }
+
             //checks to see if the cart hits a rail segment
             HitResult hit = physics.rayTrace(JomlUtil.from(location.getWorldPosition()), new Vector3f(0, -1, 0), 1.2f, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
             if (hit == null || hit.getBlockPosition() == null) {
@@ -138,7 +142,9 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
                 segmentVehicleComponent.heading = pathFollowerSystem.vehicleTangent(railVehicle);
                 rigidBodyComponent.collidesWith.remove(StandardCollisionGroup.WORLD);
                 railVehicleComponent.velocity = Util.project(segmentVehicleComponent.heading, rigidBodyComponent.velocity, new Vector3f());
-
+                if (!railVehicleComponent.velocity.isFinite()) {
+                    railVehicleComponent.velocity.set(.001f);
+                }
                 railVehicle.addOrSaveComponent(segmentVehicleComponent);
             }
         } else {
@@ -156,7 +162,7 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
 
                 Vector3f gravity = new Vector3f(0, -1, 0).mul(Constants.GRAVITY).mul(delta);
 
-                railVehicleComponent.velocity.add(Util.project(tangent, gravity, new Vector3f()));
+                railVehicleComponent.velocity.add(Util.project(gravity,tangent, new Vector3f()));
 
                 //apply some friction based off the gravity vector projected on the normal multiplied against a friction coff
                 RailComponent rail = segmentVehicleComponent.segmentMeta.association.getComponent(RailComponent.class);
@@ -169,7 +175,7 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
                 }
 
                 //apply the new velocity to the rail component
-                railVehicleComponent.velocity = Util.project(segmentVehicleComponent.heading, railVehicleComponent.velocity, new Vector3f()).normalize().mul(mag);
+                railVehicleComponent.velocity = Util.project(railVehicleComponent.velocity,segmentVehicleComponent.heading, new Vector3f()).normalize().mul(mag);
 
                 //make sure the value is not nan or infinite
                 //occurs when the cart hits a perpendicular segment.
@@ -212,6 +218,10 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
         vehicle.removeComponent(PathFollowerComponent.class);
         rigidBodyComponent.velocity = new Vector3f(railVehicleComponent.velocity);
         rigidBodyComponent.collidesWith.add(StandardCollisionGroup.WORLD);
+
+
+        railVehicleComponent.lastDetach = time.getGameTime();
+
 
         vehicle.saveComponent(railVehicleComponent);
         vehicle.saveComponent(rigidBodyComponent);
