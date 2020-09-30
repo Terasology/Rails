@@ -29,7 +29,6 @@ import org.terasology.segmentedpaths.blocks.PathFamily;
 import org.terasology.world.block.Block;
 import org.terasology.world.block.BlockBuilderHelper;
 import org.terasology.world.block.BlockUri;
-import org.terasology.world.block.family.BlockPlacementData;
 import org.terasology.world.block.family.BlockSections;
 import org.terasology.world.block.family.MultiConnectFamily;
 import org.terasology.world.block.family.RegisterBlockFamily;
