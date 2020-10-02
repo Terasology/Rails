@@ -110,7 +110,7 @@ public class CartImpulseSystem extends BaseComponentSystem {
         RigidBodyComponent r1 = entity.getComponent(RigidBodyComponent.class);
         CharacterMovementComponent r2 = event.getOtherEntity().getComponent(CharacterMovementComponent.class);
 
-        float jv = event.getNormal().dot(v1.velocity) - event.getNormal().dot(JomlUtil.from(r2.getVelocity()));
+        float jv = event.getNormal().dot(v1.velocity) - event.getNormal().dot(r2.getVelocity());
         float effectiveMass = (1.0f / r1.mass) + (1.0f / Constants.PLAYER_MASS);
 
         Vector3f df =
