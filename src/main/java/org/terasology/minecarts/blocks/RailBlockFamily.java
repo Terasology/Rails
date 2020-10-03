@@ -104,6 +104,7 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
     }
 
     @Override
+    @Deprecated
     public Block getBlockForPlacement(org.terasology.math.geom.Vector3i location, Side attachmentSide, Side direction) {
         byte connections = 0;
         for (Side connectSide : SideBitFlag.getSides(getConnectionSides())) {
