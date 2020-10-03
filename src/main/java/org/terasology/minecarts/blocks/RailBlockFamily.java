@@ -18,7 +18,6 @@ package org.terasology.minecarts.blocks;
 import com.google.common.collect.Sets;
 import gnu.trove.map.TByteObjectMap;
 import gnu.trove.map.hash.TByteObjectHashMap;
-import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.joml.Vector3ic;
 import org.terasology.entitySystem.entity.EntityRef;
@@ -230,6 +229,16 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
         return null;
     }
 
+    @Override
+    public Block getBlockForNeighborUpdate(Vector3ic location, Block oldBlock) {
+        return oldBlock;
+    }
+
+    @Override
+    public Block getBlockForNeighborUpdate(org.terasology.math.geom.Vector3i location, Block oldBlock) {
+        return oldBlock;
+    }
+
     /**
      * a fully connected tile has more then 1 connected edge and is not attached to the reference tile
      *
@@ -252,7 +261,9 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
                     return false;
                 }
             }
-            return sides.size() > 1;
+            if (sides.size() > 1) {
+                return true;
+            }
 
         }
         return false;
@@ -280,6 +291,7 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
     public Block getArchetypeBlock() {
         return blocks.get(SideBitFlag.getSides(Side.RIGHT, Side.LEFT));
     }
+
 
     public Block getBlockByConnection(byte connectionSides) {
         return blocks.get(connectionSides);
