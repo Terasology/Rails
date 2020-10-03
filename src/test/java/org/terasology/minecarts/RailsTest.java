@@ -111,7 +111,7 @@ public class RailsTest extends ModuleTestingEnvironment {
         setRailBlock(Vector3i.south());
 
         assertRailBlockAtConnectsTo(Vector3i.north().add(Vector3i.up()), SideBitFlag.getSides(Side.FRONT));
-        assertRailBlockAtConnectsTo(Vector3i.zero(), SideBitFlag.getSides(Side.BACK, Side.TOP));
+        assertRailBlockAtConnectsTo(Vector3i.zero(), SideBitFlag.getSides(Side.TOP, Side.FRONT));
         assertRailBlockAtConnectsTo(Vector3i.south(), SideBitFlag.getSides(Side.BACK));
     }
 
@@ -125,8 +125,8 @@ public class RailsTest extends ModuleTestingEnvironment {
         setRailBlock(Vector3i.zero().add(Vector3i.up()));
         setRailBlock(Vector3i.north().add(Vector3i.up().scale(2)));
 
-        assertRailBlockAtConnectsTo(Vector3i.zero().add(Vector3i.up()), SideBitFlag.getSides(Side.BACK, Side.TOP));
-        assertRailBlockAtConnectsTo(Vector3i.south(), SideBitFlag.getSides(Side.BACK, Side.TOP));
+        assertRailBlockAtConnectsTo(Vector3i.zero().add(Vector3i.up()), SideBitFlag.getSides(Side.TOP, Side.FRONT));
+        assertRailBlockAtConnectsTo(Vector3i.south(), SideBitFlag.getSides(Side.TOP, Side.FRONT));
     }
 
     private void assertRailBlockAtConnectsTo(Vector3i position, byte expectedConnectionSides) {
