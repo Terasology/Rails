@@ -1,18 +1,6 @@
-/*
- * Copyright 2015 MovingBlocks
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright 2020 The Terasology Foundation
+// SPDX-License-Identifier: Apache-2.0
+
 package org.terasology.minecarts.blocks;
 
 import com.google.common.collect.Sets;
@@ -95,8 +83,9 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
     @ReceiveEvent(components = {BlockItemComponent.class, ItemComponent.class}, priority = EventPriority.PRIORITY_HIGH)
     public void onBlockActivated(ActivateEvent event, EntityRef item) {
         BlockComponent blockComponent = event.getTarget().getComponent(BlockComponent.class);
-        if (blockComponent == null)
+        if (blockComponent == null) {
             return;
+        }
 
         Vector3i targetBlock = blockComponent.getPosition();
         Block centerBlock = worldProvider.getBlock(targetBlock.x, targetBlock.y, targetBlock.z);
@@ -109,8 +98,9 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
     @ReceiveEvent(components = {BlockItemComponent.class, ItemComponent.class})
     public void onPlaceBlock(OnBlockItemPlaced event, EntityRef entity) {
         BlockComponent blockComponent = event.getPlacedBlock().getComponent(BlockComponent.class);
-        if (blockComponent == null)
+        if (blockComponent == null) {
             return;
+        }
 
         Vector3i targetBlock = blockComponent.getPosition();
         Block centerBlock = worldProvider.getBlock(targetBlock.x, targetBlock.y, targetBlock.z);
@@ -161,8 +151,9 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
                     if (neighborBlock != neighborBlockAfterUpdate && neighborBlockAfterUpdate != null) {
                         byte connections = Byte.parseByte(neighborBlock.getURI().getIdentifier().toString());
                         //only add segment with two connections
-                        if (SideBitFlag.getSides(connections).size() <= 1)
+                        if (SideBitFlag.getSides(connections).size() <= 1) {
                             worldProvider.setBlock(neighborLocation, neighborBlockAfterUpdate);
+                        }
                     }
                 }
             }

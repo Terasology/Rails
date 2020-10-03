@@ -1,18 +1,6 @@
-/*
- * Copyright 2017 MovingBlocks
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright 2020 The Terasology Foundation
+// SPDX-License-Identifier: Apache-2.0
+
 package org.terasology.minecarts.controllers;
 
 import org.joml.Vector3f;
@@ -172,12 +160,15 @@ public class CartImpulseSystem extends BaseComponentSystem {
         Vector3f r1v = new Vector3f(normal.x / r1.mass, normal.y / r1.mass, normal.z / r1.mass).mul(lambda);
         Vector3f r2v = new Vector3f(normal.x / r2.mass, normal.y / r2.mass, normal.z / r2.mass).mul(lambda).mul(-1);
 
-        Util.bound(r1v);
-        Util.bound(r2v);
+        if (!r1v.isFinite()) {
+            r1v.set(0);
+        }
+        if (!r2v.isFinite()) {
+            r2v.set(0);
+        }
 
         v1.velocity.add(r1v);
         v2.velocity.add(r2v);
-
 
         entity.saveComponent(v1);
         event.getOtherEntity().saveComponent(v2);

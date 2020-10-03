@@ -19,18 +19,6 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 public class Util {
-    public static void bound(Vector3f v) {
-        if (Float.isNaN(v.x) || Float.isInfinite(v.x)) {
-            v.x = 0.0f;
-        }
-        if (Float.isNaN(v.y) || Float.isInfinite(v.y)) {
-            v.y = 0.0f;
-        }
-        if (Float.isNaN(v.z) || Float.isInfinite(v.z)) {
-            v.z = 0.0f;
-        }
-    }
-
     public static Vector3f project(Vector3fc u, Vector3fc v, Vector3f dest) {
         return dest.set(v).mul(u.dot(v) / v.lengthSquared());
     }
