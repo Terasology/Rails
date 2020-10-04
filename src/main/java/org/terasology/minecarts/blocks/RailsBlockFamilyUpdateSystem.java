@@ -1,21 +1,11 @@
-/*
- * Copyright 2015 MovingBlocks
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright 2020 The Terasology Foundation
+// SPDX-License-Identifier: Apache-2.0
+
 package org.terasology.minecarts.blocks;
 
 import com.google.common.collect.Sets;
+import org.joml.Vector3f;
+import org.joml.Vector3i;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityRef;
@@ -30,9 +20,9 @@ import org.terasology.logic.health.event.DoDamageEvent;
 import org.terasology.logic.health.DoDestroyEvent;
 import org.terasology.logic.health.EngineDamageTypes;
 import org.terasology.logic.inventory.ItemComponent;
+import org.terasology.math.JomlUtil;
 import org.terasology.math.Side;
 import org.terasology.math.SideBitFlag;
-import org.terasology.math.geom.Vector3i;
 import org.terasology.registry.In;
 import org.terasology.world.BlockEntityRegistry;
 import org.terasology.world.OnChangedBlock;
@@ -42,6 +32,7 @@ import org.terasology.world.block.BlockComponent;
 import org.terasology.world.block.BlockManager;
 import org.terasology.world.block.entity.neighbourUpdate.LargeBlockUpdateFinished;
 import org.terasology.world.block.entity.neighbourUpdate.LargeBlockUpdateStarting;
+import org.terasology.world.block.family.BlockPlacementData;
 import org.terasology.world.block.items.BlockItemComponent;
 import org.terasology.world.block.items.OnBlockItemPlaced;
 
@@ -82,7 +73,7 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
 
     @ReceiveEvent()
     public void doDestroy(DoDestroyEvent event, EntityRef entity, BlockComponent blockComponent) {
-        Vector3i upBlock = new Vector3i(blockComponent.getPosition());
+        Vector3i upBlock = new Vector3i(JomlUtil.from(blockComponent.position));
         upBlock.y += 1;
         Block block = worldProvider.getBlock(upBlock);
 
@@ -95,10 +86,11 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
     @ReceiveEvent(components = {BlockItemComponent.class, ItemComponent.class}, priority = EventPriority.PRIORITY_HIGH)
     public void onBlockActivated(ActivateEvent event, EntityRef item) {
         BlockComponent blockComponent = event.getTarget().getComponent(BlockComponent.class);
-        if (blockComponent == null)
+        if (blockComponent == null) {
             return;
+        }
 
-        Vector3i targetBlock = blockComponent.getPosition();
+        Vector3i targetBlock = JomlUtil.from(blockComponent.position);
         Block centerBlock = worldProvider.getBlock(targetBlock.x, targetBlock.y, targetBlock.z);
 
         if (centerBlock.getBlockFamily() instanceof RailBlockFamily) {
@@ -109,10 +101,11 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
     @ReceiveEvent(components = {BlockItemComponent.class, ItemComponent.class})
     public void onPlaceBlock(OnBlockItemPlaced event, EntityRef entity) {
         BlockComponent blockComponent = event.getPlacedBlock().getComponent(BlockComponent.class);
-        if (blockComponent == null)
+        if (blockComponent == null) {
             return;
+        }
 
-        Vector3i targetBlock = blockComponent.getPosition();
+        Vector3i targetBlock = JomlUtil.from(blockComponent.position);
         Block centerBlock = worldProvider.getBlock(targetBlock.x, targetBlock.y, targetBlock.z);
 
         if (centerBlock.getBlockFamily() instanceof RailBlockFamily) {
@@ -140,9 +133,9 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
     @ReceiveEvent(components = {BlockComponent.class})
     public void blockUpdate(OnChangedBlock event, EntityRef blockEntity) {
         if (largeBlockUpdateCount > 0) {
-            blocksUpdatedInLargeBlockUpdate.add(event.getBlockPosition());
+            blocksUpdatedInLargeBlockUpdate.add(JomlUtil.from(event.getBlockPosition()));
         } else {
-            Vector3i blockLocation = event.getBlockPosition();
+            Vector3i blockLocation = JomlUtil.from(event.getBlockPosition());
             processUpdateForBlockLocation(blockLocation);
         }
     }
@@ -151,18 +144,19 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
         for (int height : checkOnHeight) {
             for (Side side : Side.horizontalSides()) {
                 Vector3i neighborLocation = new Vector3i(blockLocation);
-                neighborLocation.add(side.getVector3i());
+                neighborLocation.add(side.direction());
                 neighborLocation.y += height;
                 Block neighborBlock = worldProvider.getBlock(neighborLocation);
                 EntityRef blockEntity = blockEntityRegistry.getBlockEntityAt(neighborLocation);
                 if (blockEntity.hasComponent(RailComponent.class)) {
                     RailBlockFamily railsFamily = (RailBlockFamily) neighborBlock.getBlockFamily();
-                    Block neighborBlockAfterUpdate = railsFamily.getBlockForPlacement(neighborLocation, null,null);
+                    Block neighborBlockAfterUpdate = railsFamily.getBlockForPlacement(new BlockPlacementData(neighborLocation, Side.FRONT, new Vector3f()));
                     if (neighborBlock != neighborBlockAfterUpdate && neighborBlockAfterUpdate != null) {
                         byte connections = Byte.parseByte(neighborBlock.getURI().getIdentifier().toString());
                         //only add segment with two connections
-                        if (SideBitFlag.getSides(connections).size() <= 1)
+                        if (SideBitFlag.getSides(connections).size() <= 1) {
                             worldProvider.setBlock(neighborLocation, neighborBlockAfterUpdate);
+                        }
                     }
                 }
             }

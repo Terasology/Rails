@@ -1,20 +1,10 @@
-/*
- * Copyright 2017 MovingBlocks
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright 2020 The Terasology Foundation
+// SPDX-License-Identifier: Apache-2.0
+
 package org.terasology.minecarts.action;
 
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
@@ -26,8 +16,6 @@ import org.terasology.logic.common.ActivateEvent;
 import org.terasology.logic.health.BeforeDestroyEvent;
 import org.terasology.logic.location.Location;
 import org.terasology.logic.location.LocationComponent;
-import org.terasology.math.geom.Quat4f;
-import org.terasology.math.geom.Vector3f;
 import org.terasology.minecarts.components.CartRidableComponent;
 import org.terasology.minecarts.components.RidingCartComponent;
 import org.terasology.minecarts.controllers.CartImpulseSystem;
@@ -60,23 +48,23 @@ public class CartRidableAction extends BaseComponentSystem {
     }
 
     @ReceiveEvent(components = {RidingCartComponent.class})
-    public void onRiderDestroyed(BeforeDestroyEvent event, EntityRef rider, RidingCartComponent ridingComponent){
+    public void onRiderDestroyed(BeforeDestroyEvent event, EntityRef rider, RidingCartComponent ridingComponent) {
         dismount(ridingComponent.cart, rider);
     }
 
-    private void mount(EntityRef cart, EntityRef rider){
+    private void mount(EntityRef cart, EntityRef rider) {
         CartRidableComponent cartRidableComponent = cart.getComponent(CartRidableComponent.class);
         RigidBodyComponent railVehicleRigidBody = cart.getComponent(RigidBodyComponent.class);
 
-        if(rider.getComponent(RidingCartComponent.class) != null){
+        if (rider.getComponent(RidingCartComponent.class) != null) {
             return;
         }
-        if(cartRidableComponent.rider != null){
+        if (cartRidableComponent.rider != null) {
             return;
         }
         rider.send(new SetMovementModeEvent(MovementMode.NONE));
         cartRidableComponent.rider = rider;
-        Location.attachChild(cart, rider, new Vector3f(0, 1.5f, 0), new Quat4f());
+        Location.attachChild(cart, rider, new Vector3f(0, 1.5f, 0), new Quaternionf());
         CartImpulseSystem.addCollisionFilter(cart, rider);
         railVehicleRigidBody.collidesWith.remove(StandardCollisionGroup.CHARACTER);
         railVehicleRigidBody.collidesWith.remove(StandardCollisionGroup.DEFAULT);
@@ -86,9 +74,9 @@ public class CartRidableAction extends BaseComponentSystem {
         cart.saveComponent(railVehicleRigidBody);
     }
 
-    private void dismount(EntityRef cart, EntityRef rider){
+    private void dismount(EntityRef cart, EntityRef rider) {
         CartRidableComponent cartRidableComponent = cart.getComponent(CartRidableComponent.class);
-        if(rider == null || !rider.equals(cartRidableComponent.rider)) {
+        if (rider == null || !rider.equals(cartRidableComponent.rider)) {
             return;
         }
         rider.removeComponent(RidingCartComponent.class);
