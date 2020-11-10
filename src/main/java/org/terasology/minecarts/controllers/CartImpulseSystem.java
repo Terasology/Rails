@@ -168,8 +168,8 @@ public class CartImpulseSystem extends BaseComponentSystem {
             r2v.set(0);
         }
 
-        v1.velocity.add(JomlUtil.from(r1v));
-        v2.velocity.add(JomlUtil.from(r2v));
+        v1.velocity.add(r1v);
+        v2.velocity.add(r2v);
 
         entity.saveComponent(v1);
         event.getOtherEntity().saveComponent(v2);

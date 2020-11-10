@@ -145,14 +145,14 @@ public class CartJointSystem extends BaseComponentSystem implements  UpdateSubsc
         Vector3f projectedNormal = Util.project(segmentVehicle.heading, normal, new Vector3f()).normalize();//segmentVehicle.heading.project(normal).normalize();
         Vector3f otherProjectedNormal = Util.project(otherSegmentVehicle.heading, normal, new Vector3f()).normalize();
 
-        float relVelAlongNormal = otherRailVehicle.velocity.dot(JomlUtil.from(otherProjectedNormal)) - railVehicle.velocity.dot(JomlUtil.from(projectedNormal));
+        float relVelAlongNormal = otherRailVehicle.velocity.dot(otherProjectedNormal) - railVehicle.velocity.dot(projectedNormal);
         float inverseMassSum = 1 / rigidBody.mass + 1 / otherRigidBody.mass;
         float bias = (Constants.BAUMGARTE_COFF / delta) * ((j1.range + j2.range) - distance);
         float j = -(relVelAlongNormal + bias) / inverseMassSum;
 
 
-        railVehicle.velocity.sub(JomlUtil.from(projectedNormal).mul(j / rigidBody.mass));
-        otherRailVehicle.velocity.add(JomlUtil.from(otherProjectedNormal).mul(j / otherRigidBody.mass));
+        railVehicle.velocity.sub(projectedNormal.mul(j / rigidBody.mass));
+        otherRailVehicle.velocity.add(otherProjectedNormal.mul(j / otherRigidBody.mass));
 
         if (!railVehicle.velocity.isFinite()) {
             railVehicle.velocity.set(0);
