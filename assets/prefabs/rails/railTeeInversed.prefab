@@ -3,7 +3,7 @@
      "SegmentedPaths:PathDescriptor":{
        "descriptors" : [ "SegmentedPaths:leftFrontPath","SegmentedPaths:leftRightPath"]
      },
-     "BlockDropGrammar": {
+     "DropGrammar": {
          "blockDrops": [
              "Rails:rails"
          ]

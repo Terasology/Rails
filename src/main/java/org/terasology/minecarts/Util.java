@@ -15,8 +15,8 @@
  */
 package org.terasology.minecarts;
 
-import org.terasology.logic.location.LocationComponent;
-import org.terasology.math.geom.Vector3f;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public class Util {
     public static void bound(Vector3f v) {
@@ -49,5 +49,9 @@ public class Util {
         }
 
         return worldPosition;
+    }
+  
+    public static Vector3f project(Vector3fc u, Vector3fc v, Vector3f dest) {
+        return dest.set(v).mul(u.dot(v) / v.lengthSquared());
     }
 }

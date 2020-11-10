@@ -1,20 +1,10 @@
-/*
- * Copyright 2016 MovingBlocks
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright 2020 The Terasology Foundation
+// SPDX-License-Identifier: Apache-2.0
+
 package org.terasology.minecarts.controllers;
 
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.engine.Time;
@@ -29,8 +19,6 @@ import org.terasology.logic.inventory.InventoryManager;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.logic.players.LocalPlayer;
 import org.terasology.math.JomlUtil;
-import org.terasology.math.geom.Quat4f;
-import org.terasology.math.geom.Vector3f;
 import org.terasology.minecarts.Constants;
 import org.terasology.minecarts.Util;
 import org.terasology.minecarts.blocks.RailBlockSegmentMapper;
@@ -42,12 +30,11 @@ import org.terasology.physics.StandardCollisionGroup;
 import org.terasology.physics.components.RigidBodyComponent;
 import org.terasology.registry.In;
 import org.terasology.rendering.logic.MeshComponent;
-import org.terasology.segmentedpaths.segments.CurvedSegment;
 import org.terasology.segmentedpaths.SegmentMeta;
 import org.terasology.segmentedpaths.components.PathDescriptorComponent;
 import org.terasology.segmentedpaths.components.PathFollowerComponent;
-import org.terasology.segmentedpaths.controllers.SegmentCacheSystem;
 import org.terasology.segmentedpaths.controllers.PathFollowerSystem;
+import org.terasology.segmentedpaths.controllers.SegmentCacheSystem;
 import org.terasology.segmentedpaths.controllers.SegmentSystem;
 import org.terasology.segmentedpaths.segments.Segment;
 import org.terasology.world.BlockEntityRegistry;
@@ -86,7 +73,7 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
 
     @Override
     public void initialise() {
-        segmentMapping = new RailBlockSegmentMapper(blockEntityRegistry, pathFollowerSystem,segmentSystem, segmentCacheSystem);
+        segmentMapping = new RailBlockSegmentMapper(blockEntityRegistry, pathFollowerSystem, segmentSystem, segmentCacheSystem);
     }
 
 
@@ -97,10 +84,10 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
         }
     }
 
-    public Vector3f updateHeading(EntityRef railVehcile,Vector3f oldHeading){
+    public Vector3f updateHeading(EntityRef railVehcile, Vector3f oldHeading) {
         PathFollowerComponent pathFollowerComponent = railVehcile.getComponent(PathFollowerComponent.class);
-        if(pathFollowerComponent != null){
-            return pathFollowerComponent.heading.project(oldHeading).normalize();
+        if (pathFollowerComponent != null) {
+            return Util.project(pathFollowerComponent.heading, oldHeading, new Vector3f()).normalize();
         }
         return null;
     }
@@ -113,10 +100,15 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
         PathFollowerComponent segmentVehicleComponent = railVehicle.getComponent(PathFollowerComponent.class);
 
         if (segmentVehicleComponent == null) {
-            //checks to see if the cart hits a rail segment
-            HitResult hit = physics.rayTrace(JomlUtil.from(location.getWorldPosition()), JomlUtil.from(Vector3f.down()), 1.2f, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
-            if (hit == null || hit.getBlockPosition() == null)
+            if (railVehicleComponent.lastDetach + 1.5f > time.getGameTime()) {
                 return;
+            }
+
+            //checks to see if the cart hits a rail segment
+            HitResult hit = physics.rayTrace(JomlUtil.from(location.getWorldPosition()), new Vector3f(0, -1, 0), 1.2f, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
+            if (hit == null || hit.getBlockPosition() == null) {
+                return;
+            }
 
             EntityRef ref = blockEntityRegistry.getBlockEntityAt(JomlUtil.from(hit.getBlockPosition()));
 
@@ -128,21 +120,25 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
                 Segment segment = segmentCacheSystem.getSegment(prefab);
 
                 Vector3f position = segmentSystem.segmentPosition(ref);
-                Quat4f rotation = segmentSystem.segmentRotation(ref);
+                Quaternionf rotation = segmentSystem.segmentRotation(ref);
 
-                float segmentPosition = segment.nearestSegmentPosition(location.getWorldPosition(), position, rotation);;
+                float segmentPosition = segment.nearestSegmentPosition(JomlUtil.from(location.getWorldPosition()), position, rotation);
 
-                segmentVehicleComponent.segmentMeta = new SegmentMeta(segmentPosition,ref,prefab);
+
+                segmentVehicleComponent.segmentMeta = new SegmentMeta(segmentPosition, ref, prefab);
                 railVehicle.addComponent(segmentVehicleComponent);
                 segmentVehicleComponent.heading = pathFollowerSystem.vehicleTangent(railVehicle);
                 rigidBodyComponent.collidesWith.remove(StandardCollisionGroup.WORLD);
-                railVehicleComponent.velocity = JomlUtil.from(segmentVehicleComponent.heading.project(JomlUtil.from(rigidBodyComponent.velocity)));
-
+                railVehicleComponent.velocity = Util.project(segmentVehicleComponent.heading, rigidBodyComponent.velocity, new Vector3f());
+                if (!railVehicleComponent.velocity.isFinite()) {
+                    railVehicleComponent.velocity.set(.001f);
+                }
                 railVehicle.addOrSaveComponent(segmentVehicleComponent);
             }
         } else {
-            if (railVehicleComponent.velocity.length() > Constants.VELOCITY_CAP)
+            if (railVehicleComponent.velocity.length() > Constants.VELOCITY_CAP) {
                 railVehicleComponent.velocity.normalize().mul(Constants.VELOCITY_CAP);
+            }
 
             if (pathFollowerSystem.isVehicleValid(railVehicle)) {
                 Vector3f position = pathFollowerSystem.vehiclePoint(railVehicle);
@@ -151,34 +147,42 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
 
                 Vector3f normal = pathFollowerSystem.vehicleNormal(railVehicle);
                 Vector3f tangent = pathFollowerSystem.vehicleTangent(railVehicle);
+                Vector3f gravity = new Vector3f(0, -1, 0).mul(Constants.GRAVITY).mul(delta);
 
-                Vector3f gravity = Vector3f.down().mul(Constants.GRAVITY).mul(delta);
-                railVehicleComponent.velocity.add(JomlUtil.from(tangent.project(gravity)));
+                railVehicleComponent.velocity.add(Util.project(gravity, tangent, new Vector3f()));
 
                 //apply some friction based off the gravity vector projected on the normal multiplied against a friction coff
                 RailComponent rail = segmentVehicleComponent.segmentMeta.association.getComponent(RailComponent.class);
-                Vector3f friction = normal.project(gravity).invert().mul(rail.frictionCoefficient);
+                Vector3f friction = Util.project(normal, gravity, new Vector3f()).mul(-1).mul(rail.frictionCoefficient);
 
                 float mag = railVehicleComponent.velocity.length() - friction.length();
                 //make sure the magnitude is not less then zero when the friction value is subtracted off of the velocity
-                if (mag < 0)
+                if (mag < 0) {
                     mag = 0;
+                }
 
                 //apply the new velocity to the rail component
-                railVehicleComponent.velocity = JomlUtil.from(segmentVehicleComponent.heading.project(JomlUtil.from(railVehicleComponent.velocity)).normalize().mul(mag));
+                railVehicleComponent.velocity = Util.project(railVehicleComponent.velocity, segmentVehicleComponent.heading, new Vector3f()).normalize().mul(mag);
 
                 //make sure the value is not nan or infinite
                 //occurs when the cart hits a perpendicular segment.
                 //currently, the vehicle and its axle are the same components
-                Util.bound(railVehicleComponent.velocity);
-                if (pathFollowerSystem.move(railVehicle, Math.signum(segmentVehicleComponent.heading.dot(JomlUtil.from(railVehicleComponent.velocity))) * mag * delta, segmentMapping)) {
+                if (!railVehicleComponent.velocity.isFinite()) {
+                    railVehicleComponent.velocity.set(0);
+                }
 
+                if (pathFollowerSystem.move(railVehicle, Math.signum(segmentVehicleComponent.heading.dot(railVehicleComponent.velocity)) * mag * delta, segmentMapping)) {
                     //calculate the cart rotation
-                    Quat4f horizontalRotation = Quat4f.shortestArcQuat(Vector3f.north(), new Vector3f(segmentVehicleComponent.heading).setY(0).normalize());
-                    Quat4f verticalRotation = Quat4f.shortestArcQuat(new Vector3f(segmentVehicleComponent.heading).setY(0).normalize(), new Vector3f(segmentVehicleComponent.heading));
+                    Vector3f horzY = new Vector3f(segmentVehicleComponent.heading);
+                    horzY.y = 0;
+                    horzY.normalize();
+
+                    Quaternionf horizontalRotation = new Quaternionf().rotateTo(new Vector3f(0, 0, 1), horzY);
+                    Quaternionf verticalRotation = new Quaternionf().rotateTo(horzY, segmentVehicleComponent.heading);
+
                     verticalRotation.mul(horizontalRotation);
-                    location.setLocalRotation(verticalRotation);
-                    location.setWorldPosition(position);
+                    location.setLocalRotation(JomlUtil.from(verticalRotation));
+                    location.setWorldPosition(JomlUtil.from(position));
                     rigidBodyComponent.kinematic = true;
                 } else {
                     detachFromRail(railVehicle);
@@ -204,9 +208,9 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
         rigidBodyComponent.velocity = new org.joml.Vector3f(railVehicleComponent.velocity);
         rigidBodyComponent.collidesWith.add(StandardCollisionGroup.WORLD);
 
+        railVehicleComponent.lastDetach = time.getGameTime();
+
         vehicle.saveComponent(railVehicleComponent);
         vehicle.saveComponent(rigidBodyComponent);
     }
-
-
 }

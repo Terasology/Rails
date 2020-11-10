@@ -1,20 +1,9 @@
-/*
- * Copyright 2017 MovingBlocks
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright 2020 The Terasology Foundation
+// SPDX-License-Identifier: Apache-2.0
+
 package org.terasology.minecarts.action;
 
+import org.joml.Vector3i;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityRef;
@@ -23,8 +12,8 @@ import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.logic.common.ActivateEvent;
+import org.terasology.math.JomlUtil;
 import org.terasology.math.SideBitFlag;
-import org.terasology.math.geom.Vector3i;
 import org.terasology.minecarts.blocks.RailBlockFamily;
 import org.terasology.minecarts.blocks.RailComponent;
 import org.terasology.minecarts.components.CartJointComponent;
@@ -58,11 +47,12 @@ public class WrenchAction extends BaseComponentSystem {
     public void onCartJoinAction(ActivateEvent event, EntityRef item, WrenchComponent wrenchComponent) {
         EntityRef targetVehicle = event.getTarget();
 
-        if (!targetVehicle.hasComponent(RailVehicleComponent.class) && !targetVehicle.hasComponent(CartJointComponent.class))
+        if (!targetVehicle.hasComponent(RailVehicleComponent.class) && !targetVehicle.hasComponent(CartJointComponent.class)) {
             return;
+        }
 
-        if(wrenchComponent.lastSelectedCart != null){
-            cartJointSystem.joinVehicles(targetVehicle,wrenchComponent.lastSelectedCart);
+        if (wrenchComponent.lastSelectedCart != null) {
+            cartJointSystem.joinVehicles(targetVehicle, wrenchComponent.lastSelectedCart);
             wrenchComponent.lastSelectedCart = null;
             LOGGER.debug("Carts Joined");
         }
@@ -74,15 +64,16 @@ public class WrenchAction extends BaseComponentSystem {
     @ReceiveEvent(components = {WrenchComponent.class})
     public void onRailFlipAction(ActivateEvent event, EntityRef item) {
         EntityRef targetEntity = event.getTarget();
-        if (!targetEntity.hasComponent(RailComponent.class))
+        if (!targetEntity.hasComponent(RailComponent.class)) {
             return;
+        }
 
-        Vector3i position = targetEntity.getComponent(BlockComponent.class).getPosition();
+        Vector3i position = JomlUtil.from(targetEntity.getComponent(BlockComponent.class).position);
 
         RailBlockFamily railFamily = (RailBlockFamily) blockManager.getBlockFamily("Rails:rails");
         RailBlockFamily invertFamily = (RailBlockFamily) blockManager.getBlockFamily("railsTBlockInverted");
 
-        Block block = worldProvider.getBlock(targetEntity.getComponent(BlockComponent.class).getPosition());
+        Block block = worldProvider.getBlock(targetEntity.getComponent(BlockComponent.class).position);
 
         byte connections = Byte.parseByte(block.getURI().getIdentifier().toString());
 
@@ -94,9 +85,5 @@ public class WrenchAction extends BaseComponentSystem {
                 blockEntityRegistry.setBlockForceUpdateEntity(position, railFamily.getBlockByConnection(connections));
             }
         }
-
-
     }
-
-
 }

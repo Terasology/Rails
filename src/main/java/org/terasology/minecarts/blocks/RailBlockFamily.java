@@ -18,16 +18,19 @@ package org.terasology.minecarts.blocks;
 import com.google.common.collect.Sets;
 import gnu.trove.map.TByteObjectMap;
 import gnu.trove.map.hash.TByteObjectHashMap;
+import org.joml.Vector3i;
+import org.joml.Vector3ic;
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.math.JomlUtil;
 import org.terasology.math.Rotation;
 import org.terasology.math.Side;
 import org.terasology.math.SideBitFlag;
-import org.terasology.math.geom.Vector3i;
 import org.terasology.naming.Name;
 import org.terasology.segmentedpaths.blocks.PathFamily;
 import org.terasology.world.block.Block;
 import org.terasology.world.block.BlockBuilderHelper;
 import org.terasology.world.block.BlockUri;
+import org.terasology.world.block.family.BlockPlacementData;
 import org.terasology.world.block.family.BlockSections;
 import org.terasology.world.block.family.MultiConnectFamily;
 import org.terasology.world.block.family.RegisterBlockFamily;
@@ -67,7 +70,8 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
         initSideBitMap();
 
         for (String k : baseSideBitMap.keySet()) {
-            this.registerBlock(blockUri, definition, blockBuilder, k, baseSideBitMap.get(k), Rotation.horizontalRotations());
+            this.registerBlock(blockUri, definition, blockBuilder, k, baseSideBitMap.get(k),
+                Rotation.horizontalRotations());
         }
     }
 
@@ -82,14 +86,16 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
     }
 
     @Override
-    public Set<Block> registerBlock(BlockUri root, BlockFamilyDefinition definition, BlockBuilderHelper blockBuilder, String name, byte sides, Iterable<Rotation> rotations) {
+    public Set<Block> registerBlock(BlockUri root, BlockFamilyDefinition definition, BlockBuilderHelper blockBuilder,
+                                    String name, byte sides, Iterable<Rotation> rotations) {
         Set<Block> result = Sets.newLinkedHashSet();
         for (Rotation rotation : rotations) {
             byte sideBits = 0;
             for (Side side : SideBitFlag.getSides(sides)) {
                 sideBits += SideBitFlag.getSide(rotation.rotate(side));
             }
-            Block block = blockBuilder.constructTransformedBlock(definition, name, rotation, new BlockUri(root, new Name(String.valueOf(sideBits))), this);
+            Block block = blockBuilder.constructTransformedBlock(definition, name, rotation, new BlockUri(root,
+                new Name(String.valueOf(sideBits))), this);
             rotationMap.put(sideBits, rotation);
             blocks.put(sideBits, block);
             result.add(block);
@@ -98,23 +104,61 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
     }
 
     @Override
-    public Block getBlockForPlacement(Vector3i location, Side attachmentSide, Side direction) {
+    @Deprecated
+    public Block getBlockForPlacement(org.terasology.math.geom.Vector3i location, Side attachmentSide, Side direction) {
         byte connections = 0;
         for (Side connectSide : SideBitFlag.getSides(getConnectionSides())) {
-            if (this.connectionCondition(location, connectSide) && !isFullyConnected(location, connectSide)) {
+            if (this.connectionCondition(JomlUtil.from(location), connectSide) && !isFullyConnected(JomlUtil.from(location), connectSide)) {
                 connections |= SideBitFlag.getSide(connectSide);
             }
         }
 
         for (Side connectSide : SideBitFlag.getSides(getConnectionSides())) {
-            if (this.connectionCondition(new Vector3i(location).add(Vector3i.down()), connectSide)) {
+            if (this.connectionCondition(new Vector3i(JomlUtil.from(location)).add(new Vector3i(0, -1, 0)),
+                connectSide)) {
                 connections |= SideBitFlag.getSide(connectSide);
             }
         }
 
         Side topSide = Side.BOTTOM;
         for (Side connectSide : SideBitFlag.getSides(getConnectionSides())) {
-            if (this.connectionCondition(new Vector3i(location).add(Vector3i.up()), connectSide)) {
+            if (this.connectionCondition(new Vector3i(JomlUtil.from(location)).add(new Vector3i(0, 1, 0)),
+                connectSide)) {
+                connections |= SideBitFlag.getSide(Side.TOP);
+                topSide = connectSide;
+                if (SideBitFlag.getSides(connections).size() == 1) {
+                    connections |= SideBitFlag.getSide(connectSide.reverse());
+                }
+                break;
+            }
+        }
+
+        Block result = blocks.get(connections);
+        if (result != null) {
+            return result;
+        } else {
+            return getClosestMatch(connections, topSide);
+        }
+    }
+
+    @Override
+    public Block getBlockForPlacement(BlockPlacementData data) {
+        byte connections = 0;
+        for (Side connectSide : SideBitFlag.getSides(getConnectionSides())) {
+            if (this.connectionCondition(data.blockPosition, connectSide) && !isFullyConnected(data.blockPosition, connectSide)) {
+                connections |= SideBitFlag.getSide(connectSide);
+            }
+        }
+
+        for (Side connectSide : SideBitFlag.getSides(getConnectionSides())) {
+            if (this.connectionCondition(new Vector3i(data.blockPosition).add(new Vector3i(0, -1, 0)), connectSide)) {
+                connections |= SideBitFlag.getSide(connectSide);
+            }
+        }
+
+        Side topSide = Side.BOTTOM;
+        for (Side connectSide : SideBitFlag.getSides(getConnectionSides())) {
+            if (this.connectionCondition(new Vector3i(data.blockPosition).add(new Vector3i(0, 1, 0)), connectSide)) {
                 connections |= SideBitFlag.getSide(Side.TOP);
                 topSide = connectSide;
                 if (SideBitFlag.getSides(connections).size() == 1) {
@@ -186,12 +230,15 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
         return null;
     }
 
-
     @Override
-    public Block getBlockForNeighborUpdate(Vector3i location, Block oldBlock) {
+    public Block getBlockForNeighborUpdate(Vector3ic location, Block oldBlock) {
         return oldBlock;
     }
 
+    @Override
+    public Block getBlockForNeighborUpdate(org.terasology.math.geom.Vector3i location, Block oldBlock) {
+        return oldBlock;
+    }
 
     /**
      * a fully connected tile has more then 1 connected edge and is not attached to the reference tile
@@ -200,17 +247,18 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
      * @param connectSide
      * @return
      */
-    private boolean isFullyConnected(Vector3i location, Side connectSide) {
+    private boolean isFullyConnected(Vector3ic location, Side connectSide) {
         if (connectionCondition(location, connectSide)) {
             Vector3i neighborLocation = new Vector3i(location);
-            neighborLocation.add(connectSide.getVector3i());
-            EnumSet<Side> sides = SideBitFlag.getSides(Byte.parseByte(worldProvider.getBlock(neighborLocation).getURI().getIdentifier().toString()));
+            neighborLocation.add(connectSide.direction());
+            EnumSet<Side> sides =
+                SideBitFlag.getSides(Byte.parseByte(worldProvider.getBlock(neighborLocation).getURI().getIdentifier().toString()));
 
             for (Side side : sides) {
                 if (side == Side.TOP || side == Side.BOTTOM) {
                     continue;
                 }
-                if (new Vector3i(neighborLocation).add(side.getVector3i()).equals(location)) {
+                if (new Vector3i(neighborLocation).add(side.direction()).equals(location)) {
                     return false;
                 }
             }
@@ -222,13 +270,17 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
         return false;
     }
 
-
     @Override
-    protected boolean connectionCondition(Vector3i blockLocation, Side connectSide) {
-        Vector3i neighborLocation = new Vector3i(blockLocation);
-        neighborLocation.add(connectSide.getVector3i());
+    protected boolean connectionCondition(Vector3ic blockLocation, Side connectSide) {
+        org.joml.Vector3i neighborLocation = new org.joml.Vector3i(blockLocation);
+        neighborLocation.add(connectSide.direction());
         EntityRef neighborEntity = blockEntityRegistry.getEntityAt(neighborLocation);
         return neighborEntity != null && neighborEntity.hasComponent(RailComponent.class);
+    }
+
+    @Override
+    protected boolean connectionCondition(org.terasology.math.geom.Vector3i blockLocation, Side connectSide) {
+        return this.connectionCondition(JomlUtil.from(blockLocation), connectSide);
     }
 
     @Override
@@ -241,10 +293,10 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
         return blocks.get(SideBitFlag.getSides(Side.RIGHT, Side.LEFT));
     }
 
+
     public Block getBlockByConnection(byte connectionSides) {
         return blocks.get(connectionSides);
     }
-
 
     @Override
     public Rotation getRotationFor(BlockUri blockUri) {
