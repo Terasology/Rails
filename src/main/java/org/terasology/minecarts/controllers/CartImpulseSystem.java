@@ -17,7 +17,6 @@ import org.terasology.logic.characters.CharacterMovementComponent;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.JomlUtil;
 import org.terasology.minecarts.Constants;
-import org.terasology.minecarts.Util;
 import org.terasology.minecarts.components.CartJointComponent;
 import org.terasology.minecarts.components.CollisionFilterComponent;
 import org.terasology.minecarts.components.RailVehicleComponent;
@@ -57,7 +56,7 @@ public class CartImpulseSystem extends BaseComponentSystem {
 
 
     @ReceiveEvent(components = {RailVehicleComponent.class, PathFollowerComponent.class, LocationComponent.class,
-        RigidBodyComponent.class}, priority = EventPriority.PRIORITY_HIGH)
+            RigidBodyComponent.class}, priority = EventPriority.PRIORITY_HIGH)
     public void onBump(CollideEvent event, EntityRef entity) {
         CollisionFilterComponent collisionFilterComponent = entity.getComponent(CollisionFilterComponent.class);
         if (collisionFilterComponent != null && collisionFilterComponent.filter.contains(event.getOtherEntity())) {
@@ -102,10 +101,11 @@ public class CartImpulseSystem extends BaseComponentSystem {
         float effectiveMass = (1.0f / r1.mass) + (1.0f / Constants.PLAYER_MASS);
 
         Vector3f df =
-            new Vector3f(JomlUtil.from(v2l.getWorldPosition())).sub(JomlUtil.from(v1l.getWorldPosition())).normalize();
+                new Vector3f(v2l.getWorldPosition(new Vector3f())).sub(v1l.getWorldPosition(new Vector3f())).normalize();
 
         float b =
-            -df.dot(event.getNormal()) * (Constants.BAUMGARTE_COFF / time.getGameDelta()) * event.getPenetration();
+                -df.dot(event.getNormal()) * (Constants.BAUMGARTE_COFF / time.getGameDelta()) * event.getPenetration();
+
 
         float lambda = -(jv + b) / effectiveMass;
 
@@ -114,15 +114,15 @@ public class CartImpulseSystem extends BaseComponentSystem {
         }
 
         Vector3f r1v = new Vector3f(
-            event.getNormal().x / r1.mass,
-            event.getNormal().y / r1.mass,
-            event.getNormal().z / r1.mass)
-            .mul(lambda);
+                event.getNormal().x / r1.mass,
+                event.getNormal().y / r1.mass,
+                event.getNormal().z / r1.mass)
+                .mul(lambda);
         Vector3f r2v = new Vector3f(
-            event.getNormal().x / Constants.PLAYER_MASS,
-            event.getNormal().y / Constants.PLAYER_MASS,
-            event.getNormal().z / Constants.PLAYER_MASS)
-            .mul(lambda).mul(-1);
+                event.getNormal().x / Constants.PLAYER_MASS,
+                event.getNormal().y / Constants.PLAYER_MASS,
+                event.getNormal().z / Constants.PLAYER_MASS)
+                .mul(lambda).mul(-1);
 
         v1.velocity.add(r1v);
         event.getOtherEntity().send(new CharacterImpulseEvent(JomlUtil.from(r2v)));
@@ -142,9 +142,9 @@ public class CartImpulseSystem extends BaseComponentSystem {
         LocationComponent v2l = event.getOtherEntity().getComponent(LocationComponent.class);
 
 
-        Vector3f df = new Vector3f(JomlUtil.from(v2l.getWorldPosition()))
-            .sub(JomlUtil.from(v1l.getWorldPosition()))
-            .add(new Vector3f(Float.MIN_VALUE, Float.MIN_VALUE, Float.MIN_VALUE)).normalize();
+        Vector3f df = new Vector3f(v2l.getWorldPosition(new Vector3f()))
+                .sub(v1l.getWorldPosition(new Vector3f()))
+                .add(new Vector3f(Float.MIN_VALUE, Float.MIN_VALUE, Float.MIN_VALUE)).normalize();
 
         //calculate the half normal vector
         Vector3f normal = new Vector3f(df);

@@ -18,7 +18,6 @@ import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
 import org.terasology.logic.inventory.InventoryManager;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.logic.players.LocalPlayer;
-import org.terasology.math.JomlUtil;
 import org.terasology.minecarts.Constants;
 import org.terasology.minecarts.Util;
 import org.terasology.minecarts.blocks.RailBlockSegmentMapper;
@@ -73,13 +72,15 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
 
     @Override
     public void initialise() {
-        segmentMapping = new RailBlockSegmentMapper(blockEntityRegistry, pathFollowerSystem, segmentSystem, segmentCacheSystem);
+        segmentMapping = new RailBlockSegmentMapper(blockEntityRegistry, pathFollowerSystem, segmentSystem,
+                segmentCacheSystem);
     }
 
 
     @Override
     public void update(float delta) {
-        for (EntityRef railVehicle : entityManager.getEntitiesWith(RailVehicleComponent.class, RigidBodyComponent.class)) {
+        for (EntityRef railVehicle : entityManager.getEntitiesWith(RailVehicleComponent.class,
+                RigidBodyComponent.class)) {
             updateCart(railVehicle, delta);
         }
     }
@@ -105,7 +106,8 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
             }
 
             //checks to see if the cart hits a rail segment
-            HitResult hit = physics.rayTrace(JomlUtil.from(location.getWorldPosition()), new Vector3f(0, -1, 0), 1.2f, StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
+            HitResult hit = physics.rayTrace(location.getWorldPosition(new Vector3f()), new Vector3f(0, -1, 0), 1.2f,
+                    StandardCollisionGroup.DEFAULT, StandardCollisionGroup.WORLD);
             if (hit == null || hit.getBlockPosition() == null) {
                 return;
             }
@@ -122,14 +124,16 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
                 Vector3f position = segmentSystem.segmentPosition(ref);
                 Quaternionf rotation = segmentSystem.segmentRotation(ref);
 
-                float segmentPosition = segment.nearestSegmentPosition(JomlUtil.from(location.getWorldPosition()), position, rotation);
+                float segmentPosition = segment.nearestSegmentPosition(location.getWorldPosition(new Vector3f()),
+                        position, rotation);
 
 
                 segmentVehicleComponent.segmentMeta = new SegmentMeta(segmentPosition, ref, prefab);
                 railVehicle.addComponent(segmentVehicleComponent);
                 segmentVehicleComponent.heading = pathFollowerSystem.vehicleTangent(railVehicle);
                 rigidBodyComponent.collidesWith.remove(StandardCollisionGroup.WORLD);
-                railVehicleComponent.velocity = Util.project(segmentVehicleComponent.heading, rigidBodyComponent.velocity, new Vector3f());
+                railVehicleComponent.velocity = Util.project(segmentVehicleComponent.heading,
+                        rigidBodyComponent.velocity, new Vector3f());
                 if (!railVehicleComponent.velocity.isFinite()) {
                     railVehicleComponent.velocity.set(.001f);
                 }
@@ -147,23 +151,25 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
 
                 Vector3f normal = pathFollowerSystem.vehicleNormal(railVehicle);
                 Vector3f tangent = pathFollowerSystem.vehicleTangent(railVehicle);
-
                 Vector3f gravity = new Vector3f(0, -1, 0).mul(Constants.GRAVITY).mul(delta);
 
                 railVehicleComponent.velocity.add(Util.project(gravity, tangent, new Vector3f()));
 
-                //apply some friction based off the gravity vector projected on the normal multiplied against a friction coff
+                //apply some friction based off the gravity vector projected on the normal multiplied against a
+                // friction coff
                 RailComponent rail = segmentVehicleComponent.segmentMeta.association.getComponent(RailComponent.class);
                 Vector3f friction = Util.project(normal, gravity, new Vector3f()).mul(-1).mul(rail.frictionCoefficient);
 
                 float mag = railVehicleComponent.velocity.length() - friction.length();
-                //make sure the magnitude is not less then zero when the friction value is subtracted off of the velocity
+                //make sure the magnitude is not less then zero when the friction value is subtracted off of the
+                // velocity
                 if (mag < 0) {
                     mag = 0;
                 }
 
                 //apply the new velocity to the rail component
-                railVehicleComponent.velocity = Util.project(railVehicleComponent.velocity, segmentVehicleComponent.heading, new Vector3f()).normalize().mul(mag);
+                railVehicleComponent.velocity = Util.project(railVehicleComponent.velocity,
+                        segmentVehicleComponent.heading, new Vector3f()).normalize().mul(mag);
 
                 //make sure the value is not nan or infinite
                 //occurs when the cart hits a perpendicular segment.
@@ -172,8 +178,9 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
                     railVehicleComponent.velocity.set(0);
                 }
 
-                if (pathFollowerSystem.move(railVehicle, Math.signum(segmentVehicleComponent.heading.dot(railVehicleComponent.velocity)) * mag * delta, segmentMapping)) {
-
+                if (pathFollowerSystem.move(railVehicle,
+                        Math.signum(segmentVehicleComponent.heading.dot(railVehicleComponent.velocity)) * mag * delta
+                        , segmentMapping)) {
                     //calculate the cart rotation
                     Vector3f horzY = new Vector3f(segmentVehicleComponent.heading);
                     horzY.y = 0;
@@ -183,8 +190,8 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
                     Quaternionf verticalRotation = new Quaternionf().rotateTo(horzY, segmentVehicleComponent.heading);
 
                     verticalRotation.mul(horizontalRotation);
-                    location.setLocalRotation(JomlUtil.from(verticalRotation));
-                    location.setWorldPosition(JomlUtil.from(position));
+                    location.setLocalRotation(verticalRotation);
+                    location.setWorldPosition(position);
                     rigidBodyComponent.kinematic = true;
                 } else {
                     detachFromRail(railVehicle);
