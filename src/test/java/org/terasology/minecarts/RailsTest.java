@@ -35,6 +35,7 @@ import org.terasology.world.block.Block;
 import org.terasology.world.block.BlockManager;
 import org.terasology.world.block.BlockRegion;
 import org.terasology.world.block.BlockRegionIterable;
+import org.terasology.world.block.BlockRegions;
 import org.terasology.world.block.BlockUri;
 import org.terasology.world.block.family.BlockFamily;
 import org.terasology.world.block.family.BlockPlacementData;
@@ -62,12 +63,12 @@ public class RailsTest {
         railBlockFamily = blockManager.getBlockFamily(RAIL_BLOCKFAMILY_URI);
 
         for (Vector3ic pos :
-            BlockRegionIterable.region(new BlockRegion(0, 0, 0, 0, 0, 0).addExtents(5, 5, 5)).build()) {
+            BlockRegions.iterableInPlace(BlockRegions.createFromCenterAndExtents(new Vector3i(0, 0, 0), new Vector3i(5, 5, 5)))) {
             helper.forceAndWaitForGeneration(JomlUtil.from(pos));
             worldProvider.setBlock(pos, airBlock);
         }
         for (Vector3ic pos :
-            BlockRegionIterable.region(new BlockRegion(0, -1, 0, 0, -1, 0).addExtents(5, 0, 5)).build()) {
+            BlockRegions.iterableInPlace(BlockRegions.createFromCenterAndExtents(new Vector3i(0, 0, 0), new Vector3i(5, 5, 5)))) {
             helper.forceAndWaitForGeneration(JomlUtil.from(pos));
             worldProvider.setBlock(pos, dirtBlock);
         }
@@ -76,7 +77,8 @@ public class RailsTest {
     @Test
     public void singleRail() {
         this.initialize();
-        worldProvider.setBlock(new Vector3i(0, 0, 0), railBlockFamily.getBlockForPlacement(new BlockPlacementData(new Vector3i(), Side.FRONT, new Vector3f())));
+        worldProvider.setBlock(new Vector3i(0, 0, 0),
+            railBlockFamily.getBlockForPlacement(new BlockPlacementData(new Vector3i(), Side.FRONT, new Vector3f())));
 
         assertRailBlockAtConnectsTo(new Vector3i(), SideBitFlag.getSides());
     }
@@ -157,6 +159,7 @@ public class RailsTest {
     }
 
     private void setRail(Vector3i position) {
-        worldProvider.setBlock(position, railBlockFamily.getBlockForPlacement(new BlockPlacementData(position, Side.FRONT, new Vector3f())));
+        worldProvider.setBlock(position, railBlockFamily.getBlockForPlacement(new BlockPlacementData(position,
+            Side.FRONT, new Vector3f())));
     }
 }
