@@ -125,7 +125,7 @@ public class CartImpulseSystem extends BaseComponentSystem {
                 .mul(lambda).mul(-1);
 
         v1.velocity.add(r1v);
-        event.getOtherEntity().send(new CharacterImpulseEvent(JomlUtil.from(r2v)));
+        event.getOtherEntity().send(new CharacterImpulseEvent(r2v));
 
         entity.saveComponent(v1);
     }
