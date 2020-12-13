@@ -133,9 +133,9 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
     @ReceiveEvent(components = {BlockComponent.class})
     public void blockUpdate(OnChangedBlock event, EntityRef blockEntity) {
         if (largeBlockUpdateCount > 0) {
-            blocksUpdatedInLargeBlockUpdate.add(JomlUtil.from(event.getBlockPosition()));
+            blocksUpdatedInLargeBlockUpdate.add(event.getBlockPosition());
         } else {
-            Vector3i blockLocation = JomlUtil.from(event.getBlockPosition());
+            Vector3i blockLocation = event.getBlockPosition();
             processUpdateForBlockLocation(blockLocation);
         }
     }
