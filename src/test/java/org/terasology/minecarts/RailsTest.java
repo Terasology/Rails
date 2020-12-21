@@ -63,12 +63,12 @@ public class RailsTest {
         railBlockFamily = blockManager.getBlockFamily(RAIL_BLOCKFAMILY_URI);
 
         for (Vector3ic pos :
-            BlockRegions.iterableInPlace(BlockRegions.createFromCenterAndExtents(new Vector3i(0, 0, 0), new Vector3i(5, 5, 5)))) {
+            BlockRegions.iterableInPlace(BlockRegions.fromCenterAndExtents(new Vector3i(0, 0, 0), new Vector3i(5, 5, 5)))) {
             helper.forceAndWaitForGeneration(JomlUtil.from(pos));
             worldProvider.setBlock(pos, airBlock);
         }
         for (Vector3ic pos :
-            BlockRegions.iterableInPlace(BlockRegions.createFromCenterAndExtents(new Vector3i(0, 0, 0), new Vector3i(5, 5, 5)))) {
+            BlockRegions.iterableInPlace(BlockRegions.fromCenterAndExtents(new Vector3i(0, 0, 0), new Vector3i(5, 5, 5)))) {
             helper.forceAndWaitForGeneration(JomlUtil.from(pos));
             worldProvider.setBlock(pos, dirtBlock);
         }
