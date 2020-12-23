@@ -33,7 +33,7 @@ import org.terasology.world.BlockEntityRegistry;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
 import org.terasology.world.block.BlockManager;
-import org.terasology.world.block.BlockRegions;
+import org.terasology.world.block.BlockRegion;
 import org.terasology.world.block.BlockUri;
 import org.terasology.world.block.family.BlockFamily;
 import org.terasology.world.block.family.BlockPlacementData;
@@ -60,13 +60,13 @@ public class RailsTest {
         dirtBlock = blockManager.getBlock("CoreAssets:Dirt");
         railBlockFamily = blockManager.getBlockFamily(RAIL_BLOCKFAMILY_URI);
 
-        for (Vector3ic pos :
-                BlockRegions.iterableInPlace(BlockRegions.fromCenterAndExtents(0, 0, 0, 5, 5, 5))) {
+        BlockRegion region = new BlockRegion(0, 0, 0).expand(5, 5, 5);
+
+        for (Vector3ic pos : region) {
             helper.forceAndWaitForGeneration(JomlUtil.from(pos));
             worldProvider.setBlock(pos, airBlock);
         }
-        for (Vector3ic pos :
-                BlockRegions.iterableInPlace(BlockRegions.fromCenterAndExtents(0, 0, 0, 5, 5, 5))) {
+        for (Vector3ic pos : region) {
             helper.forceAndWaitForGeneration(JomlUtil.from(pos));
             worldProvider.setBlock(pos, dirtBlock);
         }
