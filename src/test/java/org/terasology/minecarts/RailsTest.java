@@ -63,11 +63,11 @@ public class RailsTest {
         BlockRegion region = new BlockRegion(0, 0, 0).expand(5, 5, 5);
 
         for (Vector3ic pos : region) {
-            helper.forceAndWaitForGeneration(JomlUtil.from(pos));
+            helper.forceAndWaitForGeneration(pos);
             worldProvider.setBlock(pos, airBlock);
         }
         for (Vector3ic pos : region) {
-            helper.forceAndWaitForGeneration(JomlUtil.from(pos));
+            helper.forceAndWaitForGeneration(pos);
             worldProvider.setBlock(pos, dirtBlock);
         }
     }
