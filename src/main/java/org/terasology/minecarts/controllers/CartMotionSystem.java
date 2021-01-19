@@ -147,7 +147,7 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
             if (pathFollowerSystem.isVehicleValid(railVehicle)) {
                 Vector3f position = pathFollowerSystem.vehiclePoint(railVehicle);
                 MeshComponent mesh = railVehicle.getComponent(MeshComponent.class);
-                position.y = mesh.mesh.getAABB().getMax().y / 2.0f + position.y + .01f;
+                position.y = mesh.mesh.getAABB().maxY() / 2.0f + position.y + .01f;
 
                 Vector3f normal = pathFollowerSystem.vehicleNormal(railVehicle);
                 Vector3f tangent = pathFollowerSystem.vehicleTangent(railVehicle);
