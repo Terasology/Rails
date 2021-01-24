@@ -12,7 +12,6 @@ import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.logic.common.ActivateEvent;
-import org.terasology.math.JomlUtil;
 import org.terasology.math.SideBitFlag;
 import org.terasology.minecarts.blocks.RailBlockFamily;
 import org.terasology.minecarts.blocks.RailComponent;
@@ -68,12 +67,12 @@ public class WrenchAction extends BaseComponentSystem {
             return;
         }
 
-        Vector3i position = JomlUtil.from(targetEntity.getComponent(BlockComponent.class).position);
+        Vector3i position = targetEntity.getComponent(BlockComponent.class).getPosition(new Vector3i());
 
         RailBlockFamily railFamily = (RailBlockFamily) blockManager.getBlockFamily("Rails:rails");
         RailBlockFamily invertFamily = (RailBlockFamily) blockManager.getBlockFamily("railsTBlockInverted");
 
-        Block block = worldProvider.getBlock(targetEntity.getComponent(BlockComponent.class).position);
+        Block block = worldProvider.getBlock(position);
 
         byte connections = Byte.parseByte(block.getURI().getIdentifier().toString());
 

@@ -16,7 +16,6 @@ import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.logic.common.ActivateEvent;
 import org.terasology.logic.inventory.InventoryManager;
 import org.terasology.logic.inventory.ItemComponent;
-import org.terasology.math.JomlUtil;
 import org.terasology.minecarts.blocks.RailComponent;
 import org.terasology.minecarts.components.CartDefinitionComponent;
 import org.terasology.registry.In;
@@ -48,7 +47,7 @@ public class MinecartAction extends BaseComponentSystem {
 
         CartDefinitionComponent cartDefinition = item.getComponent(CartDefinitionComponent.class);
 
-        Vector3i placementPos = new Vector3i(JomlUtil.from(targetEntity.getComponent(BlockComponent.class).position));
+        Vector3i placementPos = targetEntity.getComponent(BlockComponent.class).getPosition(new Vector3i());
         placementPos.y += 0.2f;
 
         logger.info("Created vehicle at {}", placementPos);
