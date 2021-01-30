@@ -8,7 +8,6 @@ import gnu.trove.map.hash.TByteObjectHashMap;
 import org.joml.Vector3i;
 import org.joml.Vector3ic;
 import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.math.JomlUtil;
 import org.terasology.math.Rotation;
 import org.terasology.math.Side;
 import org.terasology.math.SideBitFlag;
@@ -88,44 +87,6 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
             result.add(block);
         }
         return result;
-    }
-
-    @Override
-    @Deprecated
-    public Block getBlockForPlacement(org.terasology.math.geom.Vector3i location, Side attachmentSide, Side direction) {
-        byte connections = 0;
-        for (Side connectSide : SideBitFlag.getSides(getConnectionSides())) {
-            if (this.connectionCondition(JomlUtil.from(location), connectSide) && !isFullyConnected(JomlUtil.from(location), connectSide)) {
-                connections |= SideBitFlag.getSide(connectSide);
-            }
-        }
-
-        for (Side connectSide : SideBitFlag.getSides(getConnectionSides())) {
-            if (this.connectionCondition(new Vector3i(JomlUtil.from(location)).add(new Vector3i(0, -1, 0)),
-                connectSide)) {
-                connections |= SideBitFlag.getSide(connectSide);
-            }
-        }
-
-        Side topSide = Side.BOTTOM;
-        for (Side connectSide : SideBitFlag.getSides(getConnectionSides())) {
-            if (this.connectionCondition(new Vector3i(JomlUtil.from(location)).add(new Vector3i(0, 1, 0)),
-                connectSide)) {
-                connections |= SideBitFlag.getSide(Side.TOP);
-                topSide = connectSide;
-                if (SideBitFlag.getSides(connections).size() == 1) {
-                    connections |= SideBitFlag.getSide(connectSide.reverse());
-                }
-                break;
-            }
-        }
-
-        Block result = blocks.get(connections);
-        if (result != null) {
-            return result;
-        } else {
-            return getClosestMatch(connections, topSide);
-        }
     }
 
     @Override
