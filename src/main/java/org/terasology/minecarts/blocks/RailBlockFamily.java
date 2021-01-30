@@ -1,18 +1,5 @@
-/*
- * Copyright 2018 MovingBlocks
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright 2021 The Terasology Foundation
+// SPDX-License-Identifier: Apache-2.0
 package org.terasology.minecarts.blocks;
 
 import com.google.common.collect.Sets;
@@ -21,7 +8,6 @@ import gnu.trove.map.hash.TByteObjectHashMap;
 import org.joml.Vector3i;
 import org.joml.Vector3ic;
 import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.math.JomlUtil;
 import org.terasology.math.Rotation;
 import org.terasology.math.Side;
 import org.terasology.math.SideBitFlag;
@@ -101,44 +87,6 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
             result.add(block);
         }
         return result;
-    }
-
-    @Override
-    @Deprecated
-    public Block getBlockForPlacement(org.terasology.math.geom.Vector3i location, Side attachmentSide, Side direction) {
-        byte connections = 0;
-        for (Side connectSide : SideBitFlag.getSides(getConnectionSides())) {
-            if (this.connectionCondition(JomlUtil.from(location), connectSide) && !isFullyConnected(JomlUtil.from(location), connectSide)) {
-                connections |= SideBitFlag.getSide(connectSide);
-            }
-        }
-
-        for (Side connectSide : SideBitFlag.getSides(getConnectionSides())) {
-            if (this.connectionCondition(new Vector3i(JomlUtil.from(location)).add(new Vector3i(0, -1, 0)),
-                connectSide)) {
-                connections |= SideBitFlag.getSide(connectSide);
-            }
-        }
-
-        Side topSide = Side.BOTTOM;
-        for (Side connectSide : SideBitFlag.getSides(getConnectionSides())) {
-            if (this.connectionCondition(new Vector3i(JomlUtil.from(location)).add(new Vector3i(0, 1, 0)),
-                connectSide)) {
-                connections |= SideBitFlag.getSide(Side.TOP);
-                topSide = connectSide;
-                if (SideBitFlag.getSides(connections).size() == 1) {
-                    connections |= SideBitFlag.getSide(connectSide.reverse());
-                }
-                break;
-            }
-        }
-
-        Block result = blocks.get(connections);
-        if (result != null) {
-            return result;
-        } else {
-            return getClosestMatch(connections, topSide);
-        }
     }
 
     @Override
