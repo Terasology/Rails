@@ -235,11 +235,6 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
         return oldBlock;
     }
 
-    @Override
-    public Block getBlockForNeighborUpdate(org.terasology.math.geom.Vector3i location, Block oldBlock) {
-        return oldBlock;
-    }
-
     /**
      * a fully connected tile has more then 1 connected edge and is not attached to the reference tile
      *
@@ -276,11 +271,6 @@ public class RailBlockFamily extends MultiConnectFamily implements PathFamily {
         neighborLocation.add(connectSide.direction());
         EntityRef neighborEntity = blockEntityRegistry.getEntityAt(neighborLocation);
         return neighborEntity != null && neighborEntity.hasComponent(RailComponent.class);
-    }
-
-    @Override
-    protected boolean connectionCondition(org.terasology.math.geom.Vector3i blockLocation, Side connectSide) {
-        return this.connectionCondition(JomlUtil.from(blockLocation), connectSide);
     }
 
     @Override
