@@ -1,4 +1,4 @@
-// Copyright 2020 The Terasology Foundation
+// Copyright 2021 The Terasology Foundation
 // SPDX-License-Identifier: Apache-2.0
 
 package org.terasology.minecarts.controllers;
@@ -15,7 +15,6 @@ import org.terasology.logic.characters.CharacterComponent;
 import org.terasology.logic.characters.CharacterImpulseEvent;
 import org.terasology.logic.characters.CharacterMovementComponent;
 import org.terasology.logic.location.LocationComponent;
-import org.terasology.math.JomlUtil;
 import org.terasology.minecarts.Constants;
 import org.terasology.minecarts.components.CartJointComponent;
 import org.terasology.minecarts.components.CollisionFilterComponent;
