@@ -6,6 +6,7 @@ package org.terasology.minecarts.blocks;
 import com.google.common.collect.Sets;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
+import org.joml.Vector3ic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.entitySystem.entity.EntityRef;
@@ -16,11 +17,10 @@ import org.terasology.entitySystem.systems.RegisterMode;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.entitySystem.systems.UpdateSubscriberSystem;
 import org.terasology.logic.common.ActivateEvent;
-import org.terasology.logic.health.event.DoDamageEvent;
 import org.terasology.logic.health.DoDestroyEvent;
 import org.terasology.logic.health.EngineDamageTypes;
+import org.terasology.logic.health.event.DoDamageEvent;
 import org.terasology.logic.inventory.ItemComponent;
-import org.terasology.math.JomlUtil;
 import org.terasology.math.Side;
 import org.terasology.math.SideBitFlag;
 import org.terasology.registry.In;
@@ -73,8 +73,7 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
 
     @ReceiveEvent()
     public void doDestroy(DoDestroyEvent event, EntityRef entity, BlockComponent blockComponent) {
-        Vector3i upBlock = new Vector3i(JomlUtil.from(blockComponent.position));
-        upBlock.y += 1;
+        Vector3i upBlock = blockComponent.getPosition().add(0, 1, 0, new Vector3i());
         Block block = worldProvider.getBlock(upBlock);
 
         if (block.getBlockFamily() instanceof RailBlockFamily) {
@@ -90,8 +89,7 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
             return;
         }
 
-        Vector3i targetBlock = JomlUtil.from(blockComponent.position);
-        Block centerBlock = worldProvider.getBlock(targetBlock.x, targetBlock.y, targetBlock.z);
+        Block centerBlock = worldProvider.getBlock(blockComponent.getPosition());
 
         if (centerBlock.getBlockFamily() instanceof RailBlockFamily) {
             event.consume();
@@ -105,8 +103,8 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
             return;
         }
 
-        Vector3i targetBlock = JomlUtil.from(blockComponent.position);
-        Block centerBlock = worldProvider.getBlock(targetBlock.x, targetBlock.y, targetBlock.z);
+        Vector3ic targetBlock = blockComponent.getPosition();
+        Block centerBlock = worldProvider.getBlock(targetBlock);
 
         if (centerBlock.getBlockFamily() instanceof RailBlockFamily) {
             processUpdateForBlockLocation(targetBlock);
@@ -140,7 +138,7 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
         }
     }
 
-    private void processUpdateForBlockLocation(Vector3i blockLocation) {
+    private void processUpdateForBlockLocation(Vector3ic blockLocation) {
         for (int height : checkOnHeight) {
             for (Side side : Side.horizontalSides()) {
                 Vector3i neighborLocation = new Vector3i(blockLocation);
@@ -150,7 +148,9 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
                 EntityRef blockEntity = blockEntityRegistry.getBlockEntityAt(neighborLocation);
                 if (blockEntity.hasComponent(RailComponent.class)) {
                     RailBlockFamily railsFamily = (RailBlockFamily) neighborBlock.getBlockFamily();
-                    Block neighborBlockAfterUpdate = railsFamily.getBlockForPlacement(new BlockPlacementData(neighborLocation, Side.FRONT, new Vector3f()));
+                    Block neighborBlockAfterUpdate =
+                            railsFamily.getBlockForPlacement(new BlockPlacementData(neighborLocation, Side.FRONT,
+                                    new Vector3f()));
                     if (neighborBlock != neighborBlockAfterUpdate && neighborBlockAfterUpdate != null) {
                         byte connections = Byte.parseByte(neighborBlock.getURI().getIdentifier().toString());
                         //only add segment with two connections
