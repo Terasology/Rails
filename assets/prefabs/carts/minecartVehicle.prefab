@@ -1,6 +1,6 @@
 {
     "Location": {
-        "scale": 0.32
+        "scale": 1.0
     },
     "Mesh": {
         "mesh": "Rails:minecart",
@@ -16,7 +16,6 @@
             "engine:default"
         ]
     },
-
     "HullShape": {
          "sourceMesh" : "Rails:minecart_bounds"
     },
