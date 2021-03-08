@@ -7,6 +7,9 @@ import org.terasology.entitySystem.Component;
 import org.terasology.network.FieldReplicateType;
 import org.terasology.network.Replicate;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by michaelpollind on 3/31/17.
  */

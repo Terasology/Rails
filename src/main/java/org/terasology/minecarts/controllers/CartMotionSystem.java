@@ -85,14 +85,6 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
         }
     }
 
-    public Vector3f updateHeading(EntityRef railVehcile, Vector3f oldHeading) {
-        PathFollowerComponent pathFollowerComponent = railVehcile.getComponent(PathFollowerComponent.class);
-        if (pathFollowerComponent != null) {
-            return Util.project(pathFollowerComponent.heading, oldHeading, new Vector3f()).normalize();
-        }
-        return null;
-    }
-
     private void updateCart(EntityRef railVehicle, float delta) {
 
         LocationComponent location = railVehicle.getComponent(LocationComponent.class);

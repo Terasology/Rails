@@ -47,7 +47,7 @@ public class MinecartAction extends BaseComponentSystem {
 
         CartDefinitionComponent cartDefinition = item.getComponent(CartDefinitionComponent.class);
 
-        Vector3i placementPos = targetEntity.getComponent(BlockComponent.class).getPosition(new Vector3i());
+        Vector3f placementPos = new Vector3f(targetEntity.getComponent(BlockComponent.class).getPosition());
         placementPos.y += 0.2f;
 
         logger.info("Created vehicle at {}", placementPos);

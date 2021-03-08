@@ -33,9 +33,25 @@
         "regenRate": 1,
         "waitBeforeRegen": 2,
         "destroyEntityOnNoHealth" : true
-
+    },
+    "DropGrammar": {
+        "itemDrops": [
+          "Rails:minecart"
+        ]
     },
     "Rails:CartRidable" : {},
+    "Rails:CartWheel": {
+        "wheels": [
+             {
+                 "prefab": "Rails:baseMinecartWheel",
+                 "offset": 0.6
+             },
+             {
+                 "prefab": "Rails:baseMinecartWheel",
+                 "offset": -0.6
+             }
+        ]
+    },
     "Rails:RailVehicle": {},
     "Trigger": {
         "detectGroups": [
