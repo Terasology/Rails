@@ -12,9 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CartWheelComponent implements Component {
-    @Replicate(FieldReplicateType.SERVER_TO_CLIENT)
     public List<EntityRef> targets = new ArrayList<>();
-
     @Replicate(FieldReplicateType.SERVER_TO_CLIENT)
     public List<WheelDefinition> wheels = new ArrayList<>();
 }

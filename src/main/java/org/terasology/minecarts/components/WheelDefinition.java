@@ -9,4 +9,5 @@ import org.terasology.reflection.MappedContainer;
 public class WheelDefinition {
     public String prefab;
     public float offset;
+    public float voffset;
 }

@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Created by michaelpollind on 3/31/17.
  */
-public class CartRidableComponent implements Component {
+public class CartRideableComponent implements Component {
     @Replicate(FieldReplicateType.SERVER_TO_CLIENT)
     public EntityRef rider;
 

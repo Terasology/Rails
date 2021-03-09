@@ -15,9 +15,12 @@ import java.util.List;
 
 @ServerEvent(lagCompensate = true)
 public class RailVehicleComponent implements Component {
-    @Replicate(FieldReplicateType.SERVER_TO_CLIENT)
+    @Replicate
     public Vector3f velocity = new Vector3f();
-
-    @Replicate(FieldReplicateType.SERVER_TO_CLIENT)
+    @Replicate
+    public float backAxisOffset = 0.0f;
+    @Replicate
+    public float frontAxisOffset = 0.0f;
+    @Replicate
     public float lastDetach = 0;
 }

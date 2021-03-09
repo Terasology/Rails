@@ -44,16 +44,16 @@ public class MinecartAction extends BaseComponentSystem {
         if (!targetEntity.hasComponent(RailComponent.class)) {
             return;
         }
-
-        CartDefinitionComponent cartDefinition = item.getComponent(CartDefinitionComponent.class);
-
-        Vector3f placementPos = new Vector3f(targetEntity.getComponent(BlockComponent.class).getPosition());
-        placementPos.y += 0.2f;
-
-        logger.info("Created vehicle at {}", placementPos);
-
-        entityManager.create(cartDefinition.prefab, new Vector3f(placementPos));
-        event.consume();
+        EntityRef target = inventoryManager.removeItem(event.getInstigator(), event.getInstigator(), item, false);
+        CartDefinitionComponent cartDefinition = target.getComponent(CartDefinitionComponent.class);
+        if (target != EntityRef.NULL) {
+            Vector3f placementPos = new Vector3f(targetEntity.getComponent(BlockComponent.class).getPosition());
+            placementPos.y += 0.2f;
+            logger.info("Created vehicle at {}", placementPos);
+            entityManager.create(cartDefinition.prefab, new Vector3f(placementPos));
+            event.consume();
+            target.destroy();
+        }
     }
 
 }

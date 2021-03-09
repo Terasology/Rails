@@ -1,6 +1,5 @@
 {
     "Location": {
-        "scale": 1.0
     },
     "Mesh": {
         "mesh": "Rails:minecart",
@@ -39,20 +38,25 @@
           "Rails:minecart"
         ]
     },
-    "Rails:CartRidable" : {},
+    "Rails:CartRideable" : {},
     "Rails:CartWheel": {
         "wheels": [
              {
                  "prefab": "Rails:baseMinecartWheel",
-                 "offset": 0.6
+                 "offset": -0.3,
+                 "voffset": 0.08
              },
              {
                  "prefab": "Rails:baseMinecartWheel",
-                 "offset": -0.6
+                 "offset": 0.3,
+                 "voffset": 0.08
              }
         ]
     },
-    "Rails:RailVehicle": {},
+    "Rails:RailVehicle": {
+        "backAxisOffset" : -0.3,
+        "frontAxisOffset" : 0.3
+    },
     "Trigger": {
         "detectGroups": [
             "engine:world",
