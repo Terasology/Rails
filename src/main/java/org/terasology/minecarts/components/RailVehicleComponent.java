@@ -4,10 +4,10 @@
 package org.terasology.minecarts.components;
 
 import org.joml.Vector3f;
-import org.terasology.entitySystem.Component;
-import org.terasology.network.FieldReplicateType;
-import org.terasology.network.Replicate;
-import org.terasology.network.ServerEvent;
+import org.terasology.engine.entitySystem.Component;
+import org.terasology.engine.network.FieldReplicateType;
+import org.terasology.engine.network.Replicate;
+import org.terasology.engine.network.ServerEvent;
 
 @ServerEvent(lagCompensate = true)
 public class RailVehicleComponent implements Component {
