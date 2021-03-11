@@ -5,22 +5,22 @@ package org.terasology.minecarts.action;
 
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.entitySystem.event.ReceiveEvent;
-import org.terasology.entitySystem.systems.BaseComponentSystem;
-import org.terasology.entitySystem.systems.RegisterMode;
-import org.terasology.entitySystem.systems.RegisterSystem;
-import org.terasology.logic.characters.MovementMode;
-import org.terasology.logic.characters.events.SetMovementModeEvent;
-import org.terasology.logic.common.ActivateEvent;
-import org.terasology.logic.health.BeforeDestroyEvent;
-import org.terasology.logic.location.Location;
-import org.terasology.logic.location.LocationComponent;
+import org.terasology.engine.entitySystem.entity.EntityRef;
+import org.terasology.engine.entitySystem.event.ReceiveEvent;
+import org.terasology.engine.entitySystem.systems.BaseComponentSystem;
+import org.terasology.engine.entitySystem.systems.RegisterMode;
+import org.terasology.engine.entitySystem.systems.RegisterSystem;
+import org.terasology.engine.logic.characters.MovementMode;
+import org.terasology.engine.logic.characters.events.SetMovementModeEvent;
+import org.terasology.engine.logic.common.ActivateEvent;
+import org.terasology.engine.logic.health.BeforeDestroyEvent;
+import org.terasology.engine.logic.location.Location;
+import org.terasology.engine.logic.location.LocationComponent;
+import org.terasology.engine.physics.StandardCollisionGroup;
+import org.terasology.engine.physics.components.RigidBodyComponent;
 import org.terasology.minecarts.components.CartRideableComponent;
 import org.terasology.minecarts.components.RidingCartComponent;
 import org.terasology.minecarts.controllers.CartImpulseSystem;
-import org.terasology.physics.StandardCollisionGroup;
-import org.terasology.physics.components.RigidBodyComponent;
 
 @RegisterSystem(RegisterMode.AUTHORITY)
 public class CartRideableAction extends BaseComponentSystem {

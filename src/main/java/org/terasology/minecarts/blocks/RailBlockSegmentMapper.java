@@ -7,10 +7,13 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.joml.Vector3ic;
-import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.entitySystem.prefab.Prefab;
-import org.terasology.math.Rotation;
-import org.terasology.math.Side;
+import org.terasology.engine.entitySystem.entity.EntityRef;
+import org.terasology.engine.entitySystem.prefab.Prefab;
+import org.terasology.engine.math.Rotation;
+import org.terasology.engine.math.Side;
+import org.terasology.engine.world.BlockEntityRegistry;
+import org.terasology.engine.world.block.BlockComponent;
+import org.terasology.engine.world.block.family.BlockFamily;
 import org.terasology.segmentedpaths.SegmentMeta;
 import org.terasology.segmentedpaths.blocks.PathFamily;
 import org.terasology.segmentedpaths.components.BlockMappingComponent;
@@ -20,9 +23,6 @@ import org.terasology.segmentedpaths.controllers.SegmentCacheSystem;
 import org.terasology.segmentedpaths.controllers.SegmentMapping;
 import org.terasology.segmentedpaths.controllers.SegmentSystem;
 import org.terasology.segmentedpaths.segments.Segment;
-import org.terasology.world.BlockEntityRegistry;
-import org.terasology.world.block.BlockComponent;
-import org.terasology.world.block.family.BlockFamily;
 
 /**
  * Created by michaelpollind on 4/9/17.
@@ -62,11 +62,11 @@ public class RailBlockSegmentMapper implements SegmentMapping {
                 switch (ends) {
                     case START: {
                         Vector3i segment = findOffset(blockComponent.getPosition(),
-                            blockMappingComponent.s1, blockMappingComponent.s2, rotation);//rotation.rotate
+                                blockMappingComponent.s1, blockMappingComponent.s2, rotation);//rotation.rotate
                         // (blockMappingComponent.s1).getVector3i());
                         EntityRef blockEntity = blockEntityRegistry.getBlockEntityAt(segment);
                         PathDescriptorComponent pathDescriptor =
-                            blockEntity.getComponent(PathDescriptorComponent.class);
+                                blockEntity.getComponent(PathDescriptorComponent.class);
                         if (pathDescriptor == null) {
                             return null;
                         }
@@ -85,11 +85,11 @@ public class RailBlockSegmentMapper implements SegmentMapping {
                     break;
                     case END: {
                         Vector3i segment = findOffset(blockComponent.getPosition(),
-                            blockMappingComponent.s2, blockMappingComponent.s1, rotation);//rotation.rotate
+                                blockMappingComponent.s2, blockMappingComponent.s1, rotation);//rotation.rotate
                         // (blockMappingComponent.s2).getVector3i());
                         EntityRef blockEntity = blockEntityRegistry.getBlockEntityAt(segment);
                         PathDescriptorComponent pathDescriptor =
-                            blockEntity.getComponent(PathDescriptorComponent.class);
+                                blockEntity.getComponent(PathDescriptorComponent.class);
                         if (pathDescriptor == null) {
                             return null;
                         }

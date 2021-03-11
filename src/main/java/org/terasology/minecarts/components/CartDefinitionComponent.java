@@ -3,9 +3,9 @@
 
 package org.terasology.minecarts.components;
 
-import org.terasology.entitySystem.Component;
-import org.terasology.network.FieldReplicateType;
-import org.terasology.network.Replicate;
+import org.terasology.engine.entitySystem.Component;
+import org.terasology.engine.network.FieldReplicateType;
+import org.terasology.engine.network.Replicate;
 
 import java.util.ArrayList;
 import java.util.List;
