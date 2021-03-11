@@ -23,7 +23,6 @@ import org.terasology.engine.physics.Physics;
 import org.terasology.engine.physics.StandardCollisionGroup;
 import org.terasology.engine.physics.components.RigidBodyComponent;
 import org.terasology.engine.registry.In;
-import org.terasology.engine.rendering.logic.MeshComponent;
 import org.terasology.engine.world.BlockEntityRegistry;
 import org.terasology.engine.world.WorldProvider;
 import org.terasology.minecarts.Constants;
@@ -85,14 +84,6 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
         }
     }
 
-    public Vector3f updateHeading(EntityRef railVehcile, Vector3f oldHeading) {
-        PathFollowerComponent pathFollowerComponent = railVehcile.getComponent(PathFollowerComponent.class);
-        if (pathFollowerComponent != null) {
-            return Util.project(pathFollowerComponent.heading, oldHeading, new Vector3f()).normalize();
-        }
-        return null;
-    }
-
     private void updateCart(EntityRef railVehicle, float delta) {
 
         LocationComponent location = railVehicle.getComponent(LocationComponent.class);
@@ -146,8 +137,7 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
 
             if (pathFollowerSystem.isVehicleValid(railVehicle)) {
                 Vector3f position = pathFollowerSystem.vehiclePoint(railVehicle);
-                MeshComponent mesh = railVehicle.getComponent(MeshComponent.class);
-                position.y = mesh.mesh.getAABB().maxY() / 2.0f + position.y + .01f;
+                position.y = position.y + .01f;
 
                 Vector3f normal = pathFollowerSystem.vehicleNormal(railVehicle);
                 Vector3f tangent = pathFollowerSystem.vehicleTangent(railVehicle);
@@ -177,21 +167,28 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
                 if (!railVehicleComponent.velocity.isFinite()) {
                     railVehicleComponent.velocity.set(0);
                 }
-
                 if (pathFollowerSystem.move(railVehicle,
                         Math.signum(segmentVehicleComponent.heading.dot(railVehicleComponent.velocity)) * mag * delta
                         , segmentMapping)) {
-                    //calculate the cart rotation
-                    Vector3f horzY = new Vector3f(segmentVehicleComponent.heading);
-                    horzY.y = 0;
-                    horzY.normalize();
 
-                    Quaternionf horizontalRotation = new Quaternionf().rotateTo(new Vector3f(0, 0, 1), horzY);
-                    Quaternionf verticalRotation = new Quaternionf().rotateTo(horzY, segmentVehicleComponent.heading);
+                    if(railVehicleComponent.backAxisOffset == 0.0f && railVehicleComponent.frontAxisOffset == 0.0f) {
+                        location.setWorldRotation(Util.rotation(segmentVehicleComponent.heading));
+                        location.setWorldPosition(position);
+                    } else {
+                        Vector3f frontAxisPosition = pathFollowerSystem.vehiclePoint(railVehicle,
+                                railVehicleComponent.frontAxisOffset, segmentMapping);
+                        Vector3f backAxisPosition = pathFollowerSystem.vehiclePoint(railVehicle,
+                                railVehicleComponent.backAxisOffset, segmentMapping);
+                        if (frontAxisPosition == null || backAxisPosition == null) {
+                            location.setWorldRotation(Util.rotation(segmentVehicleComponent.heading));
+                            location.setWorldPosition(position);
+                        } else {
+                            Vector3f dir = frontAxisPosition.sub(backAxisPosition, new Vector3f()).normalize();
+                            location.setWorldPosition(backAxisPosition.add(new Vector3f(dir).mul(-railVehicleComponent.backAxisOffset)));
+                            location.setWorldRotation(Util.rotation(dir.normalize()));
+                        }
+                    }
 
-                    verticalRotation.mul(horizontalRotation);
-                    location.setLocalRotation(verticalRotation);
-                    location.setWorldPosition(position);
                     rigidBodyComponent.kinematic = true;
                 } else {
                     detachFromRail(railVehicle);

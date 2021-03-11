@@ -62,11 +62,11 @@ public class RailBlockSegmentMapper implements SegmentMapping {
                 switch (ends) {
                     case START: {
                         Vector3i segment = findOffset(blockComponent.getPosition(),
-                            blockMappingComponent.s1, blockMappingComponent.s2, rotation);//rotation.rotate
+                                blockMappingComponent.s1, blockMappingComponent.s2, rotation);//rotation.rotate
                         // (blockMappingComponent.s1).getVector3i());
                         EntityRef blockEntity = blockEntityRegistry.getBlockEntityAt(segment);
                         PathDescriptorComponent pathDescriptor =
-                            blockEntity.getComponent(PathDescriptorComponent.class);
+                                blockEntity.getComponent(PathDescriptorComponent.class);
                         if (pathDescriptor == null) {
                             return null;
                         }
@@ -85,11 +85,11 @@ public class RailBlockSegmentMapper implements SegmentMapping {
                     break;
                     case END: {
                         Vector3i segment = findOffset(blockComponent.getPosition(),
-                            blockMappingComponent.s2, blockMappingComponent.s1, rotation);//rotation.rotate
+                                blockMappingComponent.s2, blockMappingComponent.s1, rotation);//rotation.rotate
                         // (blockMappingComponent.s2).getVector3i());
                         EntityRef blockEntity = blockEntityRegistry.getBlockEntityAt(segment);
                         PathDescriptorComponent pathDescriptor =
-                            blockEntity.getComponent(PathDescriptorComponent.class);
+                                blockEntity.getComponent(PathDescriptorComponent.class);
                         if (pathDescriptor == null) {
                             return null;
                         }

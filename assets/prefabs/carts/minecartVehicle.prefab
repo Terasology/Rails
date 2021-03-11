@@ -1,6 +1,5 @@
 {
     "Location": {
-        "scale": 0.32
     },
     "Mesh": {
         "mesh": "Rails:minecart",
@@ -16,7 +15,6 @@
             "engine:default"
         ]
     },
-
     "HullShape": {
          "sourceMesh" : "Rails:minecart_bounds"
     },
@@ -34,10 +32,31 @@
         "regenRate": 1,
         "waitBeforeRegen": 2,
         "destroyEntityOnNoHealth" : true
-
     },
-    "Rails:CartRidable" : {},
-    "Rails:RailVehicle": {},
+    "DropGrammar": {
+        "itemDrops": [
+          "Rails:minecart"
+        ]
+    },
+    "Rails:CartRideable" : {},
+    "Rails:CartWheel": {
+        "wheels": [
+             {
+                 "prefab": "Rails:baseMinecartWheel",
+                 "offset": -0.3,
+                 "voffset": 0.08
+             },
+             {
+                 "prefab": "Rails:baseMinecartWheel",
+                 "offset": 0.3,
+                 "voffset": 0.08
+             }
+        ]
+    },
+    "Rails:RailVehicle": {
+        "backAxisOffset" : -0.3,
+        "frontAxisOffset" : 0.3
+    },
     "Trigger": {
         "detectGroups": [
             "engine:world",

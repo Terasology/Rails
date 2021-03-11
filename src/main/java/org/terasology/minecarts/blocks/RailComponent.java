@@ -8,5 +8,5 @@ import org.terasology.engine.world.block.ForceBlockActive;
 
 @ForceBlockActive
 public class RailComponent implements Component {
-    public float frictionCoefficient = 0.1f;
+    public float frictionCoefficient = 0.01f;
 }

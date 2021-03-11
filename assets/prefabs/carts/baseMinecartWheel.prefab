@@ -1,0 +1,8 @@
+{
+    "Location": {
+    },
+    "Mesh": {
+        "mesh": "Rails:wheel",
+        "material": "Rails:minecart"
+    }
+}

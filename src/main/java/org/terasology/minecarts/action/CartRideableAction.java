@@ -18,21 +18,18 @@ import org.terasology.engine.logic.location.Location;
 import org.terasology.engine.logic.location.LocationComponent;
 import org.terasology.engine.physics.StandardCollisionGroup;
 import org.terasology.engine.physics.components.RigidBodyComponent;
-import org.terasology.minecarts.components.CartRidableComponent;
+import org.terasology.minecarts.components.CartRideableComponent;
 import org.terasology.minecarts.components.RidingCartComponent;
 import org.terasology.minecarts.controllers.CartImpulseSystem;
 
-/**
- * Created by michaelpollind on 3/31/17.
- */
 @RegisterSystem(RegisterMode.AUTHORITY)
-public class CartRidableAction extends BaseComponentSystem {
+public class CartRideableAction extends BaseComponentSystem {
 
-    @ReceiveEvent(components = {CartRidableComponent.class, LocationComponent.class})
+    @ReceiveEvent(components = {CartRideableComponent.class, LocationComponent.class})
     public void onUseFunctional(ActivateEvent event, EntityRef entity) {
-        CartRidableComponent cartRidableComponent = entity.getComponent(CartRidableComponent.class);
+        CartRideableComponent cartRideableComponent = entity.getComponent(CartRideableComponent.class);
 
-        if (cartRidableComponent.rider == null) {
+        if (cartRideableComponent.rider == null) {
             mount(entity, event.getInstigator());
         } else {
             dismount(entity, event.getInstigator());
@@ -40,11 +37,11 @@ public class CartRidableAction extends BaseComponentSystem {
     }
 
 
-    @ReceiveEvent(components = {CartRidableComponent.class, LocationComponent.class})
+    @ReceiveEvent(components = {CartRideableComponent.class, LocationComponent.class})
     public void onCartDestroyed(BeforeDestroyEvent event, EntityRef entity) {
-        CartRidableComponent cartRidableComponent = entity.getComponent(CartRidableComponent.class);
+        CartRideableComponent cartRideableComponent = entity.getComponent(CartRideableComponent.class);
 
-        dismount(entity, cartRidableComponent.rider);
+        dismount(entity, cartRideableComponent.rider);
     }
 
     @ReceiveEvent(components = {RidingCartComponent.class})
@@ -53,30 +50,30 @@ public class CartRidableAction extends BaseComponentSystem {
     }
 
     private void mount(EntityRef cart, EntityRef rider) {
-        CartRidableComponent cartRidableComponent = cart.getComponent(CartRidableComponent.class);
+        CartRideableComponent cartRideableComponent = cart.getComponent(CartRideableComponent.class);
         RigidBodyComponent railVehicleRigidBody = cart.getComponent(RigidBodyComponent.class);
 
         if (rider.getComponent(RidingCartComponent.class) != null) {
             return;
         }
-        if (cartRidableComponent.rider != null) {
+        if (cartRideableComponent.rider != null) {
             return;
         }
         rider.send(new SetMovementModeEvent(MovementMode.NONE));
-        cartRidableComponent.rider = rider;
+        cartRideableComponent.rider = rider;
         Location.attachChild(cart, rider, new Vector3f(0, 1.5f, 0), new Quaternionf());
         CartImpulseSystem.addCollisionFilter(cart, rider);
         railVehicleRigidBody.collidesWith.remove(StandardCollisionGroup.CHARACTER);
         railVehicleRigidBody.collidesWith.remove(StandardCollisionGroup.DEFAULT);
         rider.addComponent(new RidingCartComponent(cart));
 
-        cart.saveComponent(cartRidableComponent);
+        cart.saveComponent(cartRideableComponent);
         cart.saveComponent(railVehicleRigidBody);
     }
 
     private void dismount(EntityRef cart, EntityRef rider) {
-        CartRidableComponent cartRidableComponent = cart.getComponent(CartRidableComponent.class);
-        if (rider == null || !rider.equals(cartRidableComponent.rider)) {
+        CartRideableComponent cartRideableComponent = cart.getComponent(CartRideableComponent.class);
+        if (rider == null || !rider.equals(cartRideableComponent.rider)) {
             return;
         }
         rider.removeComponent(RidingCartComponent.class);
@@ -85,11 +82,11 @@ public class CartRidableAction extends BaseComponentSystem {
 
         RigidBodyComponent railVehicleRigidBody = cart.getComponent(RigidBodyComponent.class);
         CartImpulseSystem.removeCollisionFilter(cart, rider);
-        cartRidableComponent.rider = null;
+        cartRideableComponent.rider = null;
         railVehicleRigidBody.collidesWith.add(StandardCollisionGroup.CHARACTER);
         railVehicleRigidBody.collidesWith.add(StandardCollisionGroup.DEFAULT);
 
-        cart.saveComponent(cartRidableComponent);
+        cart.saveComponent(cartRideableComponent);
         cart.saveComponent(railVehicleRigidBody);
     }
 }

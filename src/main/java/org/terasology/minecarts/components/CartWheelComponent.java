@@ -4,16 +4,15 @@
 package org.terasology.minecarts.components;
 
 import org.terasology.engine.entitySystem.Component;
+import org.terasology.engine.entitySystem.entity.EntityRef;
 import org.terasology.engine.network.FieldReplicateType;
 import org.terasology.engine.network.Replicate;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by michaelpollind on 3/31/17.
- */
-public class CartDefinitionComponent implements Component {
+public class CartWheelComponent implements Component {
+    public List<EntityRef> targets = new ArrayList<>();
     @Replicate(FieldReplicateType.SERVER_TO_CLIENT)
-    public String prefab;
+    public List<WheelDefinition> wheels = new ArrayList<>();
 }

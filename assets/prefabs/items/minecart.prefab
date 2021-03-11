@@ -6,7 +6,8 @@
     "Item": {
         "name": "Minecart",
         "icon": "Rails:minecart#minecart",
-        "usage": "IN_DIRECTION"
+        "usage": "IN_DIRECTION",
+        "consumeOnUse": True
     },
     "Rails:CartDefinition": {
         "prefab" : "Rails:minecartVehicle"
