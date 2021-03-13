@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.engine.entitySystem.entity.EntityManager;
 import org.terasology.engine.entitySystem.entity.EntityRef;
-import org.terasology.engine.entitySystem.entity.lifecycleEvents.BeforeRemoveComponent;
 import org.terasology.engine.entitySystem.entity.lifecycleEvents.OnAddedComponent;
 import org.terasology.engine.entitySystem.event.ReceiveEvent;
 import org.terasology.engine.entitySystem.systems.BaseComponentSystem;
@@ -30,9 +29,6 @@ import org.terasology.segmentedpaths.components.PathFollowerComponent;
 import org.terasology.segmentedpaths.controllers.PathFollowerSystem;
 import org.terasology.segmentedpaths.controllers.SegmentCacheSystem;
 import org.terasology.segmentedpaths.controllers.SegmentSystem;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @RegisterSystem(RegisterMode.CLIENT)
 public class CartWheelSystem  extends BaseComponentSystem implements UpdateSubscriberSystem {
@@ -72,17 +68,6 @@ public class CartWheelSystem  extends BaseComponentSystem implements UpdateSubsc
         entity.saveComponent(cartWheelComponent);
 
     }
-
-    @ReceiveEvent
-    public void cartDestroyed(BeforeRemoveComponent event, EntityRef entity, CartWheelComponent component) {
-        logger.info("clearing wheels {}", entity);
-        List<EntityRef> prev = new ArrayList<>(component.targets);
-        component.targets.clear();
-        for (EntityRef wheel : prev) {
-            wheel.destroy();
-        }
-    }
-
 
     @Override
     public void update(float delta) {
