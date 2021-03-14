@@ -51,13 +51,7 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
     @In
     EntityManager entityManager;
     @In
-    WorldProvider worldProvider;
-    @In
     Physics physics;
-    @In
-    LocalPlayer localPlayer;
-    @In
-    InventoryManager inventoryManager;
     @In
     BlockEntityRegistry blockEntityRegistry;
     @In
@@ -171,7 +165,7 @@ public class CartMotionSystem extends BaseComponentSystem implements UpdateSubsc
                         Math.signum(segmentVehicleComponent.heading.dot(railVehicleComponent.velocity)) * mag * delta
                         , segmentMapping)) {
 
-                    if(railVehicleComponent.backAxisOffset == 0.0f && railVehicleComponent.frontAxisOffset == 0.0f) {
+                    if (railVehicleComponent.backAxisOffset == 0.0f && railVehicleComponent.frontAxisOffset == 0.0f) {
                         location.setWorldRotation(Util.rotation(segmentVehicleComponent.heading));
                         location.setWorldPosition(position);
                     } else {
