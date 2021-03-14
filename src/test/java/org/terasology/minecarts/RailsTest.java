@@ -21,10 +21,13 @@ import org.joml.Vector3i;
 import org.joml.Vector3ic;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.terasology.engine.math.Side;
 import org.terasology.engine.math.SideBitFlag;
 import org.terasology.engine.registry.In;
@@ -43,6 +46,9 @@ import org.terasology.moduletestingenvironment.extension.Dependencies;
 @Dependencies({"Rails", "CoreAssets"})
 @Tag("MteTest")
 public class RailsTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(RailsTest.class);
+
     private static final String RAIL_BLOCKFAMILY_URI = "rails:rails";
 
     private Block dirtBlock;
@@ -59,26 +65,33 @@ public class RailsTest {
     WorldProvider worldProvider;
 
     public void setup() {
+        logger.info("Setup blocks and block families (should only happen once)");
         airBlock = blockManager.getBlock("engine:air");
         dirtBlock = blockManager.getBlock("CoreAssets:Dirt");
+        logger.info("✓ successfully resolved blocks");
         railBlockFamily = blockManager.getBlockFamily(RAIL_BLOCKFAMILY_URI);
+        logger.info("✓ successfully resolved block family");
     }
 
     @BeforeEach
     public void initialize() {
+        logger.info("Pre-test initialization");
         if (!initialized) {
-            setup();
             initialized = true;
+            setup();
         }
 
+        logger.info("Resetting test area ...");
         for (Vector3ic pos : new BlockRegion(0, 0, 0).expand(5, 5, 5)) {
             helper.forceAndWaitForGeneration(pos);
             worldProvider.setBlock(pos, airBlock);
         }
+        logger.info("✓ removed blocks from test space (replace with air)");
         for (Vector3ic pos : new BlockRegion(0, -1, 0).expand(5, 0, 5)) {
             helper.forceAndWaitForGeneration(pos);
             worldProvider.setBlock(pos, dirtBlock);
         }
+        logger.info("✓ create dirt platform (place dirt blocks)");
     }
 
     @Test
