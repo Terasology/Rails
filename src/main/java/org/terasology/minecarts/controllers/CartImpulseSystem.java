@@ -16,6 +16,7 @@ import org.terasology.engine.logic.characters.CharacterImpulseEvent;
 import org.terasology.engine.logic.characters.CharacterMovementComponent;
 import org.terasology.engine.logic.location.LocationComponent;
 import org.terasology.engine.physics.components.RigidBodyComponent;
+import org.terasology.engine.physics.events.ChangeVelocityEvent;
 import org.terasology.engine.physics.events.CollideEvent;
 import org.terasology.engine.registry.In;
 import org.terasology.minecarts.Constants;
@@ -68,8 +69,9 @@ public class CartImpulseSystem extends BaseComponentSystem {
             if (areJoinedTogether(entity, event.getOtherEntity())) {
                 return;
             }
-
             this.handleCartCollision(event, entity);
+        } else if (event.getOtherEntity().hasComponent(RigidBodyComponent.class)) {
+            handleRigidBodyCollision(event, entity);
         }
     }
 
@@ -83,6 +85,53 @@ public class CartImpulseSystem extends BaseComponentSystem {
             return true;
         }
         return false;
+    }
+
+    private void handleRigidBodyCollision(CollideEvent event, EntityRef entity) {
+        RailVehicleComponent v1 = entity.getComponent(RailVehicleComponent.class);
+
+        LocationComponent v1l = entity.getComponent(LocationComponent.class);
+        LocationComponent v2l = event.getOtherEntity().getComponent(LocationComponent.class);
+
+        RigidBodyComponent r1 = entity.getComponent(RigidBodyComponent.class);
+        RigidBodyComponent r2 = event.getOtherEntity().getComponent(RigidBodyComponent.class);
+
+        Vector3f df = new Vector3f(v2l.getWorldPosition(new Vector3f())).sub(v1l.getWorldPosition(new Vector3f())).normalize();
+
+        Vector3f normal = new Vector3f(df);
+
+        float jv = normal.dot(v1.velocity) - normal.dot(r2.velocity);
+        float effectiveMass = (1.0f / r1.mass) + (1.0f / r2.mass);
+
+        float b = -df.dot(event.getNormal()) * (Constants.BAUMGARTE_COFF / time.getGameDelta()) * event.getPenetration();
+        float lambda = -(jv + b) / effectiveMass;
+        if (lambda > 0) {
+            return;
+        }
+        Vector3f r1v = new Vector3f(
+                event.getNormal().x / r1.mass,
+                event.getNormal().y / r1.mass,
+                event.getNormal().z / r1.mass)
+                .mul(lambda);
+        Vector3f r2v = new Vector3f(
+                event.getNormal().x / r2.mass,
+                event.getNormal().y / r2.mass,
+                event.getNormal().z / r2.mass)
+                .mul(lambda).mul(-1);
+
+        if (!r1v.isFinite()) {
+            r1v.set(0);
+        }
+        if (!r2v.isFinite()) {
+            r2v.set(0);
+        }
+//        LocationComponent lc = event.getOtherEntity().getComponent(LocationComponent.class);
+
+        v1.velocity.add(r1v);
+        entity.saveComponent(v1);
+        event.getOtherEntity().send(new ChangeVelocityEvent(new Vector3f(r2.velocity).add(r2v)));
+//        event.getOtherEntity().saveComponent(lc);
+
     }
 
 
