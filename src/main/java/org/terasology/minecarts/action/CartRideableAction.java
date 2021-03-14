@@ -13,7 +13,7 @@ import org.terasology.engine.entitySystem.systems.RegisterSystem;
 import org.terasology.engine.logic.characters.MovementMode;
 import org.terasology.engine.logic.characters.events.SetMovementModeEvent;
 import org.terasology.engine.logic.common.ActivateEvent;
-import org.terasology.engine.logic.health.BeforeDestroyEvent;
+import org.terasology.logic.health.BeforeDestroyEvent;
 import org.terasology.engine.logic.location.Location;
 import org.terasology.engine.logic.location.LocationComponent;
 import org.terasology.engine.physics.StandardCollisionGroup;
