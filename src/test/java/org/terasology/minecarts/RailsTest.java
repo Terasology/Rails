@@ -20,13 +20,14 @@ import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.joml.Vector3ic;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.terasology.engine.math.Side;
 import org.terasology.engine.math.SideBitFlag;
 import org.terasology.engine.registry.In;
-import org.terasology.engine.world.BlockEntityRegistry;
 import org.terasology.engine.world.WorldProvider;
 import org.terasology.engine.world.block.Block;
 import org.terasology.engine.world.block.BlockManager;
@@ -40,15 +41,16 @@ import org.terasology.moduletestingenvironment.extension.Dependencies;
 
 @ExtendWith(MTEExtension.class)
 @Dependencies({"Rails", "CoreAssets"})
-@Disabled("Failing test with Reflection")
+@Tag("MteTest")
 public class RailsTest {
     private static final String RAIL_BLOCKFAMILY_URI = "rails:rails";
+
     private Block dirtBlock;
     private Block airBlock;
     private BlockFamily railBlockFamily;
 
-    @In
-    BlockEntityRegistry blockEntityRegistry;
+    private boolean initialized = false;
+
     @In
     BlockManager blockManager;
     @In
@@ -56,18 +58,24 @@ public class RailsTest {
     @In
     WorldProvider worldProvider;
 
-    public void initialize() {
+    public void setup() {
         airBlock = blockManager.getBlock("engine:air");
         dirtBlock = blockManager.getBlock("CoreAssets:Dirt");
         railBlockFamily = blockManager.getBlockFamily(RAIL_BLOCKFAMILY_URI);
+    }
 
-        BlockRegion region = new BlockRegion(0, 0, 0).expand(5, 5, 5);
+    @BeforeEach
+    public void initialize() {
+        if (!initialized) {
+            setup();
+            initialized = true;
+        }
 
-        for (Vector3ic pos : region) {
+        for (Vector3ic pos : new BlockRegion(0, 0, 0).expand(5, 5, 5)) {
             helper.forceAndWaitForGeneration(pos);
             worldProvider.setBlock(pos, airBlock);
         }
-        for (Vector3ic pos : region) {
+        for (Vector3ic pos : new BlockRegion(0, -1, 0).expand(5, 0, 5)) {
             helper.forceAndWaitForGeneration(pos);
             worldProvider.setBlock(pos, dirtBlock);
         }
@@ -75,7 +83,6 @@ public class RailsTest {
 
     @Test
     public void singleRail() {
-        this.initialize();
         worldProvider.setBlock(new Vector3i(0, 0, 0),
                 railBlockFamily.getBlockForPlacement(new BlockPlacementData(new Vector3i(), Side.FRONT,
                         new Vector3f())));
@@ -84,9 +91,7 @@ public class RailsTest {
     }
 
     @Test
-    public void straightRail() throws Exception {
-        this.initialize();
-
+    public void straightRail() {
         setRail(new Vector3i(0, 0, 0));
         setRail(new Vector3i(0, 0, 1));
 
@@ -95,9 +100,7 @@ public class RailsTest {
     }
 
     @Test
-    public void cornerRail() throws Exception {
-        this.initialize();
-
+    public void cornerRail() {
         setRail(new Vector3i(0, 0, 0));
         setRail(new Vector3i(0, 0, 1));
         setRail(new Vector3i(1, 0, 0));
@@ -109,8 +112,6 @@ public class RailsTest {
 
     @Test
     public void teeRail() {
-        this.initialize();
-
         setRail(new Vector3i(0, 0, 1));
         setRail(new Vector3i(0, 0, -1));
         setRail(new Vector3i(1, 0, 0));
@@ -123,7 +124,6 @@ public class RailsTest {
 
     @Test
     public void slopeRail() {
-        this.initialize();
         worldProvider.setBlock(new Vector3i(0, 0, 1), dirtBlock);
 
         setRail(new Vector3i(0, 0, 0));
@@ -137,7 +137,6 @@ public class RailsTest {
 
     @Test
     public void doubleSlopeRail() {
-        this.initialize();
         worldProvider.setBlock(new Vector3i(), dirtBlock);
         worldProvider.setBlock(new Vector3i(0, 0, 1), dirtBlock);
         worldProvider.setBlock(new Vector3i(0, 1, 1), dirtBlock);
@@ -159,7 +158,7 @@ public class RailsTest {
     }
 
     private void setRail(Vector3i position) {
-        worldProvider.setBlock(position, railBlockFamily.getBlockForPlacement(new BlockPlacementData(position,
-                Side.FRONT, new Vector3f())));
+        BlockPlacementData placementData = new BlockPlacementData(position, Side.FRONT, new Vector3f());
+        worldProvider.setBlock(position, railBlockFamily.getBlockForPlacement(placementData));
     }
 }
