@@ -21,6 +21,7 @@ import org.joml.Vector3i;
 import org.joml.Vector3ic;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.terasology.engine.math.Side;
@@ -40,6 +41,7 @@ import org.terasology.moduletestingenvironment.extension.Dependencies;
 
 @ExtendWith(MTEExtension.class)
 @Dependencies({"Rails", "CoreAssets"})
+@Tag("MteTest")
 @Disabled("Failing test with Reflection")
 public class RailsTest {
     private static final String RAIL_BLOCKFAMILY_URI = "rails:rails";
