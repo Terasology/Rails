@@ -3,19 +3,33 @@
 
 package org.terasology.minecarts.components;
 
-import org.terasology.engine.entitySystem.Component;
 import org.terasology.engine.entitySystem.entity.EntityRef;
+import org.terasology.gestalt.entitysystem.component.Component;
 import org.terasology.reflection.MappedContainer;
 
-public class CartJointComponent implements Component {
+public class CartJointComponent implements Component<CartJointComponent> {
     public CartJointSocket front;
     public CartJointSocket back;
+
+    @Override
+    public void copy(CartJointComponent other) {
+        this.front = other.front.copy();
+        this.back = other.back.copy();
+    }
 
     @MappedContainer
     public static class CartJointSocket {
         public EntityRef entity;
         public boolean isOwning = false;
         public float range = .5f;
+
+        CartJointSocket copy() {
+            CartJointSocket newSocket = new CartJointSocket();
+            newSocket.entity = this.entity;
+            newSocket.isOwning = this.isOwning;
+            newSocket.range = this.range;
+            return newSocket;
+        }
     }
 
     public CartJointSocket findJoint(EntityRef ref) {

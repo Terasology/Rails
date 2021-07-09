@@ -3,9 +3,14 @@
 
 package org.terasology.minecarts.components;
 
-import org.terasology.engine.entitySystem.Component;
 import org.terasology.engine.entitySystem.entity.EntityRef;
+import org.terasology.gestalt.entitysystem.component.Component;
 
-public class WrenchComponent implements Component {
+public class WrenchComponent implements Component<WrenchComponent> {
     public EntityRef lastSelectedCart;
+
+    @Override
+    public void copy(WrenchComponent other) {
+        this.lastSelectedCart = other.lastSelectedCart;
+    }
 }
