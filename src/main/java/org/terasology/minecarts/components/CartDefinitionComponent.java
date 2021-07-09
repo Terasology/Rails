@@ -3,17 +3,19 @@
 
 package org.terasology.minecarts.components;
 
-import org.terasology.engine.entitySystem.Component;
 import org.terasology.engine.network.FieldReplicateType;
 import org.terasology.engine.network.Replicate;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.terasology.gestalt.entitysystem.component.Component;
 
 /**
  * Created by michaelpollind on 3/31/17.
  */
-public class CartDefinitionComponent implements Component {
+public class CartDefinitionComponent implements Component<CartDefinitionComponent> {
     @Replicate(FieldReplicateType.SERVER_TO_CLIENT)
     public String prefab;
+
+    @Override
+    public void copy(CartDefinitionComponent other) {
+        this.prefab = other.prefab;
+    }
 }
