@@ -20,7 +20,7 @@ public class RailVehicleComponent implements Component<RailVehicleComponent> {
     public float lastDetach = 0;
 
     @Override
-    public void copy(RailVehicleComponent other) {
+    public void copyFrom(RailVehicleComponent other) {
         this.velocity = new Vector3f(other.velocity);
         this.backAxisOffset = other.backAxisOffset;
         this.frontAxisOffset = other.frontAxisOffset;

@@ -15,7 +15,7 @@ public class CartDefinitionComponent implements Component<CartDefinitionComponen
     public String prefab;
 
     @Override
-    public void copy(CartDefinitionComponent other) {
+    public void copyFrom(CartDefinitionComponent other) {
         this.prefab = other.prefab;
     }
 }

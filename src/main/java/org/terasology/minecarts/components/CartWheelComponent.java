@@ -21,7 +21,7 @@ public class CartWheelComponent implements Component<CartWheelComponent> {
     public List<WheelDefinition> wheels = new ArrayList<>();
 
     @Override
-    public void copy(CartWheelComponent other) {
+    public void copyFrom(CartWheelComponent other) {
         this.targets = Lists.newArrayList(other.targets);
         this.wheels = other.wheels.stream()
                 .map(WheelDefinition::copy)

@@ -16,7 +16,7 @@ public class CartRideableComponent implements Component<CartRideableComponent> {
     public EntityRef rider;
 
     @Override
-    public void copy(CartRideableComponent other) {
+    public void copyFrom(CartRideableComponent other) {
         this.rider = other.rider;
     }
 }

@@ -24,7 +24,7 @@ public class RidingCartComponent implements Component<RidingCartComponent> {
     }
 
     @Override
-    public void copy(RidingCartComponent other) {
+    public void copyFrom(RidingCartComponent other) {
         this.cart = other.cart;
     }
 }

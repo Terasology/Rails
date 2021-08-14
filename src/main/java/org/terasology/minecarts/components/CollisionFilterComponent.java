@@ -19,7 +19,7 @@ public class CollisionFilterComponent implements Component<CollisionFilterCompon
     public List<EntityRef> filter = Lists.newArrayList();
 
     @Override
-    public void copy(CollisionFilterComponent other) {
+    public void copyFrom(CollisionFilterComponent other) {
         this.filter = Lists.newArrayList(other.filter);
     }
 }

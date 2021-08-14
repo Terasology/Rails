@@ -11,7 +11,7 @@ public class RailComponent implements Component<RailComponent> {
     public float frictionCoefficient = 0.01f;
 
     @Override
-    public void copy(RailComponent other) {
+    public void copyFrom(RailComponent other) {
         this.frictionCoefficient = other.frictionCoefficient;
     }
 }

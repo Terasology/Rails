@@ -10,7 +10,7 @@ public class WrenchComponent implements Component<WrenchComponent> {
     public EntityRef lastSelectedCart;
 
     @Override
-    public void copy(WrenchComponent other) {
+    public void copyFrom(WrenchComponent other) {
         this.lastSelectedCart = other.lastSelectedCart;
     }
 }

@@ -12,7 +12,7 @@ public class CartJointComponent implements Component<CartJointComponent> {
     public CartJointSocket back;
 
     @Override
-    public void copy(CartJointComponent other) {
+    public void copyFrom(CartJointComponent other) {
         this.front = other.front.copy();
         this.back = other.back.copy();
     }
