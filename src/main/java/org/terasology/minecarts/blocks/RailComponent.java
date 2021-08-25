@@ -3,10 +3,15 @@
 
 package org.terasology.minecarts.blocks;
 
-import org.terasology.engine.entitySystem.Component;
 import org.terasology.engine.world.block.ForceBlockActive;
+import org.terasology.gestalt.entitysystem.component.Component;
 
 @ForceBlockActive
-public class RailComponent implements Component {
+public class RailComponent implements Component<RailComponent> {
     public float frictionCoefficient = 0.01f;
+
+    @Override
+    public void copyFrom(RailComponent other) {
+        this.frictionCoefficient = other.frictionCoefficient;
+    }
 }
