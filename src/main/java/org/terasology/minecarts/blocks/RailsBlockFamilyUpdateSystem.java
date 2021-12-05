@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.engine.entitySystem.entity.EntityRef;
 import org.terasology.engine.entitySystem.event.EventPriority;
-import org.terasology.engine.entitySystem.event.ReceiveEvent;
+import org.terasology.engine.entitySystem.event.Priority;
 import org.terasology.engine.entitySystem.systems.BaseComponentSystem;
 import org.terasology.engine.entitySystem.systems.RegisterMode;
 import org.terasology.engine.entitySystem.systems.RegisterSystem;
@@ -19,7 +19,6 @@ import org.terasology.engine.entitySystem.systems.UpdateSubscriberSystem;
 import org.terasology.engine.logic.common.ActivateEvent;
 import org.terasology.engine.logic.health.DoDestroyEvent;
 import org.terasology.engine.logic.health.EngineDamageTypes;
-import org.terasology.module.health.events.DoDamageEvent;
 import org.terasology.engine.logic.inventory.ItemComponent;
 import org.terasology.engine.math.Side;
 import org.terasology.engine.math.SideBitFlag;
@@ -35,6 +34,8 @@ import org.terasology.engine.world.block.entity.neighbourUpdate.LargeBlockUpdate
 import org.terasology.engine.world.block.family.BlockPlacementData;
 import org.terasology.engine.world.block.items.BlockItemComponent;
 import org.terasology.engine.world.block.items.OnBlockItemPlaced;
+import org.terasology.gestalt.entitysystem.event.ReceiveEvent;
+import org.terasology.module.health.events.DoDamageEvent;
 
 import java.util.Set;
 
@@ -71,7 +72,7 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
         }
     }
 
-    @ReceiveEvent()
+    @ReceiveEvent
     public void doDestroy(DoDestroyEvent event, EntityRef entity, BlockComponent blockComponent) {
         Vector3i upBlock = blockComponent.getPosition().add(0, 1, 0, new Vector3i());
         Block block = worldProvider.getBlock(upBlock);
@@ -82,7 +83,8 @@ public class RailsBlockFamilyUpdateSystem extends BaseComponentSystem implements
     }
 
     //prevents rails from being stacked on top of each other.
-    @ReceiveEvent(components = {BlockItemComponent.class, ItemComponent.class}, priority = EventPriority.PRIORITY_HIGH)
+    @Priority(EventPriority.PRIORITY_HIGH)
+    @ReceiveEvent(components = {BlockItemComponent.class, ItemComponent.class})
     public void onBlockActivated(ActivateEvent event, EntityRef item) {
         BlockComponent blockComponent = event.getTarget().getComponent(BlockComponent.class);
         if (blockComponent == null) {

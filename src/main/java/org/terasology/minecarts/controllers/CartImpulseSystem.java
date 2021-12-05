@@ -7,7 +7,7 @@ import org.joml.Vector3f;
 import org.terasology.engine.core.Time;
 import org.terasology.engine.entitySystem.entity.EntityRef;
 import org.terasology.engine.entitySystem.event.EventPriority;
-import org.terasology.engine.entitySystem.event.ReceiveEvent;
+import org.terasology.engine.entitySystem.event.Priority;
 import org.terasology.engine.entitySystem.systems.BaseComponentSystem;
 import org.terasology.engine.entitySystem.systems.RegisterMode;
 import org.terasology.engine.entitySystem.systems.RegisterSystem;
@@ -19,6 +19,7 @@ import org.terasology.engine.physics.components.RigidBodyComponent;
 import org.terasology.engine.physics.events.ChangeVelocityEvent;
 import org.terasology.engine.physics.events.CollideEvent;
 import org.terasology.engine.registry.In;
+import org.terasology.gestalt.entitysystem.event.ReceiveEvent;
 import org.terasology.minecarts.Constants;
 import org.terasology.minecarts.components.CartJointComponent;
 import org.terasology.minecarts.components.CollisionFilterComponent;
@@ -55,8 +56,21 @@ public class CartImpulseSystem extends BaseComponentSystem {
     }
 
 
+    private boolean areJoinedTogether(EntityRef entity, EntityRef otherEntity) {
+        if (!entity.hasComponent(CartJointComponent.class) || !otherEntity.hasComponent(CartJointComponent.class)) {
+            return false;
+        }
+
+        CartJointComponent joint = entity.getComponent(CartJointComponent.class);
+        if (joint.findJoint(otherEntity) != null) {
+            return true;
+        }
+        return false;
+    }
+
+    @Priority(EventPriority.PRIORITY_HIGH)
     @ReceiveEvent(components = {RailVehicleComponent.class, PathFollowerComponent.class, LocationComponent.class,
-            RigidBodyComponent.class}, priority = EventPriority.PRIORITY_HIGH)
+            RigidBodyComponent.class})
     public void onBump(CollideEvent event, EntityRef entity) {
         CollisionFilterComponent collisionFilterComponent = entity.getComponent(CollisionFilterComponent.class);
         if (collisionFilterComponent != null && collisionFilterComponent.filter.contains(event.getOtherEntity())) {
@@ -73,18 +87,6 @@ public class CartImpulseSystem extends BaseComponentSystem {
         } else if (event.getOtherEntity().hasComponent(RigidBodyComponent.class)) {
             handleRigidBodyCollision(event, entity);
         }
-    }
-
-    private boolean areJoinedTogether(EntityRef entity, EntityRef otherEntity) {
-        if (!entity.hasComponent(CartJointComponent.class) || !otherEntity.hasComponent(CartJointComponent.class)) {
-            return false;
-        }
-
-        CartJointComponent joint = entity.getComponent(CartJointComponent.class);
-        if (joint.findJoint(otherEntity) != null) {
-            return true;
-        }
-        return false;
     }
 
     private void handleRigidBodyCollision(CollideEvent event, EntityRef entity) {

@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.engine.entitySystem.entity.EntityManager;
 import org.terasology.engine.entitySystem.entity.EntityRef;
-import org.terasology.engine.entitySystem.event.ReceiveEvent;
 import org.terasology.engine.entitySystem.systems.BaseComponentSystem;
 import org.terasology.engine.entitySystem.systems.RegisterMode;
 import org.terasology.engine.entitySystem.systems.RegisterSystem;
@@ -17,9 +16,10 @@ import org.terasology.engine.logic.inventory.ItemComponent;
 import org.terasology.engine.registry.In;
 import org.terasology.engine.world.block.BlockComponent;
 import org.terasology.engine.world.block.BlockManager;
-import org.terasology.module.inventory.systems.InventoryManager;
+import org.terasology.gestalt.entitysystem.event.ReceiveEvent;
 import org.terasology.minecarts.blocks.RailComponent;
 import org.terasology.minecarts.components.CartDefinitionComponent;
+import org.terasology.module.inventory.systems.InventoryManager;
 
 @RegisterSystem(RegisterMode.AUTHORITY)
 public class MinecartAction extends BaseComponentSystem {
