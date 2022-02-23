@@ -8,7 +8,8 @@
     "dependencies": [
         {
             "id": "CoreAssets",
-            "minVersion": "2.0.1"
+            "minVersion": "2.0.1",
+            "optional": true
         },
         {
             "id": "Drops",
