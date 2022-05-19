@@ -24,11 +24,6 @@
             "minVersion": "1.1.0"
         },
         {
-            "id": "ModuleTestingEnvironment",
-            "minVersion": "0.3.1",
-            "optional": true
-        },
-        {
             "id": "SegmentedPaths",
             "minVersion": "1.0.0"
         }
