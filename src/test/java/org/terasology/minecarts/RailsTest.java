@@ -1,4 +1,4 @@
-// Copyright 2021 The Terasology Foundation
+// Copyright 2022 The Terasology Foundation
 // SPDX-License-Identifier: Apache-2.0
 
 package org.terasology.minecarts;
@@ -10,10 +10,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.terasology.engine.integrationenvironment.ModuleTestingHelper;
+import org.terasology.engine.integrationenvironment.jupiter.Dependencies;
+import org.terasology.engine.integrationenvironment.jupiter.MTEExtension;
 import org.terasology.engine.math.Side;
 import org.terasology.engine.math.SideBitFlag;
 import org.terasology.engine.registry.In;
-import org.terasology.engine.world.BlockEntityRegistry;
 import org.terasology.engine.world.WorldProvider;
 import org.terasology.engine.world.block.Block;
 import org.terasology.engine.world.block.BlockManager;
@@ -21,21 +23,14 @@ import org.terasology.engine.world.block.BlockRegion;
 import org.terasology.engine.world.block.BlockUri;
 import org.terasology.engine.world.block.family.BlockFamily;
 import org.terasology.engine.world.block.family.BlockPlacementData;
-import org.terasology.moduletestingenvironment.MTEExtension;
-import org.terasology.moduletestingenvironment.ModuleTestingHelper;
-import org.terasology.moduletestingenvironment.extension.Dependencies;
 
 @ExtendWith(MTEExtension.class)
 @Dependencies({"Rails", "CoreAssets"})
 @Tag("MteTest")
 public class RailsTest {
-    private static final String RAIL_BLOCKFAMILY_URI = "rails:rails";
-    private Block dirtBlock;
-    private Block airBlock;
-    private BlockFamily railBlockFamily;
 
-    @In
-    BlockEntityRegistry blockEntityRegistry;
+    private static final String RAIL_BLOCKFAMILY_URI = "rails:rails";
+
     @In
     BlockManager blockManager;
     @In
@@ -43,8 +38,11 @@ public class RailsTest {
     @In
     WorldProvider worldProvider;
 
+    private Block dirtBlock;
+    private BlockFamily railBlockFamily;
+
     public void initialize() {
-        airBlock = blockManager.getBlock("engine:air");
+        Block airBlock = blockManager.getBlock("engine:air");
         dirtBlock = blockManager.getBlock("CoreAssets:Dirt");
         railBlockFamily = blockManager.getBlockFamily(RAIL_BLOCKFAMILY_URI);
 
