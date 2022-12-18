@@ -7,12 +7,9 @@ import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.joml.Vector3ic;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.terasology.engine.integrationenvironment.ModuleTestingHelper;
-import org.terasology.engine.integrationenvironment.jupiter.Dependencies;
-import org.terasology.engine.integrationenvironment.jupiter.MTEExtension;
+import org.terasology.engine.integrationenvironment.jupiter.IntegrationEnvironment;
 import org.terasology.engine.math.Side;
 import org.terasology.engine.math.SideBitFlag;
 import org.terasology.engine.registry.In;
@@ -24,9 +21,7 @@ import org.terasology.engine.world.block.BlockUri;
 import org.terasology.engine.world.block.family.BlockFamily;
 import org.terasology.engine.world.block.family.BlockPlacementData;
 
-@ExtendWith(MTEExtension.class)
-@Dependencies({"Rails", "CoreAssets"})
-@Tag("MteTest")
+@IntegrationEnvironment(dependencies = {"Rails", "CoreAssets"})
 public class RailsTest {
 
     private static final String RAIL_BLOCKFAMILY_URI = "rails:rails";
